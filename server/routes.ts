@@ -581,6 +581,28 @@ Date: ${new Date().toISOString().split('T')[0]}
 
   // Add this closing tag for the commented out API section
   
+  // Health check and database status routes
+  app.get("/api/health", async (req, res) => {
+    try {
+      // Check Supabase connection
+      const supabaseStatus = await checkSupabaseConnection();
+      
+      // Return health status
+      res.json({
+        status: "online",
+        database: supabaseStatus,
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        status: "error",
+        message: "Health check failed",
+        error: error.message
+      });
+    }
+  });
+  
   const httpServer = createServer(app);
   return httpServer;
 }

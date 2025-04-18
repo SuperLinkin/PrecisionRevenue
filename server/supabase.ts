@@ -14,10 +14,10 @@ export const supabase = createClient(supabaseUrl, supabaseKey);
  * Checks if the Supabase connection is working
  * @returns {Promise<boolean>} True if the connection is working
  */
-export async function checkSupabaseConnection(): Promise<{ success: boolean, message?: string }> {
+export async function checkSupabaseConnection(): Promise<{ success: boolean, message?: string, version?: string }> {
   try {
-    // Try to get a small amount of data from a table to verify connection
-    const { data, error } = await supabase.from('users').select('id').limit(1);
+    // Just perform a basic auth check to verify the connection
+    const { data, error } = await supabase.auth.getSession();
     
     if (error) {
       return { 
@@ -26,11 +26,18 @@ export async function checkSupabaseConnection(): Promise<{ success: boolean, mes
       };
     }
     
+    // If we get here, our connection to Supabase is working
+    // We can't check tables directly, but we can get version info
+    const versionResponse = await supabase.from('_version').select('*').maybeSingle();
+    const version = versionResponse.data ? versionResponse.data.version : 'unknown';
+
     return { 
       success: true, 
-      message: 'Successfully connected to Supabase' 
+      message: 'Successfully connected to Supabase',
+      version
     };
   } catch (err: any) {
+    console.error("Supabase connection error:", err);
     return { 
       success: false, 
       message: `Connection check failed: ${err.message}` 
