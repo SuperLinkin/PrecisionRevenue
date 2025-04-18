@@ -362,14 +362,14 @@ export default function Revenue() {
           // Get the content as base64 for future use
           const base64Data = await readFileAsBase64(contractFile);
           
-          // Currently we don't have PDF parsing implemented, so we'll use a placeholder response
+          // Send the file name and query to the backend for analysis
           response = await fetch('/api/contracts/ask', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({ 
-              contractText: "PDF document content would be analyzed here",
+              contractText: "PDF document content would be analyzed here", // In a production app, this would be the actual PDF text
               question: userQuery,
               fileName: contractFile.name
             }),

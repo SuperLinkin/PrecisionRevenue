@@ -69,22 +69,39 @@ export async function extractContractData(text: string) {
  */
 export async function answerContractQuestion(contractText: string, question: string) {
   try {
+    // Format the question to be more IFRS 15/ASC 606 focused if it's general
+    let enhancedQuestion = question;
+    if (question.toLowerCase().includes('revenue recognition') || 
+        question.toLowerCase().includes('recognize') ||
+        question.toLowerCase().includes('revenue schedule')) {
+      enhancedQuestion = `${question} Following IFRS 15/ASC 606 guidelines`;
+    }
+    
     const prompt = `
-      You are REMY, an AI assistant specializing in contract analysis. 
+      You are REMY, a specialized AI assistant for Revenue Management at Precision Revenue Automation.
+      
+      Your expertise:
+      - Contract analysis and interpretation
+      - Revenue recognition guidance under IFRS 15/ASC 606
+      - Financial reporting requirements
+      - Performance obligation identification
+      - Revenue allocation methodologies
+      
       Analyze the following contract text and answer the user's question.
-      Provide a concise but detailed answer, citing specific clauses or sections from the contract that support your answer.
+      Your answers should be comprehensive, professional, and refer to specific sections of the contract.
+      Always relate your answers to IFRS 15/ASC 606 principles when discussing revenue recognition.
       
       Contract text:
       ${contractText}
       
-      User's question: ${question}
+      User's question: ${enhancedQuestion}
     `;
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [{ role: "user", content: prompt }],
       temperature: 0.2,
-      max_tokens: 1000,
+      max_tokens: 1500,
     });
 
     return response.choices[0].message.content;
