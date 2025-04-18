@@ -67,7 +67,7 @@ router.post('/extract', async (req, res) => {
 // Answer contract questions endpoint
 router.post('/ask', async (req, res) => {
   try {
-    const { question } = req.body;
+    const { question, fileName, contractTemplate } = req.body;
     
     if (!question) {
       return res.status(400).json({ message: "Question is required" });
@@ -75,6 +75,18 @@ router.post('/ask', async (req, res) => {
     
     console.log("DEBUG - Starting contract Q&A with question:", question);
     console.log("DEBUG - OpenAI API Key exists:", !!process.env.OPENAI_API_KEY);
+    console.log("DEBUG - Contract template requested:", contractTemplate);
+    
+    // Update contract template based on provided fileName
+    if (fileName && contractTemplate) {
+      const parts = fileName.replace('.pdf', '').split('-');
+      const contractType = parts[0]?.trim() || 'SaaS';
+      const clientName = parts[1]?.trim() || 'TechCorp';
+      
+      // Generate new template with file name details
+      demoContract.text = getContractTemplate(contractType, clientName);
+      console.log("DEBUG - Generated new contract template from filename:", fileName);
+    }
     
     // Use the stored demo contract text
     const contractText = demoContract.text;

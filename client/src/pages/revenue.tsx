@@ -439,7 +439,9 @@ export default function Revenue() {
             },
             body: JSON.stringify({ 
               question: userQuery,
-              fileName: contractFile.name
+              fileName: contractFile.name,
+              // Include our latest mock contract template
+              contractTemplate: true
             }),
           });
           
