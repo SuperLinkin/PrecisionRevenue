@@ -103,18 +103,9 @@ export default function About() {
               {/* Pranav - CEO */}
               <div className="bg-white rounded-xl shadow-md overflow-hidden p-8">
                 <div className="flex flex-col">
-                  <div className="flex items-start mb-6">
-                    <div className="mr-4 w-32 h-32 rounded-md overflow-hidden flex-shrink-0">
-                      <img 
-                        src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop"
-                        alt="Pranav MV" 
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div>
-                      <h3 className="text-2xl text-primary mb-1">Pranav MV</h3>
-                      <p className="text-blue-600 mb-0">CEO & Co-Founder</p>
-                    </div>
+                  <div className="border-b border-gray-100 pb-3 mb-4">
+                    <h3 className="text-2xl text-primary">Pranav MV</h3>
+                    <p className="text-blue-600">CEO & Co-Founder</p>
                   </div>
                   
                   <div className="text-gray-600 space-y-4">
@@ -131,18 +122,9 @@ export default function About() {
               {/* Pratima - CFO */}
               <div className="bg-white rounded-xl shadow-md overflow-hidden p-8">
                 <div className="flex flex-col">
-                  <div className="flex items-start mb-6">
-                    <div className="mr-4 w-32 h-32 rounded-md overflow-hidden flex-shrink-0">
-                      <img 
-                        src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&auto=format&fit=crop"
-                        alt="Pratima Nemani" 
-                        className="w-full h-full object-cover" 
-                      />
-                    </div>
-                    <div>
-                      <h3 className="text-2xl text-primary mb-1">Pratima Nemani</h3>
-                      <p className="text-blue-600 mb-0">CFO & Co-Founder</p>
-                    </div>
+                  <div className="border-b border-gray-100 pb-3 mb-4">
+                    <h3 className="text-2xl text-primary">Pratima Nemani</h3>
+                    <p className="text-blue-600">CFO & Co-Founder</p>
                   </div>
                   
                   <div className="text-gray-600 space-y-4">

@@ -86,11 +86,11 @@ export default function KnowledgeCenter() {
       <NavBar />
       
       {/* Header */}
-      <div className="bg-primary text-white py-12">
+      <div className="bg-gradient-to-r from-primary to-primary-800 text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl font-extrabold sm:text-5xl">Knowledge Center</h1>
-            <p className="mt-4 text-xl max-w-3xl mx-auto">
+            <h1 className="text-4xl sm:text-5xl mb-4 tracking-tight">Knowledge Center</h1>
+            <p className="mt-6 text-xl max-w-3xl mx-auto font-light leading-relaxed">
               Resources, guides, and best practices for revenue recognition and compliance
             </p>
           </div>
@@ -118,7 +118,7 @@ export default function KnowledgeCenter() {
                           <div className="inline-block px-2 py-1 text-xs font-medium rounded-full bg-secondary/10 text-secondary mb-2">
                             {resource.type.charAt(0).toUpperCase() + resource.type.slice(1)}
                           </div>
-                          <h3 className="text-lg font-semibold text-primary">{resource.title}</h3>
+                          <h3 className="text-lg text-primary">{resource.title}</h3>
                           <p className="text-sm text-neutral mt-1">{resource.description}</p>
                           <div className="mt-4 flex items-center justify-between">
                             <span className="text-xs text-neutral">{resource.readTime}</span>
@@ -145,19 +145,19 @@ export default function KnowledgeCenter() {
                         </div>
                       </div>
                       <div className="ml-6">
-                        <h3 className="text-2xl font-bold text-primary">ASC 606: Revenue from Contracts with Customers</h3>
+                        <h3 className="text-2xl text-primary">ASC 606: Revenue from Contracts with Customers</h3>
                         <p className="mt-2 text-neutral">
                           Issued by the Financial Accounting Standards Board (FASB), ASC 606 establishes a comprehensive framework for recognizing revenue from customer contracts.
                         </p>
                         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="border border-border rounded-md p-4">
-                            <h4 className="font-semibold text-primary mb-2">Core Principle</h4>
+                            <h4 className="text-primary mb-2">Core Principle</h4>
                             <p className="text-sm text-neutral">
                               Recognize revenue to depict the transfer of promised goods or services to customers in an amount that reflects the consideration to which the entity expects to be entitled in exchange for those goods or services.
                             </p>
                           </div>
                           <div className="border border-border rounded-md p-4">
-                            <h4 className="font-semibold text-primary mb-2">Effective Date</h4>
+                            <h4 className="text-primary mb-2">Effective Date</h4>
                             <p className="text-sm text-neutral">
                               Public entities: Annual reporting periods beginning after December 15, 2017<br />
                               All other entities: Annual reporting periods beginning after December 15, 2018
@@ -183,19 +183,19 @@ export default function KnowledgeCenter() {
                         </div>
                       </div>
                       <div className="ml-6">
-                        <h3 className="text-2xl font-bold text-primary">IFRS 15: Revenue from Contracts with Customers</h3>
+                        <h3 className="text-2xl text-primary">IFRS 15: Revenue from Contracts with Customers</h3>
                         <p className="mt-2 text-neutral">
                           Issued by the International Accounting Standards Board (IASB), IFRS 15 provides a single, comprehensive revenue recognition model for all contracts with customers.
                         </p>
                         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="border border-border rounded-md p-4">
-                            <h4 className="font-semibold text-primary mb-2">Core Principle</h4>
+                            <h4 className="text-primary mb-2">Core Principle</h4>
                             <p className="text-sm text-neutral">
                               Recognize revenue to depict the transfer of promised goods or services to customers in an amount that reflects the consideration to which the entity expects to be entitled in exchange for those goods or services.
                             </p>
                           </div>
                           <div className="border border-border rounded-md p-4">
-                            <h4 className="font-semibold text-primary mb-2">Effective Date</h4>
+                            <h4 className="text-primary mb-2">Effective Date</h4>
                             <p className="text-sm text-neutral">
                               Annual reporting periods beginning on or after January 1, 2018, with earlier application permitted.
                             </p>
@@ -223,7 +223,7 @@ export default function KnowledgeCenter() {
                           <CheckCircleIcon className="h-6 w-6 text-secondary" />
                         </div>
                         <div className="ml-4">
-                          <h3 className="text-lg font-semibold text-primary">{faq.question}</h3>
+                          <h3 className="text-lg text-primary">{faq.question}</h3>
                           <p className="mt-2 text-neutral">{faq.answer}</p>
                         </div>
                       </div>
@@ -237,10 +237,10 @@ export default function KnowledgeCenter() {
       </div>
       
       {/* Contact Section */}
-      <div className="bg-primary text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-2xl font-bold mb-4">Need Specialized Guidance?</h2>
-          <p className="mb-6 max-w-2xl mx-auto">
+      <div className="bg-primary text-white py-16">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl text-white mb-4">Need Specialized Guidance?</h2>
+          <p className="text-lg text-blue-100 max-w-3xl mx-auto mb-8">
             Our team of financial experts can provide personalized assistance with your revenue recognition challenges.
           </p>
           <Button className="bg-white text-primary hover:bg-gray-100">
