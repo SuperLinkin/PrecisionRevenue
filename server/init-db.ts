@@ -7,19 +7,35 @@ export async function initDB() {
   try {
     console.log('Initializing database...');
     
-    // Perform schema migration 
-    await migrate(db, { migrationsFolder: 'drizzle' });
-    
-    console.log('Database initialized successfully');
+    // We've already pushed the schema using drizzle-kit, so no need for migration
+    // Just check if tables exist and seed if needed
     
     // Check if we have any users, if not, seed some demo data
-    const users = await db.select().from(schema.users);
+    let users: any[] = [];
+    try {
+      users = await db.select().from(schema.users);
+      console.log('Database tables exist');
+    } catch (err) {
+      console.log('Tables not found, schema may need to be created');
+      // Tables don't exist yet - schema push needed
+      try {
+        // We'll use db.push in the future
+        console.log('Please run "npm run db:push" to create the database schema');
+      } catch (pushErr) {
+        console.error('Error pushing schema:', pushErr);
+      }
+      return;
+    }
     
     if (users.length === 0) {
       console.log('No users found, seeding demo data...');
       await seedDemoData();
       console.log('Demo data seeded successfully');
+    } else {
+      console.log(`Found ${users.length} users, no need to seed data`);
     }
+    
+    console.log('Database initialized successfully');
   } catch (error) {
     console.error('Error initializing database:', error);
   }
@@ -149,7 +165,7 @@ async function seedDemoData() {
       revenueType: 'subscription',
       recognitionPercentage: null,
       performanceObligationId: null,
-      adjustmentType: null,
+      adjustmentType: 'initial',
       createdAt: now,
       updatedAt: now
     })
@@ -167,7 +183,7 @@ async function seedDemoData() {
       revenueType: 'subscription',
       recognitionPercentage: null,
       performanceObligationId: null,
-      adjustmentType: null,
+      adjustmentType: 'initial',
       createdAt: now,
       updatedAt: now
     })
@@ -185,7 +201,7 @@ async function seedDemoData() {
       revenueType: 'subscription',
       recognitionPercentage: null,
       performanceObligationId: null,
-      adjustmentType: null,
+      adjustmentType: 'initial',
       createdAt: now,
       updatedAt: now
     })

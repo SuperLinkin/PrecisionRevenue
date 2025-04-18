@@ -230,7 +230,7 @@ export const revenueRecords = pgTable("revenue_records", {
   }),
   adjustmentType: text("adjustment_type", {
     enum: ["initial", "correction", "constraint", "variable_consideration", "refund", "other", "none"]
-  }).default("initial").notNull(),
+  }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
