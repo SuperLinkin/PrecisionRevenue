@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import About from "@/pages/about";
@@ -12,6 +12,8 @@ import Reports from "@/pages/reports";
 import Settings from "@/pages/settings";
 import { useAuth } from "@/lib/auth";
 import { Suspense, lazy } from "react";
+import { AnimatePresence } from "framer-motion";
+import { PageTransition } from "@/lib/animations";
 
 // Protected route component
 const ProtectedRoute = ({ component: Component, ...rest }: any) => {
@@ -32,38 +34,44 @@ const ProtectedRoute = ({ component: Component, ...rest }: any) => {
 };
 
 function App() {
+  const [location] = useLocation();
+
   return (
     <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-background">
       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-secondary"></div>
     </div>}>
-      <Switch>
-        {/* Public Routes */}
-        <Route path="/" component={Home} />
-        <Route path="/about" component={About} />
-        <Route path="/knowledge-center" component={KnowledgeCenter} />
-        <Route path="/signup" component={Signup} />
-        <Route path="/login" component={Login} />
-        
-        {/* Protected Routes */}
-        <Route path="/dashboard">
-          {(params) => <ProtectedRoute component={Dashboard} />}
-        </Route>
-        <Route path="/contracts">
-          {(params) => <ProtectedRoute component={Contracts} />}
-        </Route>
-        <Route path="/revenue">
-          {(params) => <ProtectedRoute component={Revenue} />}
-        </Route>
-        <Route path="/reports">
-          {(params) => <ProtectedRoute component={Reports} />}
-        </Route>
-        <Route path="/settings">
-          {(params) => <ProtectedRoute component={Settings} />}
-        </Route>
-        
-        {/* Fallback to 404 */}
-        <Route component={NotFound} />
-      </Switch>
+      <AnimatePresence mode="wait">
+        <PageTransition key={location}>
+          <Switch>
+            {/* Public Routes */}
+            <Route path="/" component={Home} />
+            <Route path="/about" component={About} />
+            <Route path="/knowledge-center" component={KnowledgeCenter} />
+            <Route path="/signup" component={Signup} />
+            <Route path="/login" component={Login} />
+            
+            {/* Protected Routes */}
+            <Route path="/dashboard">
+              {(params) => <ProtectedRoute component={Dashboard} />}
+            </Route>
+            <Route path="/contracts">
+              {(params) => <ProtectedRoute component={Contracts} />}
+            </Route>
+            <Route path="/revenue">
+              {(params) => <ProtectedRoute component={Revenue} />}
+            </Route>
+            <Route path="/reports">
+              {(params) => <ProtectedRoute component={Reports} />}
+            </Route>
+            <Route path="/settings">
+              {(params) => <ProtectedRoute component={Settings} />}
+            </Route>
+            
+            {/* Fallback to 404 */}
+            <Route component={NotFound} />
+          </Switch>
+        </PageTransition>
+      </AnimatePresence>
     </Suspense>
   );
 }
