@@ -193,28 +193,99 @@ export default function Revenue() {
     }
   };
   
-  const handleContractFile = (file: File) => {
-    setContractFile(file);
-    toast({
-      title: "Contract uploaded",
-      description: `${file.name} has been uploaded for analysis. REMY is ready to process it.`,
+  // Helper function to read a file as text
+  const readFileAsText = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsText(file);
     });
+  };
+
+  const handleContractFile = async (file: File) => {
+    setContractFile(file);
     
-    // Simulate contract analysis response after a short delay
-    setTimeout(() => {
+    // Add a loading message
+    setChatMessages(prev => [
+      ...prev,
+      {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: `Analyzing "${file.name}". Please wait a moment...`,
+        timestamp: new Date()
+      }
+    ]);
+    
+    try {
+      // Read the file content
+      const fileText = await readFileAsText(file);
+      
+      // Extract contract data using OpenAI
+      const response = await fetch('/api/contracts/extract', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: fileText }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to extract contract data');
+      }
+      
+      const contractData = await response.json();
+      
+      // Use the extracted data in REMY's response
+      const formattedValue = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD'
+      }).format(contractData.value);
+      
+      const startDate = new Date(contractData.startDate);
+      const endDate = contractData.endDate ? new Date(contractData.endDate) : null;
+      const durationMonths = endDate ? 
+        Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 30)) : 
+        12;
+      
       setChatMessages(prev => [
-        ...prev,
+        // Remove the loading message
+        ...prev.slice(0, -1),
         {
           id: Date.now().toString(),
           role: 'assistant',
-          content: `I've analyzed "${file.name}" and extracted the key contract details. This appears to be a SaaS license agreement with quarterly billing cycles and a total value of $480,000 over 24 months. Would you like me to suggest a revenue recognition schedule based on IFRS 15/ASC 606 guidelines?`,
+          content: `I've analyzed "${file.name}" and extracted the key contract details. This appears to be a ${contractData.name} with ${contractData.clientName} valued at ${formattedValue}${endDate ? ` over ${durationMonths} months` : ''}. Would you like me to suggest a revenue recognition schedule based on IFRS 15/ASC 606 guidelines?`,
           timestamp: new Date()
         }
       ]);
-    }, 2000);
+      
+      toast({
+        title: "Contract analysis complete",
+        description: `${file.name} has been analyzed using AI. Ask REMY for details or guidance.`,
+      });
+    } catch (error) {
+      console.error('Error extracting contract data:', error);
+      
+      // Remove the loading message and add an error message
+      setChatMessages(prev => [
+        ...prev.slice(0, -1),
+        {
+          id: Date.now().toString(),
+          role: 'assistant',
+          content: `I had trouble analyzing "${file.name}". Please try again or upload a different contract file.`,
+          timestamp: new Date()
+        }
+      ]);
+      
+      toast({
+        title: "Analysis failed",
+        description: "Failed to extract contract data. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
   
-  const handleChatSubmit = (e: React.FormEvent) => {
+  const handleChatSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentMessage.trim()) return;
     
@@ -227,30 +298,91 @@ export default function Revenue() {
     };
     
     setChatMessages(prev => [...prev, userMessage]);
+    const userQuery = currentMessage;
     setCurrentMessage('');
     
-    // Simulate REMY's response
-    setTimeout(() => {
-      let responseContent = '';
-      
-      if (currentMessage.toLowerCase().includes('generate')) {
-        responseContent = "I've created a suggested revenue recognition schedule for this contract. This allocates the $480,000 evenly across 24 months at $20,000 per month, which aligns with the performance obligations identified in the contract. Would you like me to generate these revenue records in the system?";
-      } else if (currentMessage.toLowerCase().includes('explain')) {
-        responseContent = "Under IFRS 15/ASC 606, revenue is recognized when control of goods or services transfers to the customer. For SaaS subscriptions, this typically means recognizing revenue over time as the service is provided. Would you like me to explain more specific aspects of revenue recognition for this contract?";
-      } else {
-        responseContent = "I can help with contract analysis, revenue recognition guidance, and creating revenue schedules. Is there something specific about this contract you'd like me to assist with?";
+    // Add a typing indicator
+    setChatMessages(prev => [
+      ...prev,
+      {
+        id: 'typing',
+        role: 'assistant',
+        content: 'Typing...',
+        timestamp: new Date()
       }
+    ]);
+    
+    try {
+      let response;
       
+      // If a contract file has been uploaded, use the AI to answer questions about it
+      if (contractFile) {
+        const fileText = await readFileAsText(contractFile);
+        
+        response = await fetch('/api/contracts/ask', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            contractText: fileText,
+            question: userQuery
+          }),
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to get AI response');
+        }
+        
+        const result = await response.json();
+        
+        // Remove the typing indicator and add the AI response
+        setChatMessages(prev => [
+          ...prev.filter(msg => msg.id !== 'typing'),
+          {
+            id: Date.now().toString(),
+            role: 'assistant',
+            content: result.answer,
+            timestamp: new Date()
+          }
+        ]);
+      } else {
+        // No contract uploaded yet, provide generic responses
+        let responseContent = '';
+        
+        if (userQuery.toLowerCase().includes('generate')) {
+          responseContent = "To generate a revenue recognition schedule, please upload a contract document first so I can analyze it. Would you like to upload a contract now?";
+        } else if (userQuery.toLowerCase().includes('explain') || userQuery.toLowerCase().includes('ifrs') || userQuery.toLowerCase().includes('asc')) {
+          responseContent = "Under IFRS 15/ASC 606, revenue is recognized when control of goods or services transfers to the customer. For SaaS subscriptions, this typically means recognizing revenue over time as the service is provided. Would you like me to explain more specific aspects of revenue recognition for a particular contract? If so, please upload the contract first.";
+        } else {
+          responseContent = "I can help with contract analysis, revenue recognition guidance, and creating revenue schedules. To get started, please upload a contract using the upload button or drag and drop area.";
+        }
+        
+        // Remove the typing indicator and add the response
+        setChatMessages(prev => [
+          ...prev.filter(msg => msg.id !== 'typing'),
+          {
+            id: Date.now().toString(),
+            role: 'assistant',
+            content: responseContent,
+            timestamp: new Date()
+          }
+        ]);
+      }
+    } catch (error) {
+      console.error('Error getting AI response:', error);
+      
+      // Remove the typing indicator and add an error message
       setChatMessages(prev => [
-        ...prev,
+        ...prev.filter(msg => msg.id !== 'typing'),
         {
           id: Date.now().toString(),
           role: 'assistant',
-          content: responseContent,
+          content: "I'm sorry, I encountered an error while processing your request. Please try again or upload a different contract file.",
           timestamp: new Date()
         }
       ]);
-    }, 1500);
+    }
   };
   
   const generateRevenue = () => {
