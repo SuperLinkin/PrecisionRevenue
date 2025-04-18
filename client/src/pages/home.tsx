@@ -366,37 +366,92 @@ export default function Home() {
                         </div>
                       </div>
                       
-                      {/* Top stats row */}
-                      <div className="grid grid-cols-3 gap-4">
-                        <div className="rounded-lg bg-gradient-to-br from-blue-500/20 to-primary-800/40 border border-white/5 p-3">
-                          <div className="text-xs text-white/60 mb-1">REMY Accuracy</div>
-                          <div className="text-xl font-bold text-white">98.7%</div>
-                          <div className="text-xs text-emerald-400 flex items-center mt-1">
-                            <svg className="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                            </svg>
-                            +1.2%
+                      {/* REMY Metrics */}
+                      <div className="relative">
+                        {/* REMY Badge */}
+                        <div className="absolute -top-4 -left-4 flex items-center justify-center z-10">
+                          <div className="relative">
+                            <div className="absolute inset-0 rounded-full bg-blue-600/20 blur-md"></div>
+                            <motion.div 
+                              className="relative bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold text-xs px-3 py-1 rounded-full border border-white/10 shadow-lg"
+                              initial={{ scale: 0.9, opacity: 0 }}
+                              animate={{ scale: 1, opacity: 1 }}
+                              transition={{ delay: 0.5, duration: 0.4, type: "spring" }}
+                            >
+                              REMY
+                            </motion.div>
                           </div>
                         </div>
-                        <div className="rounded-lg bg-gradient-to-br from-indigo-500/20 to-primary-800/40 border border-white/5 p-3">
-                          <div className="text-xs text-white/60 mb-1">Contracts Analyzed</div>
-                          <div className="text-xl font-bold text-white">248</div>
-                          <div className="text-xs text-emerald-400 flex items-center mt-1">
-                            <svg className="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                            </svg>
-                            +24
-                          </div>
-                        </div>
-                        <div className="rounded-lg bg-gradient-to-br from-purple-500/20 to-primary-800/40 border border-white/5 p-3">
-                          <div className="text-xs text-white/60 mb-1">Time Saved</div>
-                          <div className="text-xl font-bold text-white">342h</div>
-                          <div className="text-xs text-emerald-400 flex items-center mt-1">
-                            <svg className="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                            </svg>
-                            +18h
-                          </div>
+                        
+                        <div className="grid grid-cols-3 gap-4">
+                          <motion.div 
+                            className="rounded-lg bg-gradient-to-br from-blue-500/20 to-primary-800/40 border border-white/5 p-3 relative overflow-hidden"
+                            whileHover={{ 
+                              boxShadow: "0 0 20px 2px rgba(59, 130, 246, 0.2)",
+                              borderColor: "rgba(255, 255, 255, 0.2)"
+                            }}
+                          >
+                            <div className="absolute -right-6 -top-6 w-12 h-12 rounded-full bg-blue-500/10 blur-xl"></div>
+                            <div className="flex items-center mb-1">
+                              <svg className="w-3 h-3 mr-2 text-blue-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M9 12L11 14L15 10M20.618 5.984C20.209 5.38887 19.6547 4.88743 19.0091 4.53089C18.3635 4.17435 17.6451 3.97439 16.9125 3.94673C16.1798 3.91907 15.4493 4.06456 14.78 4.37229C14.1108 4.68002 13.5214 5.14023 13.0729 5.712M21 10V14C21 16.2091 16.9706 18 12 18C7.02944 18 3 16.2091 3 14V10C3 7.79086 7.02944 6 12 6C16.9706 6 21 7.79086 21 10Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                              <div className="text-xs text-white/80">REMY Accuracy</div>
+                            </div>
+                            <div className="text-xl font-bold text-white">98.7%</div>
+                            <div className="text-xs text-emerald-400 flex items-center mt-1">
+                              <svg className="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                              </svg>
+                              +1.2%
+                            </div>
+                          </motion.div>
+                          
+                          <motion.div 
+                            className="rounded-lg bg-gradient-to-br from-indigo-500/20 to-primary-800/40 border border-white/5 p-3 relative overflow-hidden"
+                            whileHover={{ 
+                              boxShadow: "0 0 20px 2px rgba(99, 102, 241, 0.2)",
+                              borderColor: "rgba(255, 255, 255, 0.2)"
+                            }}
+                          >
+                            <div className="absolute -right-6 -top-6 w-12 h-12 rounded-full bg-indigo-500/10 blur-xl"></div>
+                            <div className="flex items-center mb-1">
+                              <svg className="w-3 h-3 mr-2 text-indigo-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M9 12H15M9 16H15M17 21H7C5.89543 21 5 20.1046 5 19V5C5 3.89543 5.89543 3 7 3H12.5858C12.851 3 13.1054 3.10536 13.2929 3.29289L18.7071 8.70711C18.8946 8.89464 19 9.149 19 9.41421V19C19 20.1046 18.1046 21 17 21Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                              <div className="text-xs text-white/80">Contracts Analyzed</div>
+                            </div>
+                            <div className="text-xl font-bold text-white">248</div>
+                            <div className="text-xs text-emerald-400 flex items-center mt-1">
+                              <svg className="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                              </svg>
+                              +24
+                            </div>
+                          </motion.div>
+                          
+                          <motion.div 
+                            className="rounded-lg bg-gradient-to-br from-violet-500/20 to-primary-800/40 border border-white/5 p-3 relative overflow-hidden"
+                            whileHover={{ 
+                              boxShadow: "0 0 20px 2px rgba(139, 92, 246, 0.2)",
+                              borderColor: "rgba(255, 255, 255, 0.2)"
+                            }}
+                          >
+                            <div className="absolute -right-6 -top-6 w-12 h-12 rounded-full bg-violet-500/10 blur-xl"></div>
+                            <div className="flex items-center mb-1">
+                              <svg className="w-3 h-3 mr-2 text-violet-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M9 12.75L11.25 15L15 9.75M8 4H6C5.44772 4 5 4.44772 5 5V19C5 19.5523 5.44772 20 6 20H18C18.5523 20 19 19.5523 19 19V17M16 4H18C18.5523 4 19 4.44772 19 5V13M16 4V9C16 9.55228 15.5523 10 15 10H10C9.44772 10 9 9.55228 9 9V4M16 4H9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                              <div className="text-xs text-white/80">Audit-Ready Score</div>
+                            </div>
+                            <div className="text-xl font-bold text-white">97.3%</div>
+                            <div className="text-xs text-emerald-400 flex items-center mt-1">
+                              <svg className="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                              </svg>
+                              +2.8%
+                            </div>
+                          </motion.div>
                         </div>
                       </div>
                     </div>
@@ -418,18 +473,33 @@ export default function Home() {
       </div>
       
       {/* Features Section */}
-      <div className="relative bg-gradient-to-b from-white to-white/90 overflow-hidden">
+      <div className="relative overflow-hidden">
+        {/* Soft gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-primary-50 via-blue-50/70 to-indigo-50/60"></div>
+        
         {/* Background Elements */}
-        <div className="absolute inset-0 overflow-hidden opacity-10">
-          <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-secondary opacity-20 blur-3xl"></div>
-          <div className="absolute top-1/2 -left-24 w-80 h-80 rounded-full bg-accent opacity-20 blur-3xl"></div>
-          <div className="absolute -bottom-24 right-1/3 w-72 h-72 rounded-full bg-primary opacity-20 blur-3xl"></div>
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-blue-200/20 blur-3xl"></div>
+          <div className="absolute top-1/2 -left-24 w-80 h-80 rounded-full bg-indigo-200/30 blur-3xl"></div>
+          <div className="absolute -bottom-24 right-1/3 w-72 h-72 rounded-full bg-purple-200/20 blur-3xl"></div>
           
-          {/* Grid Pattern */}
-          <div className="absolute inset-0" style={{ 
-            backgroundImage: 'radial-gradient(rgba(15, 23, 42, 0.1) 1px, transparent 1px)', 
+          {/* Subtle patterns */}
+          <div className="absolute inset-0 opacity-[0.07]" style={{ 
+            backgroundImage: 'radial-gradient(rgba(79, 70, 229, 0.25) 1px, transparent 1px)', 
             backgroundSize: '30px 30px' 
           }}></div>
+          
+          {/* Light wave pattern */}
+          <div className="absolute inset-0 opacity-[0.05]">
+            <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <pattern id="wave-pattern" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
+                  <path d="M0,50 C20,30 40,70 60,40 C80,10 100,50 100,50" stroke="#4F46E5" strokeWidth="1" fill="none" />
+                </pattern>
+              </defs>
+              <rect x="0" y="0" width="100%" height="100%" fill="url(#wave-pattern)" />
+            </svg>
+          </div>
         </div>
         
         <div className="relative max-w-7xl mx-auto py-20 px-4 sm:px-6 lg:py-32 lg:px-8">
@@ -512,21 +582,20 @@ export default function Home() {
         </div>
       </div>
       
-      {/* AI Capabilities Section */}
-      <div className="relative bg-gradient-to-b from-background/80 via-background/90 to-background">
+      {/* Interactive Module Showcase Section */}
+      <div className="relative bg-gradient-to-b from-indigo-50/70 via-blue-50/60 to-primary-50/80 overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 z-0">
-          <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-white opacity-20"></div>
-          <div className="absolute inset-0 opacity-5" 
+          <div className="absolute inset-0 opacity-10" 
                style={{ 
-                 backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'100\' height=\'100\' viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z\' fill=\'%233B82F6\' fill-opacity=\'0.15\' fill-rule=\'evenodd\'/%3E%3C/svg%3E")'
+                 backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%234F46E5\' fill-opacity=\'0.15\' fill-rule=\'evenodd\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/svg%3E")',
                }}>
           </div>
-          <div className="absolute -top-40 right-20 w-96 h-96 rounded-full bg-gradient-to-r from-blue-600/20 via-indigo-600/20 to-purple-600/20 blur-3xl opacity-30"></div>
-          <div className="absolute bottom-20 left-10 w-72 h-72 rounded-full bg-gradient-to-r from-cyan-500/20 via-teal-500/20 to-emerald-500/20 blur-3xl opacity-20"></div>
+          <div className="absolute -top-40 -right-20 w-96 h-96 rounded-full bg-gradient-to-r from-purple-300/10 via-indigo-300/10 to-blue-300/10 blur-3xl"></div>
+          <div className="absolute bottom-20 -left-20 w-96 h-96 rounded-full bg-gradient-to-r from-blue-300/10 via-cyan-300/10 to-teal-300/10 blur-3xl"></div>
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto py-24 px-4 sm:px-6 lg:py-36 lg:px-8">
+        <div className="relative z-10 max-w-7xl mx-auto py-24 px-4 sm:px-6 lg:py-32 lg:px-8">
           <motion.div 
             className="max-w-3xl mx-auto text-center mb-20"
             initial={{ opacity: 0, y: 20 }}
@@ -534,130 +603,812 @@ export default function Home() {
             transition={{ duration: 0.6 }}
           >
             <motion.span 
-              className="inline-flex items-center rounded-full bg-white/5 px-3 py-1 text-sm font-medium text-blue-300 ring-1 ring-inset ring-blue-300/20 mb-3"
+              className="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-sm font-medium text-indigo-800 ring-1 ring-inset ring-indigo-400/30 mb-3"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.1, duration: 0.4 }}
             >
-              <svg className="mr-1 h-1.5 w-1.5 fill-blue-300 animate-pulse" viewBox="0 0 6 6" aria-hidden="true"><circle cx="3" cy="3" r="3" /></svg>
-              Precision Technology
+              <svg className="mr-1 h-1.5 w-1.5 fill-indigo-500 animate-pulse" viewBox="0 0 6 6" aria-hidden="true"><circle cx="3" cy="3" r="3" /></svg>
+              Interactive Platform
             </motion.span>
             <motion.h2 
-              className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent pb-2"
+              className="text-4xl font-bold bg-gradient-to-r from-primary-800 via-indigo-700 to-purple-700 bg-clip-text text-transparent pb-2"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2, duration: 0.6 }}
             >
-              Powered by Advanced Financial Intelligence
+              Powerful Modules That Transform Revenue Operations
             </motion.h2>
             <motion.p 
-              className="mt-4 text-lg text-neutral font-light max-w-2xl mx-auto"
+              className="mt-4 text-lg text-gray-600 font-light max-w-2xl mx-auto"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3, duration: 0.6 }}
             >
-              Our proprietary systems combine sophisticated algorithms with financial expertise to deliver unprecedented automation and insights for revenue operations.
+              Our suite of specialized tools work together seamlessly to automate, analyze, and optimize your entire revenue process from contract negotiation to financial reporting.
             </motion.p>
           </motion.div>
           
+          {/* CLAUS: Legal AI Agent */}
           <motion.div 
-            className="grid grid-cols-1 md:grid-cols-3 gap-10"
-            variants={{
-              hidden: { opacity: 0 },
-              visible: {
-                opacity: 1,
-                transition: {
-                  staggerChildren: 0.2
-                }
-              }
+            className="mb-24 bg-white rounded-2xl shadow-xl overflow-hidden"
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ 
+              duration: 0.7,
+              type: "spring",
+              stiffness: 100,
+              damping: 15
             }}
-            initial="hidden"
-            animate="visible"
           >
-            {aiCapabilities.map((capability, index) => (
-              <motion.div 
-                key={index}
-                className="relative group overflow-hidden"
-                variants={{
-                  hidden: { opacity: 0, y: 30 },
-                  visible: { 
-                    opacity: 1, 
-                    y: 0,
-                    transition: {
-                      type: "spring",
-                      stiffness: 100,
-                      damping: 15,
-                      duration: 0.5
-                    }
-                  }
-                }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 opacity-0 group-hover:opacity-100 transform translate-y-full group-hover:translate-y-0 transition-all duration-500 rounded-2xl"></div>
-                <motion.div 
-                  className="relative z-10 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-8 h-full transform transition-transform duration-300 group-hover:-translate-y-2 group-hover:shadow-2xl"
-                  whileHover={{ 
-                    y: -10, 
-                    boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-                    transition: { type: "spring", stiffness: 300, damping: 15 }
-                  }}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
+              {/* CLAUS Info */}
+              <div className="p-8 lg:p-12 flex flex-col justify-center">
+                <div className="flex items-center mb-6">
+                  <div className="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600 mr-4">
+                    <motion.svg 
+                      className="w-6 h-6" 
+                      viewBox="0 0 24 24" 
+                      fill="none"
+                      animate={{ rotateY: [0, 360] }}
+                      transition={{ 
+                        duration: 3, 
+                        ease: "easeInOut", 
+                        repeat: Infinity, 
+                        repeatDelay: 5
+                      }}
+                    >
+                      <path d="M12 14V22M12 14L10 12M12 14L14 12M7.24 10.2627C6.16365 9.71614 5.37804 8.76443 5.08414 7.64757C4.79024 6.53071 5.01611 5.34016 5.70211 4.39594C6.3881 3.45173 7.47299 2.84892 8.64304 2.73952C9.8131 2.63013 10.9825 3.0249 11.8438 3.82252C11.9371 3.91054 12.0633 3.91054 12.1566 3.82252C13.0179 3.0249 14.1873 2.63013 15.3573 2.73952C16.5274 2.84892 17.6123 3.45173 18.2983 4.39594C18.9843 5.34016 19.2101 6.53071 18.9162 7.64757C18.6223 8.76443 17.8367 9.71614 16.7604 10.2627C15.6602 10.8232 14.8518 11.838 14.5588 13.0434C14.5196 13.1971 14.4141 13.3255 14.2713 13.3944C14.1285 13.4634 13.9631 13.4657 13.8183 13.4007C13.1965 13.1352 12.5371 12.9999 11.87 13.0001C11.2007 13.0003 10.5399 13.1367 9.91704 13.4033C9.77181 13.4689 9.60575 13.4667 9.46251 13.3974C9.31927 13.3282 9.21359 13.1991 9.17467 13.0447C8.88033 11.839 8.07043 10.8239 6.969 10.264" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </motion.svg>
+                  </div>
+                  <div>
+                    <div className="text-xs text-indigo-600 font-semibold tracking-wide uppercase">Legal Contract AI</div>
+                    <h3 className="text-2xl font-bold text-gray-900">CLAUS</h3>
+                  </div>
+                </div>
+                
+                <p className="text-gray-600 mb-6">
+                  Our Contract Legal Analysis & Unified System (CLAUS) transforms contract creation, review, and compliance through advanced clause analysis and generation tailored to your business rules.
+                </p>
+                
+                <div className="grid grid-cols-2 gap-4 mb-8">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 h-5 w-5 text-indigo-500">
+                      <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <p className="ml-2 text-sm text-gray-600">IFRS 15/ASC 606 Compliant</p>
+                  </div>
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 h-5 w-5 text-indigo-500">
+                      <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <p className="ml-2 text-sm text-gray-600">Risk Assessment</p>
+                  </div>
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 h-5 w-5 text-indigo-500">
+                      <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <p className="ml-2 text-sm text-gray-600">Clause Library</p>
+                  </div>
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 h-5 w-5 text-indigo-500">
+                      <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <p className="ml-2 text-sm text-gray-600">Automated Redlining</p>
+                  </div>
+                </div>
+                
+                <motion.button 
+                  className="inline-flex items-center justify-center rounded-md bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 w-fit"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  <motion.div 
-                    className="w-16 h-16 flex items-center justify-center rounded-xl bg-white/10 text-4xl mb-6"
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ delay: 0.2 * index, duration: 0.4 }}
-                  >
-                    {capability.icon}
-                  </motion.div>
+                  <span>Explore CLAUS</span>
+                  <svg className="ml-2 -mr-0.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </motion.button>
+              </div>
+              
+              {/* CLAUS Interactive Demo */}
+              <div className="relative bg-gradient-to-br from-indigo-50 to-blue-50 p-6 lg:p-8">
+                <div className="absolute top-0 right-0 h-px w-1/2 bg-gradient-to-r from-transparent via-indigo-300 to-transparent"></div>
+                <div className="absolute bottom-0 left-0 h-px w-1/2 bg-gradient-to-r from-transparent via-indigo-300 to-transparent"></div>
+                
+                <div className="bg-white rounded-xl shadow-lg p-4 h-full flex flex-col">
+                  <div className="flex items-center justify-between border-b border-gray-100 pb-2 mb-4">
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 rounded-full bg-red-400 mr-2"></div>
+                      <div className="w-3 h-3 rounded-full bg-yellow-400 mr-2"></div>
+                      <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                    </div>
+                    <div className="text-sm font-medium text-gray-500">CLAUS Contract Editor</div>
+                    <div className="w-6"></div>
+                  </div>
                   
-                  <motion.h3 
-                    className="text-xl font-bold text-primary mb-3"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 + (0.2 * index), duration: 0.3 }}
-                  >
-                    {capability.title}
-                  </motion.h3>
-                  <motion.p 
-                    className="text-neutral mb-6"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.2 + (0.2 * index), duration: 0.3 }}
-                  >
-                    {capability.description}
-                  </motion.p>
+                  <div className="flex-1 flex flex-col">
+                    <div className="text-sm font-medium text-gray-700 mb-2">SaaS Contract Clause Builder</div>
+                    
+                    {/* Draggable Clauses */}
+                    <div className="grid grid-cols-2 gap-3 mb-4">
+                      <motion.div 
+                        className="bg-indigo-50 rounded-md p-2 border border-indigo-100 cursor-grab"
+                        whileHover={{ 
+                          backgroundColor: "#e0e7ff", 
+                          y: -2,
+                          boxShadow: "0 4px 6px -1px rgba(79, 70, 229, 0.1)"
+                        }}
+                        whileTap={{ scale: 0.98 }}
+                        drag
+                        dragConstraints={{
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0
+                        }}
+                      >
+                        <div className="text-xs font-medium text-indigo-700">Standard Payment Terms</div>
+                        <div className="text-xs text-gray-500 mt-1">Net-30 payment schedule</div>
+                      </motion.div>
+                      
+                      <motion.div 
+                        className="bg-blue-50 rounded-md p-2 border border-blue-100 cursor-grab"
+                        whileHover={{ 
+                          backgroundColor: "#dbeafe", 
+                          y: -2,
+                          boxShadow: "0 4px 6px -1px rgba(59, 130, 246, 0.1)"
+                        }}
+                        whileTap={{ scale: 0.98 }}
+                        drag
+                        dragConstraints={{
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0
+                        }}
+                      >
+                        <div className="text-xs font-medium text-blue-700">Usage-Based Pricing</div>
+                        <div className="text-xs text-gray-500 mt-1">Tiered consumption pricing</div>
+                      </motion.div>
+                      
+                      <motion.div 
+                        className="bg-purple-50 rounded-md p-2 border border-purple-100 cursor-grab"
+                        whileHover={{ 
+                          backgroundColor: "#f3e8ff", 
+                          y: -2,
+                          boxShadow: "0 4px 6px -1px rgba(139, 92, 246, 0.1)"
+                        }}
+                        whileTap={{ scale: 0.98 }}
+                        drag
+                        dragConstraints={{
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0
+                        }}
+                      >
+                        <div className="text-xs font-medium text-purple-700">Service Level Agreement</div>
+                        <div className="text-xs text-gray-500 mt-1">99.9% uptime guarantee</div>
+                      </motion.div>
+                      
+                      <motion.div 
+                        className="bg-cyan-50 rounded-md p-2 border border-cyan-100 cursor-grab"
+                        whileHover={{ 
+                          backgroundColor: "#ecfeff", 
+                          y: -2,
+                          boxShadow: "0 4px 6px -1px rgba(8, 145, 178, 0.1)"
+                        }}
+                        whileTap={{ scale: 0.98 }}
+                        drag
+                        dragConstraints={{
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0
+                        }}
+                      >
+                        <div className="text-xs font-medium text-cyan-700">Data Processing Terms</div>
+                        <div className="text-xs text-gray-500 mt-1">GDPR compliance clause</div>
+                      </motion.div>
+                    </div>
+                    
+                    {/* Contract Preview with Before/After */}
+                    <div className="flex-1 bg-gray-50 rounded-lg border border-gray-200 p-3 mb-3">
+                      <div className="flex justify-between items-center mb-3">
+                        <div className="text-xs font-medium text-gray-700">Contract Preview</div>
+                        <div className="flex space-x-2">
+                          <div className="text-xs px-2 py-1 bg-gray-200 rounded text-gray-700">Before</div>
+                          <div className="text-xs px-2 py-1 bg-indigo-100 rounded text-indigo-700">After</div>
+                        </div>
+                      </div>
+                      
+                      <div className="text-xs text-gray-800 mb-2 line-through">9.1 Payment terms are strictly due on receipt of invoice.</div>
+                      <div className="text-xs text-indigo-700 mb-2 bg-indigo-50 p-1 rounded">9.1 Payment terms are net-30 from date of invoice issuance.</div>
+                      
+                      <div className="text-xs text-gray-800 mb-2">9.2 All fees are non-refundable.</div>
+                      
+                      <div className="text-xs text-gray-800 mb-2 line-through">9.3 Late payments will accrue interest at 2% per month.</div>
+                      <div className="text-xs text-indigo-700 mb-2 bg-indigo-50 p-1 rounded">9.3 Late payments will accrue interest at 1.5% per month or the maximum rate permitted by law.</div>
+                      
+                      <div className="text-xs text-gray-400 italic mt-3">Drag clauses above to the contract to update terms...</div>
+                    </div>
+                    
+                    {/* CLAUS Analysis */}
+                    <div className="bg-indigo-50 rounded-md p-2 border border-indigo-100 mt-auto">
+                      <div className="flex items-center">
+                        <div className="w-4 h-4 rounded-full bg-indigo-100 flex items-center justify-center mr-2">
+                          <span className="text-xs font-bold text-indigo-600">C</span>
+                        </div>
+                        <div className="text-xs font-medium text-indigo-800">CLAUS Analysis</div>
+                      </div>
+                      <div className="text-xs text-indigo-600 mt-1">Modified payment terms may impact revenue recognition timing under ASC 606.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+          
+          {/* MOCA: Modeling & Forecasting */}
+          <motion.div 
+            className="mb-24 bg-white rounded-2xl shadow-xl overflow-hidden"
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ 
+              duration: 0.7,
+              type: "spring",
+              stiffness: 100,
+              damping: 15,
+              delay: 0.1
+            }}
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
+              {/* MOCA Interactive Demo */}
+              <div className="order-2 lg:order-1 relative bg-gradient-to-br from-blue-50 to-cyan-50 p-6 lg:p-8">
+                <div className="absolute top-0 right-0 h-px w-1/2 bg-gradient-to-r from-transparent via-blue-300 to-transparent"></div>
+                <div className="absolute bottom-0 left-0 h-px w-1/2 bg-gradient-to-r from-transparent via-blue-300 to-transparent"></div>
+                
+                <div className="bg-white rounded-xl shadow-lg p-4 h-full flex flex-col">
+                  <div className="flex items-center justify-between border-b border-gray-100 pb-2 mb-4">
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 rounded-full bg-red-400 mr-2"></div>
+                      <div className="w-3 h-3 rounded-full bg-yellow-400 mr-2"></div>
+                      <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                    </div>
+                    <div className="text-sm font-medium text-gray-500">MOCA Scenario Builder</div>
+                    <div className="w-6"></div>
+                  </div>
                   
-                  <motion.div 
-                    className="grid grid-cols-3 gap-2 mt-auto"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 + (0.2 * index), duration: 0.3 }}
-                  >
-                    <motion.div 
-                      className="bg-white/10 rounded-lg p-4 text-center"
-                      whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.15)" }}
+                  <div className="flex-1 flex flex-col">
+                    <div className="text-sm font-medium text-gray-700 mb-4">Revenue Forecast Sandbox</div>
+                    
+                    {/* Forecast Inputs */}
+                    <div className="grid grid-cols-2 gap-4 mb-6">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Churn Rate</label>
+                        <div className="relative">
+                          <motion.input 
+                            type="range" 
+                            className="w-full h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer" 
+                            defaultValue="5"
+                            min="0"
+                            max="20"
+                            animate={{ boxShadow: ["0 0 0 0 rgba(59, 130, 246, 0)", "0 0 0 4px rgba(59, 130, 246, 0.1)", "0 0 0 0 rgba(59, 130, 246, 0)"] }}
+                            transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
+                          />
+                          <div className="absolute top-5 left-0 right-0 flex justify-between">
+                            <span className="text-xs text-gray-500">0%</span>
+                            <span className="text-xs text-gray-500">20%</span>
+                          </div>
+                        </div>
+                        <div className="text-center mt-4">
+                          <span className="text-sm font-medium text-blue-600">5%</span>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">New Deals/Month</label>
+                        <div className="relative">
+                          <motion.input 
+                            type="range" 
+                            className="w-full h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer" 
+                            defaultValue="12"
+                            min="0"
+                            max="30"
+                            animate={{ boxShadow: ["0 0 0 0 rgba(59, 130, 246, 0)", "0 0 0 4px rgba(59, 130, 246, 0.1)", "0 0 0 0 rgba(59, 130, 246, 0)"] }}
+                            transition={{ duration: 2, repeat: Infinity, repeatDelay: 1, delay: 0.5 }}
+                          />
+                          <div className="absolute top-5 left-0 right-0 flex justify-between">
+                            <span className="text-xs text-gray-500">0</span>
+                            <span className="text-xs text-gray-500">30</span>
+                          </div>
+                        </div>
+                        <div className="text-center mt-4">
+                          <span className="text-sm font-medium text-blue-600">12</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Revenue Chart */}
+                    <div className="relative h-40 mb-4">
+                      <div className="absolute inset-x-0 bottom-0 h-px bg-gray-200"></div>
+                      <div className="absolute inset-y-0 left-0 w-px bg-gray-200"></div>
+                      
+                      {/* Chart bars */}
+                      <div className="absolute left-[5%] bottom-0 w-[7%] h-[25%] bg-blue-200 rounded-t"></div>
+                      <div className="absolute left-[14%] bottom-0 w-[7%] h-[30%] bg-blue-300 rounded-t"></div>
+                      <div className="absolute left-[23%] bottom-0 w-[7%] h-[38%] bg-blue-400 rounded-t"></div>
+                      <div className="absolute left-[32%] bottom-0 w-[7%] h-[45%] bg-blue-500 rounded-t"></div>
+                      <div className="absolute left-[41%] bottom-0 w-[7%] h-[55%] bg-blue-600 rounded-t"></div>
+                      <div className="absolute left-[50%] bottom-0 w-[7%] h-[65%] bg-blue-700 rounded-t"></div>
+                      
+                      {/* Projected (animated) */}
+                      <motion.div 
+                        className="absolute left-[59%] bottom-0 w-[7%] rounded-t bg-gradient-to-t from-indigo-500 to-indigo-400"
+                        initial={{ height: "0%" }}
+                        animate={{ height: "72%" }}
+                        transition={{ duration: 1.5, delay: 1 }}
+                      ></motion.div>
+                      <motion.div 
+                        className="absolute left-[68%] bottom-0 w-[7%] rounded-t bg-gradient-to-t from-indigo-500 to-indigo-400"
+                        initial={{ height: "0%" }}
+                        animate={{ height: "80%" }}
+                        transition={{ duration: 1.5, delay: 1.2 }}
+                      ></motion.div>
+                      <motion.div 
+                        className="absolute left-[77%] bottom-0 w-[7%] rounded-t bg-gradient-to-t from-indigo-500 to-indigo-400"
+                        initial={{ height: "0%" }}
+                        animate={{ height: "85%" }}
+                        transition={{ duration: 1.5, delay: 1.4 }}
+                      ></motion.div>
+                      <motion.div 
+                        className="absolute left-[86%] bottom-0 w-[7%] rounded-t bg-gradient-to-t from-indigo-500 to-indigo-400"
+                        initial={{ height: "0%" }}
+                        animate={{ height: "92%" }}
+                        transition={{ duration: 1.5, delay: 1.6 }}
+                      ></motion.div>
+                      
+                      {/* Labels */}
+                      <div className="absolute bottom-[-20px] left-[23%] text-xs text-gray-500">Q1</div>
+                      <div className="absolute bottom-[-20px] left-[50%] text-xs text-gray-500">Q2</div>
+                      <div className="absolute bottom-[-20px] left-[77%] text-xs text-gray-500">Q3</div>
+                      
+                      {/* Legend */}
+                      <div className="absolute top-0 right-0 flex items-center">
+                        <div className="w-3 h-3 bg-blue-500 rounded-sm mr-1"></div>
+                        <span className="text-xs text-gray-500">Actual</span>
+                        <div className="w-3 h-3 bg-indigo-500 rounded-sm ml-3 mr-1"></div>
+                        <span className="text-xs text-gray-500">Projected</span>
+                      </div>
+                      
+                      {/* Revenue indicator */}
+                      <motion.div 
+                        className="absolute top-1 left-1/2 transform -translate-x-1/2 bg-white px-2 py-1 rounded shadow-md text-xs font-medium text-blue-700 border border-blue-100"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 2, duration: 0.5 }}
+                      >
+                        $4.2M Projected
+                      </motion.div>
+                    </div>
+                    
+                    {/* Additional Metrics */}
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="bg-green-50 rounded-md p-2 text-center">
+                        <div className="text-xs text-gray-600">ARR Growth</div>
+                        <div className="text-sm font-semibold text-green-600">+28.5%</div>
+                      </div>
+                      <div className="bg-blue-50 rounded-md p-2 text-center">
+                        <div className="text-xs text-gray-600">MRR</div>
+                        <div className="text-sm font-semibold text-blue-600">$352K</div>
+                      </div>
+                      <div className="bg-purple-50 rounded-md p-2 text-center">
+                        <div className="text-xs text-gray-600">Retention</div>
+                        <div className="text-sm font-semibold text-purple-600">94.3%</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* MOCA Info */}
+              <div className="order-1 lg:order-2 p-8 lg:p-12 flex flex-col justify-center">
+                <div className="flex items-center mb-6">
+                  <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 mr-4">
+                    <motion.svg 
+                      className="w-6 h-6" 
+                      viewBox="0 0 24 24" 
+                      fill="none"
+                      animate={{ 
+                        y: [0, -5, 0],
+                        rotateZ: [0, 5, 0, -5, 0]
+                      }}
+                      transition={{ 
+                        duration: 5, 
+                        ease: "easeInOut", 
+                        repeat: Infinity,
+                        repeatDelay: 3
+                      }}
                     >
-                      <div className="text-lg font-bold text-accent">{capability.stats.accuracy}</div>
-                      <div className="text-xs text-neutral/80">Accuracy</div>
-                    </motion.div>
-                    <motion.div 
-                      className="bg-white/10 rounded-lg p-4 text-center"
-                      whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.15)" }}
+                      <path d="M3 10H21M7 15H8M12 15H13M6 19H18C19.6569 19 21 17.6569 21 16V8C21 6.34315 19.6569 5 18 5H6C4.34315 5 3 6.34315 3 8V16C3 17.6569 4.34315 19 6 19Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </motion.svg>
+                  </div>
+                  <div>
+                    <div className="text-xs text-blue-600 font-semibold tracking-wide uppercase">Modeling & Forecasting</div>
+                    <h3 className="text-2xl font-bold text-gray-900">MOCA</h3>
+                  </div>
+                </div>
+                
+                <p className="text-gray-600 mb-6">
+                  Our Modeling & Operational Cash Analysis (MOCA) system provides real-time revenue forecasting and scenario planning to optimize your revenue recognition strategy and cash flow management.
+                </p>
+                
+                <div className="grid grid-cols-2 gap-4 mb-8">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 h-5 w-5 text-blue-500">
+                      <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <p className="ml-2 text-sm text-gray-600">Multi-Scenario Planning</p>
+                  </div>
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 h-5 w-5 text-blue-500">
+                      <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <p className="ml-2 text-sm text-gray-600">Variable Recognition</p>
+                  </div>
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 h-5 w-5 text-blue-500">
+                      <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <p className="ml-2 text-sm text-gray-600">Cash Flow Analysis</p>
+                  </div>
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 h-5 w-5 text-blue-500">
+                      <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <p className="ml-2 text-sm text-gray-600">Forecast Comparison</p>
+                  </div>
+                </div>
+                
+                <motion.button 
+                  className="inline-flex items-center justify-center rounded-md bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 w-fit"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <span>Explore MOCA</span>
+                  <svg className="ml-2 -mr-0.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </motion.button>
+              </div>
+            </div>
+          </motion.div>
+          
+          {/* DEAL DESK */}
+          <motion.div 
+            className="mb-16 bg-white rounded-2xl shadow-xl overflow-hidden"
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ 
+              duration: 0.7,
+              type: "spring",
+              stiffness: 100,
+              damping: 15,
+              delay: 0.2
+            }}
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
+              {/* DEAL DESK Info */}
+              <div className="p-8 lg:p-12 flex flex-col justify-center">
+                <div className="flex items-center mb-6">
+                  <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center text-purple-600 mr-4">
+                    <motion.svg 
+                      className="w-6 h-6" 
+                      viewBox="0 0 24 24" 
+                      fill="none"
+                      animate={{ 
+                        rotateY: [0, 180],
+                        scale: [1, 1.1, 1]
+                      }}
+                      transition={{ 
+                        rotateY: {
+                          duration: 2,
+                          repeat: Infinity,
+                          repeatDelay: 5
+                        },
+                        scale: {
+                          duration: 3,
+                          repeat: Infinity,
+                          repeatType: "reverse"
+                        }
+                      }}
                     >
-                      <div className="text-lg font-bold text-secondary">{capability.stats.speedImprovement}</div>
-                      <div className="text-xs text-neutral/80">Faster</div>
-                    </motion.div>
-                    <motion.div 
-                      className="bg-white/10 rounded-lg p-4 text-center"
-                      whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.15)" }}
-                    >
-                      <div className="text-lg font-bold text-primary">{capability.stats.dataPoints}</div>
-                      <div className="text-xs text-neutral/80">Data Points</div>
-                    </motion.div>
-                  </motion.div>
-                </motion.div>
-              </motion.div>
-            ))}
+                      <path d="M10.75 13.25H6.75L13.25 6.75V10.75M2.25 7.75L7.75 2.25L14.25 8.75L21.75 16.25V21.75H16.25L8.75 14.25L2.25 7.75Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </motion.svg>
+                  </div>
+                  <div>
+                    <div className="text-xs text-purple-600 font-semibold tracking-wide uppercase">Revenue Pipeline</div>
+                    <h3 className="text-2xl font-bold text-gray-900">DEAL DESK</h3>
+                  </div>
+                </div>
+                
+                <p className="text-gray-600 mb-6">
+                  Our Deal Desk provides a unified platform for tracking deal progression from negotiation to revenue recognition, with built-in compliance checks, approval workflows, and revenue impact analysis.
+                </p>
+                
+                <div className="grid grid-cols-2 gap-4 mb-8">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 h-5 w-5 text-purple-500">
+                      <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <p className="ml-2 text-sm text-gray-600">Pipeline Visibility</p>
+                  </div>
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 h-5 w-5 text-purple-500">
+                      <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <p className="ml-2 text-sm text-gray-600">Approval Workflows</p>
+                  </div>
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 h-5 w-5 text-purple-500">
+                      <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <p className="ml-2 text-sm text-gray-600">Risk Assessment</p>
+                  </div>
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 h-5 w-5 text-purple-500">
+                      <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <p className="ml-2 text-sm text-gray-600">Revenue Impact</p>
+                  </div>
+                </div>
+                
+                <motion.button 
+                  className="inline-flex items-center justify-center rounded-md bg-purple-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 w-fit"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <span>Explore DEAL DESK</span>
+                  <svg className="ml-2 -mr-0.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </motion.button>
+              </div>
+              
+              {/* DEAL DESK Interactive Demo */}
+              <div className="relative bg-gradient-to-br from-purple-50 to-indigo-50 p-6 lg:p-8">
+                <div className="absolute top-0 right-0 h-px w-1/2 bg-gradient-to-r from-transparent via-purple-300 to-transparent"></div>
+                <div className="absolute bottom-0 left-0 h-px w-1/2 bg-gradient-to-r from-transparent via-purple-300 to-transparent"></div>
+                
+                <div className="bg-white rounded-xl shadow-lg p-4 h-full flex flex-col">
+                  <div className="flex items-center justify-between border-b border-gray-100 pb-2 mb-4">
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 rounded-full bg-red-400 mr-2"></div>
+                      <div className="w-3 h-3 rounded-full bg-yellow-400 mr-2"></div>
+                      <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                    </div>
+                    <div className="text-sm font-medium text-gray-500">DEAL DESK</div>
+                    <div className="w-6"></div>
+                  </div>
+                  
+                  <div className="flex-1 flex flex-col">
+                    <div className="flex justify-between items-center mb-4">
+                      <div className="text-sm font-medium text-gray-700">Deal Pipeline View</div>
+                      
+                      {/* Filter buttons */}
+                      <div className="flex items-center space-x-2 text-xs">
+                        <motion.div 
+                          className="px-2 py-1 rounded-full bg-purple-100 text-purple-700 border border-purple-200 cursor-pointer"
+                          whileHover={{ backgroundColor: "#f3e8ff", y: -1 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          Region
+                        </motion.div>
+                        <motion.div 
+                          className="px-2 py-1 rounded-full bg-indigo-100 text-indigo-700 border border-indigo-200 cursor-pointer"
+                          whileHover={{ backgroundColor: "#e0e7ff", y: -1 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          ARR
+                        </motion.div>
+                        <motion.div 
+                          className="px-2 py-1 rounded-full bg-blue-100 text-blue-700 border border-blue-200 cursor-pointer"
+                          whileHover={{ backgroundColor: "#dbeafe", y: -1 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          Risk Score
+                        </motion.div>
+                      </div>
+                    </div>
+                    
+                    {/* Deal Stages */}
+                    <div className="grid grid-cols-3 gap-3 mb-4">
+                      <div className="bg-gray-50 rounded-lg p-3 h-[180px] overflow-y-auto">
+                        <div className="font-medium text-xs text-gray-500 mb-2 flex items-center justify-between">
+                          <span>NEGOTIATION</span>
+                          <span className="bg-gray-200 text-gray-600 rounded-full px-2 py-0.5 text-xs">4</span>
+                        </div>
+                        
+                        <motion.div 
+                          className="bg-white rounded-md p-2 border border-gray-200 mb-2 cursor-pointer"
+                          whileHover={{ 
+                            y: -2,
+                            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                            borderColor: "#d1d5db"
+                          }}
+                        >
+                          <div className="text-xs font-medium text-gray-700">Acme Corp</div>
+                          <div className="text-xs text-gray-500 mt-1">$120K ARR</div>
+                          <div className="flex items-center mt-1.5">
+                            <div className="w-1.5 h-1.5 rounded-full bg-yellow-500 mr-1"></div>
+                            <span className="text-xs text-yellow-700">Medium Risk</span>
+                          </div>
+                        </motion.div>
+                        
+                        <motion.div 
+                          className="bg-white rounded-md p-2 border border-gray-200 mb-2 cursor-pointer"
+                          whileHover={{ 
+                            y: -2,
+                            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                            borderColor: "#d1d5db"
+                          }}
+                        >
+                          <div className="text-xs font-medium text-gray-700">Globex Inc</div>
+                          <div className="text-xs text-gray-500 mt-1">$85K ARR</div>
+                          <div className="flex items-center mt-1.5">
+                            <div className="w-1.5 h-1.5 rounded-full bg-green-500 mr-1"></div>
+                            <span className="text-xs text-green-700">Low Risk</span>
+                          </div>
+                        </motion.div>
+                        
+                        <motion.div 
+                          className="bg-white rounded-md p-2 border border-gray-200 mb-2 cursor-pointer"
+                          whileHover={{ 
+                            y: -2,
+                            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                            borderColor: "#d1d5db"
+                          }}
+                        >
+                          <div className="text-xs font-medium text-gray-700">TechNova</div>
+                          <div className="text-xs text-gray-500 mt-1">$240K ARR</div>
+                          <div className="flex items-center mt-1.5">
+                            <div className="w-1.5 h-1.5 rounded-full bg-red-500 mr-1"></div>
+                            <span className="text-xs text-red-700">High Risk</span>
+                          </div>
+                        </motion.div>
+                      </div>
+                      
+                      <div className="bg-purple-50 rounded-lg p-3 h-[180px] overflow-y-auto">
+                        <div className="font-medium text-xs text-purple-800 mb-2 flex items-center justify-between">
+                          <span>APPROVAL PENDING</span>
+                          <span className="bg-purple-200 text-purple-700 rounded-full px-2 py-0.5 text-xs">3</span>
+                        </div>
+                        
+                        <motion.div 
+                          className="bg-white rounded-md p-2 border border-purple-200 mb-2 cursor-pointer"
+                          whileHover={{ 
+                            y: -2,
+                            boxShadow: "0 4px 6px -1px rgba(139, 92, 246, 0.1)",
+                            borderColor: "#ddd6fe"
+                          }}
+                        >
+                          <div className="text-xs font-medium text-gray-700">Initech LLC</div>
+                          <div className="text-xs text-gray-500 mt-1">$195K ARR</div>
+                          <div className="flex items-center mt-1.5">
+                            <div className="w-1.5 h-1.5 rounded-full bg-yellow-500 mr-1"></div>
+                            <span className="text-xs text-yellow-700">Finance Review</span>
+                          </div>
+                        </motion.div>
+                        
+                        <motion.div 
+                          className="bg-white rounded-md p-2 border border-purple-200 mb-2 cursor-pointer"
+                          whileHover={{ 
+                            y: -2,
+                            boxShadow: "0 4px 6px -1px rgba(139, 92, 246, 0.1)",
+                            borderColor: "#ddd6fe"
+                          }}
+                        >
+                          <div className="text-xs font-medium text-gray-700">SkyHigh Cloud</div>
+                          <div className="text-xs text-gray-500 mt-1">$320K ARR</div>
+                          <div className="flex items-center mt-1.5">
+                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1"></div>
+                            <span className="text-xs text-blue-700">Legal Review</span>
+                          </div>
+                        </motion.div>
+                      </div>
+                      
+                      <div className="bg-green-50 rounded-lg p-3 h-[180px] overflow-y-auto">
+                        <div className="font-medium text-xs text-green-800 mb-2 flex items-center justify-between">
+                          <span>CLOSED WON</span>
+                          <span className="bg-green-200 text-green-700 rounded-full px-2 py-0.5 text-xs">2</span>
+                        </div>
+                        
+                        <motion.div 
+                          className="bg-white rounded-md p-2 border border-green-200 mb-2 cursor-pointer"
+                          whileHover={{ 
+                            y: -2,
+                            boxShadow: "0 4px 6px -1px rgba(16, 185, 129, 0.1)",
+                            borderColor: "#a7f3d0"
+                          }}
+                        >
+                          <div className="text-xs font-medium text-gray-700">MegaSoft Inc</div>
+                          <div className="text-xs text-gray-500 mt-1">$260K ARR</div>
+                          <div className="text-xs text-green-700 mt-1 flex items-center">
+                            <svg className="w-3 h-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                            Revenue Recognized
+                          </div>
+                        </motion.div>
+                        
+                        <motion.div 
+                          className="bg-white rounded-md p-2 border border-green-200 mb-2 cursor-pointer"
+                          whileHover={{ 
+                            y: -2,
+                            boxShadow: "0 4px 6px -1px rgba(16, 185, 129, 0.1)",
+                            borderColor: "#a7f3d0"
+                          }}
+                        >
+                          <div className="text-xs font-medium text-gray-700">Stellar Systems</div>
+                          <div className="text-xs text-gray-500 mt-1">$180K ARR</div>
+                          <div className="text-xs text-purple-700 mt-1 flex items-center">
+                            <svg className="w-3 h-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                            </svg>
+                            Pending Recognition
+                          </div>
+                        </motion.div>
+                      </div>
+                    </div>
+                    
+                    {/* Summary Stats */}
+                    <div className="mt-auto pt-3 border-t border-gray-100">
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="text-center">
+                          <div className="text-xs text-gray-500">Pipeline Value</div>
+                          <div className="text-sm font-semibold text-purple-700">$1.2M</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-xs text-gray-500">Avg. Deal Size</div>
+                          <div className="text-sm font-semibold text-indigo-700">$215K</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-xs text-gray-500">Close Rate</div>
+                          <div className="text-sm font-semibold text-green-700">62%</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </motion.div>
           
           <motion.div 

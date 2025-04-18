@@ -1,0 +1,54 @@
+Update the UI and layout of my PRA (Precision Revenue Automation) web app.
+
+Background & Theming:
+
+Replace the current full white background that appears after the hero/first section with a soft gradient or subtle light-themed background that blends well with the top section.
+
+Ensure the background has smooth transitions between sections and maintains high readability.
+
+Keep it modern and tech-finance savvy — avoid stark white, aim for a soft lavender/blue blend.
+
+Update REMY Section:
+
+Remove "Time Saved" stat — replace it with a "Compliance Confidence" metric or "Audit-Ready Score".
+
+Change layout so it looks cleaner and more structured, possibly with an icon or metric badge for REMY’s accuracy.
+
+Maintain REMY’s tone as an AI Revenue Agent — highlight IFRS/ASC mapping, audit automation, and disclosure generation.
+
+Replace Existing Feature Sections:
+Remove current sections:
+
+“Advanced Contract Analysis”
+
+“Predictive Revenue Modeling”
+
+“Adaptive Financial Intelligence”
+
+Replace them with a 3-part interactive module showcase:
+
+A. CLAUS (Legal AI Agent):
+
+Add an interactive screen mockup (or component) showing how users can drag and drop legal SaaS clause blocks to generate or review a contract.
+
+Optionally show before/after clause redlines and AI suggestions.
+
+B. MOCA (Modeling & Forecasting AI):
+
+Display a scenario builder where users can set inputs (e.g., churn %, new deals, billing terms) and view a live revenue/cash projection.
+
+Should feel like a modern financial sandbox.
+
+C. DEAL DESK:
+
+Visual showing sales/revenue deals at different stages (Negotiation, Closed-Won, Approval Pending).
+
+Add filters like Region, ARR, Clause Risk Score.
+
+Final Section Fix:
+
+The section labeled "Advanced Financial Intelligence" and the text below it is currently unreadable and blended into the background.
+
+Update background to improve contrast.
+
+Change font color for that text block to a darker shade or apply a light glassmorphism effect to make it pop while keeping the design clean.
