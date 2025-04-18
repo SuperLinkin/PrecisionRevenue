@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { getInitials } from '@/lib/utils';
 import { useAuth } from '@/lib/auth';
-import { motion } from 'framer-motion';
 
 interface DashboardHeaderProps {
   title: string;
@@ -15,14 +14,9 @@ export function DashboardHeader({ title }: DashboardHeaderProps) {
   return (
     <header className="bg-gradient-to-r from-primary-50 via-blue-50/70 to-indigo-50/60 border-b border-indigo-100/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex items-center justify-between">
-        <motion.h1 
-          className="text-3xl font-bold bg-gradient-to-r from-primary via-blue-700 to-primary bg-clip-text text-transparent"
-          initial={{ opacity: 0, y: -5 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
+        <h1 className="text-3xl font-medium text-primary">
           {title}
-        </motion.h1>
+        </h1>
         
         <div className="flex items-center space-x-4">
           {/* Search */}

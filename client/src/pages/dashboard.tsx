@@ -22,11 +22,11 @@ export default function Dashboard() {
         <main className="flex-1 overflow-y-auto">
           <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
             {/* Welcome Message */}
-            <div className="px-4 py-2 sm:px-0 mb-6">
-              <h2 className="text-lg text-primary/80 font-medium">
-                Welcome back, <span className="font-semibold">{user?.fullName || user?.username}</span>
+            <div className="px-4 py-3 sm:px-0 mb-6">
+              <h2 className="text-xl text-primary font-medium">
+                Welcome back, <span className="font-medium">{user?.fullName || user?.username}</span>
               </h2>
-              <p className="text-neutral/70 text-sm">
+              <p className="text-gray-600 mt-1">
                 Here's what's happening with your revenue metrics today
               </p>
             </div>

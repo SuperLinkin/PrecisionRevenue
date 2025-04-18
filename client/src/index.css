@@ -52,15 +52,40 @@
   }
   
   body {
-    @apply font-inter antialiased bg-background text-foreground;
+    @apply font-inter antialiased bg-background text-foreground text-sm;
   }
   
   h1, h2, h3, h4, h5, h6 {
-    @apply font-inter font-semibold tracking-tight;
+    @apply font-inter font-medium tracking-tight text-primary;
   }
   
   p {
-    @apply font-inter font-normal;
+    @apply font-inter font-normal text-sm;
+  }
+  
+  button, input, select, textarea {
+    @apply font-inter;
+  }
+  
+  /* Consistent text sizes */
+  .text-xs {
+    @apply font-inter;
+  }
+  
+  .text-sm {
+    @apply font-inter;
+  }
+  
+  .text-base {
+    @apply font-inter;
+  }
+  
+  .text-lg {
+    @apply font-inter;
+  }
+  
+  .text-xl, .text-2xl, .text-3xl, .text-4xl {
+    @apply font-inter tracking-tight;
   }
 }
 
