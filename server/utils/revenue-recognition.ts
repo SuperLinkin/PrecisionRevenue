@@ -1,538 +1,328 @@
-/**
- * IFRS 15/ASC 606 Revenue Recognition Algorithms
- * 
- * This module implements the 5-step model for revenue recognition:
- * 1. Identify the contract with a customer
- * 2. Identify the performance obligations in the contract
- * 3. Determine the transaction price
- * 4. Allocate the transaction price to the performance obligations
- * 5. Recognize revenue when (or as) performance obligations are satisfied
- */
+import { Contract } from '@shared/schema';
+import OpenAI from 'openai';
 
-import { db } from "../db";
-import { 
-  contracts, 
-  performanceObligations, 
-  revenueRecords, 
-  transactionPriceAdjustments,
-  type Contract,
-  type PerformanceObligation, 
-  type RevenueRecord,
-  type TransactionPriceAdjustment
-} from "@shared/schema";
-import { eq, and, gte, lte, sql } from "drizzle-orm";
-
-// Type definitions for revenue recognition
-export type RevenueCalculationResult = {
-  totalRevenue: number;
-  recognizedRevenue: number;
-  deferredRevenue: number;
-  remainingRevenue: number;
-  revenueByPeriod: {
-    period: string;
-    amount: number;
-    status: 'recognized' | 'projected';
-  }[];
-  performanceObligations: {
-    id: number;
-    name: string;
-    allocated: number;
-    recognized: number;
-    remaining: number;
-    percentComplete: number;
-  }[];
-};
-
-export type RevenueRecognitionOptions = {
-  contractId: number;
-  asOfDate?: Date;
-  includeProjections?: boolean;
-};
+// The newest OpenAI model is "gpt-4o" which was released May 13, 2024
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 /**
- * Calculate the total transaction price for a contract including adjustments
- * IFRS 15/ASC 606 Step 3: Determine the transaction price
+ * Identifies performance obligations from a contract
+ * @param contractText The text of the contract
+ * @param contractData Basic contract data
+ * @returns Array of performance obligations
  */
-export async function calculateTransactionPrice(contractId: number): Promise<number> {
-  // Get the contract
-  const [contract] = await db
-    .select({
-      value: contracts.value,
-      totalTransactionPrice: contracts.totalTransactionPrice,
-      discountAmount: contracts.discountAmount
-    })
-    .from(contracts)
-    .where(eq(contracts.id, contractId));
-
-  if (!contract) {
-    throw new Error(`Contract with ID ${contractId} not found`);
-  }
-
-  // Use the stored total transaction price if available
-  if (contract.totalTransactionPrice !== null) {
-    return Number(contract.totalTransactionPrice);
-  }
-
-  // Base value
-  let totalPrice = contract.value;
-
-  // Subtract any discounts
-  if (contract.discountAmount) {
-    totalPrice -= Number(contract.discountAmount);
-  }
-
-  // Apply any transaction price adjustments (variable consideration, etc.)
-  const adjustments = await db
-    .select({
-      amount: transactionPriceAdjustments.amount,
-      adjustmentType: transactionPriceAdjustments.adjustmentType,
-      probability: transactionPriceAdjustments.probability
-    })
-    .from(transactionPriceAdjustments)
-    .where(eq(transactionPriceAdjustments.contractId, contractId));
-
-  for (const adjustment of adjustments) {
-    // Apply the probability constraint for variable consideration
-    const adjustmentAmount = Number(adjustment.amount) * (adjustment.probability ? Number(adjustment.probability) : 1);
+export async function identifyPerformanceObligations(contractText: string, contractData: any) {
+  try {
+    console.log("Starting performance obligation identification with AI");
     
-    // Add or subtract depending on the adjustment type
-    if (adjustment.adjustmentType === 'variable_consideration' || 
-        adjustment.adjustmentType === 'significant_financing' || 
-        adjustment.adjustmentType === 'non_cash') {
-      totalPrice += adjustmentAmount;
-    } else if (adjustment.adjustmentType === 'payable_to_customer') {
-      totalPrice -= adjustmentAmount;
-    }
-  }
-
-  // Update the contract with the calculated transaction price
-  await db
-    .update(contracts)
-    .set({ totalTransactionPrice: totalPrice })
-    .where(eq(contracts.id, contractId));
-
-  return totalPrice;
-}
-
-/**
- * Allocate the transaction price to performance obligations
- * IFRS 15/ASC 606 Step 4: Allocate the transaction price
- */
-export async function allocateTransactionPrice(contractId: number): Promise<void> {
-  // Get the total transaction price
-  const totalPrice = await calculateTransactionPrice(contractId);
-
-  // Get all performance obligations for this contract
-  const pos = await db
-    .select({
-      id: performanceObligations.id,
-      standaloneSellingPrice: performanceObligations.standaloneSellingPrice,
-      allocationPercentage: performanceObligations.allocationPercentage
-    })
-    .from(performanceObligations)
-    .where(eq(performanceObligations.contractId, contractId));
-
-  if (pos.length === 0) {
-    // If there are no explicit performance obligations, create a default one
-    const [contract] = await db
-      .select({
-        id: contracts.id,
-        startDate: contracts.startDate,
-        endDate: contracts.endDate,
-        revenueRecognitionMethod: contracts.revenueRecognitionMethod
-      })
-      .from(contracts)
-      .where(eq(contracts.id, contractId));
-
-    if (!contract) {
-      throw new Error(`Contract with ID ${contractId} not found`);
-    }
-    
-    // Create default performance obligation
-    const [defaultPO] = await db
-      .insert(performanceObligations)
-      .values({
-        contractId: contractId,
-        name: 'Default Performance Obligation',
-        status: 'active',
-        recognitionMethod: contract.revenueRecognitionMethod || 'over_time',
-        startDate: contract.startDate,
-        endDate: contract.endDate,
-        allocationPercentage: 100,
-        standaloneSellingPrice: totalPrice
-      })
-      .returning();
-
-    // Set 100% allocation to the default performance obligation
-    await db
-      .update(performanceObligations)
-      .set({ allocationPercentage: 100 })
-      .where(eq(performanceObligations.id, defaultPO.id));
-    
-    return;
-  }
-
-  // Calculate total standalone selling price
-  let totalSSP = 0;
-  for (const po of pos) {
-    if (po.standaloneSellingPrice) {
-      totalSSP += Number(po.standaloneSellingPrice);
-    }
-  }
-
-  // Allocate based on relative standalone selling price if SSPs are provided
-  if (totalSSP > 0) {
-    for (const po of pos) {
-      if (po.standaloneSellingPrice) {
-        const allocationPercentage = (Number(po.standaloneSellingPrice) / totalSSP) * 100;
-        await db
-          .update(performanceObligations)
-          .set({ allocationPercentage })
-          .where(eq(performanceObligations.id, po.id));
-      }
-    }
-  } else {
-    // Use existing allocation percentages if defined, otherwise split evenly
-    const posWithoutPercentage = pos.filter(po => po.allocationPercentage === null);
-    
-    if (posWithoutPercentage.length > 0) {
-      // Calculate total allocated percentage
-      let allocatedPercentage = 0;
-      for (const po of pos) {
-        if (po.allocationPercentage !== null) {
-          allocatedPercentage += Number(po.allocationPercentage);
-        }
+    const prompt = `
+      As a revenue recognition expert specializing in IFRS 15/ASC 606, analyze this contract and identify all distinct performance obligations.
+      
+      Contract: ${contractText}
+      
+      Follow these steps:
+      1. Identify each distinct good or service promised in the contract
+      2. Determine which promises are DISTINCT performance obligations per IFRS 15 paragraph 22-30
+      3. For each obligation, provide:
+         - A clear description
+         - Whether it's satisfied over time or at a point in time (with justification)
+         - The estimated standalone selling price and basis for estimation
+         - Allocation of the transaction price (${contractData.value}) to each obligation
+      
+      Format your response as a valid JSON array with objects containing:
+      {
+        "description": string,
+        "satisfactionMethod": "over_time" | "point_in_time",
+        "justification": string,
+        "estimatedValue": number,
+        "allocatedAmount": number,
+        "allocationBasis": string
       }
       
-      // Allocate remaining percentage evenly
-      const remainingPercentage = 100 - allocatedPercentage;
-      const percentagePerPO = remainingPercentage / posWithoutPercentage.length;
-      
-      for (const po of posWithoutPercentage) {
-        await db
-          .update(performanceObligations)
-          .set({ allocationPercentage: percentagePerPO })
-          .where(eq(performanceObligations.id, po.id));
-      }
+      Return ONLY the JSON array without any explanations or additional text.
+    `;
+    
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: "You are a specialized revenue recognition AI that identifies performance obligations according to IFRS 15/ASC 606 standards."
+        },
+        { role: "user", content: prompt }
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.1
+    });
+    
+    try {
+      const result = JSON.parse(response.choices[0].message.content || '{}');
+      return result.obligations || [];
+    } catch (parseError) {
+      console.error("Error parsing performance obligations:", parseError);
+      return [];
     }
+  } catch (error) {
+    console.error("Error identifying performance obligations:", error);
+    return [];
   }
 }
 
 /**
- * Calculate the amount of revenue to recognize for a given date range
- * IFRS 15/ASC 606 Step 5: Recognize revenue
+ * Generates a revenue recognition schedule based on contract and identified obligations
+ * @param contract The contract data
+ * @param obligations The identified performance obligations
+ * @returns Revenue recognition schedule
  */
-export async function calculateRevenueRecognition(options: RevenueRecognitionOptions): Promise<RevenueCalculationResult> {
-  const { contractId, asOfDate = new Date(), includeProjections = false } = options;
-  
-  // Get contract details
-  const [contract] = await db
-    .select()
-    .from(contracts)
-    .where(eq(contracts.id, contractId));
-
-  if (!contract) {
-    throw new Error(`Contract with ID ${contractId} not found`);
-  }
-
-  // Get total transaction price 
-  const totalPrice = contract.totalTransactionPrice 
-    ? Number(contract.totalTransactionPrice) 
-    : await calculateTransactionPrice(contractId);
-
-  // Get all performance obligations
-  const pos = await db
-    .select()
-    .from(performanceObligations)
-    .where(eq(performanceObligations.contractId, contractId));
-
-  if (pos.length === 0) {
-    // Ensure allocation is done if no POs exist
-    await allocateTransactionPrice(contractId);
+export async function generateRevenueSchedule(contract: any, obligations: any[] = []) {
+  try {
+    console.log("Generating revenue recognition schedule");
     
-    // Re-fetch performance obligations
-    const newPos = await db
-      .select()
-      .from(performanceObligations)
-      .where(eq(performanceObligations.contractId, contractId));
-      
-    if (newPos.length === 0) {
-      throw new Error(`Failed to create performance obligations for contract ${contractId}`);
+    // If no obligations are provided, create a default one for the entire contract
+    const effectiveObligations = obligations.length > 0 ? obligations : [{
+      description: "Full contract services",
+      satisfactionMethod: "over_time",
+      justification: "Services provided continuously throughout contract period",
+      estimatedValue: contract.value,
+      allocatedAmount: contract.value,
+      allocationBasis: "Full contract value"
+    }];
+    
+    const startDate = new Date(contract.startDate);
+    const endDate = contract.endDate ? new Date(contract.endDate) : new Date(startDate);
+    
+    // Default to 1 year if dates are the same or endDate is before startDate
+    if (endDate <= startDate) {
+      endDate.setFullYear(startDate.getFullYear() + 1);
     }
-  }
-
-  // Get recognized revenue records
-  const recognizedRevenues = await db
-    .select()
-    .from(revenueRecords)
-    .where(
-      and(
-        eq(revenueRecords.contractId, contractId),
-        eq(revenueRecords.status, 'recognized'),
-        lte(revenueRecords.recognitionDate, asOfDate)
-      )
-    )
-    .orderBy(revenueRecords.recognitionDate);
-
-  // Calculate total recognized revenue
-  let totalRecognized = 0;
-  for (const record of recognizedRevenues) {
-    totalRecognized += Number(record.amount);
-  }
-
-  // Initialize result
-  const result: RevenueCalculationResult = {
-    totalRevenue: totalPrice,
-    recognizedRevenue: totalRecognized,
-    deferredRevenue: totalPrice - totalRecognized,
-    remainingRevenue: totalPrice - totalRecognized,
-    revenueByPeriod: [],
-    performanceObligations: []
-  };
-
-  // Group revenue by period (month)
-  const revenueByPeriod = new Map<string, number>();
-  for (const record of recognizedRevenues) {
-    const date = new Date(record.recognitionDate);
-    const period = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
     
-    const currentAmount = revenueByPeriod.get(period) || 0;
-    revenueByPeriod.set(period, currentAmount + Number(record.amount));
-  }
-
-  // Add recognized revenue periods to result
-  for (const [period, amount] of revenueByPeriod.entries()) {
-    result.revenueByPeriod.push({
-      period,
-      amount,
-      status: 'recognized'
-    });
-  }
-
-  // Calculate revenue by performance obligation
-  for (const po of pos) {
-    const allocated = totalPrice * (Number(po.allocationPercentage) / 100);
+    const contractDurationMs = endDate.getTime() - startDate.getTime();
+    const contractDurationDays = Math.ceil(contractDurationMs / (1000 * 60 * 60 * 24));
     
-    // Get recognized revenue for this performance obligation
-    const poRecognized = await db
-      .select({
-        total: sql<string>`SUM(${revenueRecords.amount})`
-      })
-      .from(revenueRecords)
-      .where(
-        and(
-          eq(revenueRecords.contractId, contractId),
-          eq(revenueRecords.performanceObligationId, po.id),
-          eq(revenueRecords.status, 'recognized'),
-          lte(revenueRecords.recognitionDate, asOfDate)
-        )
-      );
-
-    const recognized = poRecognized[0]?.total ? Number(poRecognized[0].total) : 0;
-    const remaining = allocated - recognized;
-    const percentComplete = allocated > 0 ? (recognized / allocated) * 100 : 0;
-
-    result.performanceObligations.push({
-      id: po.id,
-      name: po.name,
-      allocated,
-      recognized, 
-      remaining,
-      percentComplete
-    });
-  }
-
-  // Add projected revenue if requested
-  if (includeProjections && contract.endDate && contract.endDate > asOfDate) {
-    // We'll implement different projection strategies based on recognition method
-    for (const po of pos) {
-      if (po.recognitionMethod === 'over_time' && po.startDate && po.endDate) {
-        // Calculate remaining months
-        const startDate = po.startDate < asOfDate ? asOfDate : po.startDate;
-        const endDate = po.endDate;
+    const schedule = [];
+    
+    // Generate revenue schedules for each obligation
+    for (const obligation of effectiveObligations) {
+      if (obligation.satisfactionMethod === "over_time") {
+        // For over_time, create monthly recognition entries
+        const monthlyAmount = obligation.allocatedAmount / (contractDurationDays / 30);
+        let currentDate = new Date(startDate);
         
-        const totalMonths = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
-                           (endDate.getMonth() - startDate.getMonth());
-                           
-        if (totalMonths <= 0) continue;
-        
-        // Find this PO in our result
-        const poResult = result.performanceObligations.find(p => p.id === po.id);
-        if (!poResult) continue;
-        
-        // Calculate monthly amount (straight-line)
-        const monthlyAmount = poResult.remaining / totalMonths;
-        
-        // Add projected periods
-        for (let i = 0; i < totalMonths; i++) {
-          const projDate = new Date(startDate);
-          projDate.setMonth(projDate.getMonth() + i);
+        while (currentDate < endDate) {
+          const recognitionDate = new Date(currentDate);
+          const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
           
-          const period = `${projDate.getFullYear()}-${(projDate.getMonth() + 1).toString().padStart(2, '0')}`;
+          // Calculate prorated amount for partial months
+          let amount = monthlyAmount;
           
-          result.revenueByPeriod.push({
-            period,
-            amount: monthlyAmount,
-            status: 'projected'
+          if (currentDate.getTime() === startDate.getTime() && startDate.getDate() > 1) {
+            // Prorate first month
+            const daysActive = daysInMonth - startDate.getDate() + 1;
+            amount = (monthlyAmount / daysInMonth) * daysActive;
+          }
+          
+          schedule.push({
+            recognitionDate,
+            amount: parseFloat(amount.toFixed(2)),
+            description: `${obligation.description} - ${recognitionDate.toLocaleDateString()}`,
+            recognitionMethod: "over_time",
+            revenueType: "recurring",
+            performanceObligation: obligation.description,
+            status: "scheduled"
           });
+          
+          // Move to next month
+          currentDate.setMonth(currentDate.getMonth() + 1);
+          
+          // Handle potential last month proration
+          if (currentDate > endDate) {
+            const daysOver = (currentDate.getTime() - endDate.getTime()) / (1000 * 60 * 60 * 24);
+            const daysInLastMonth = daysInMonth;
+            const adjustmentAmount = (monthlyAmount / daysInLastMonth) * daysOver;
+            
+            // Adjust the last entry
+            const lastEntry = schedule[schedule.length - 1];
+            lastEntry.amount = parseFloat((lastEntry.amount - adjustmentAmount).toFixed(2));
+            
+            // Break if we've applied the adjustment
+            break;
+          }
         }
+      } else {
+        // For point_in_time, create a single recognition entry
+        schedule.push({
+          recognitionDate: new Date(startDate),
+          amount: obligation.allocatedAmount,
+          description: obligation.description,
+          recognitionMethod: "point_in_time",
+          revenueType: "one_time",
+          performanceObligation: obligation.description,
+          status: "scheduled"
+        });
       }
     }
-  }
-
-  // Sort periods chronologically
-  result.revenueByPeriod.sort((a, b) => a.period.localeCompare(b.period));
-
-  return result;
-}
-
-/**
- * Create a revenue recognition record for a specific amount
- */
-export async function recognizeRevenue(data: {
-  contractId: number;
-  amount: number;
-  recognitionDate: Date;
-  performanceObligationId?: number;
-  description?: string;
-  recognitionMethod?: string;
-  recognitionReason?: string;
-  revenueType?: string;
-}): Promise<RevenueRecord> {
-  const {
-    contractId,
-    amount,
-    recognitionDate,
-    performanceObligationId,
-    description,
-    recognitionMethod,
-    recognitionReason,
-    revenueType
-  } = data;
-
-  // Validate the revenue recognition
-  const [contract] = await db
-    .select({ totalTransactionPrice: contracts.totalTransactionPrice })
-    .from(contracts)
-    .where(eq(contracts.id, contractId));
-
-  if (!contract) {
-    throw new Error(`Contract with ID ${contractId} not found`);
-  }
-
-  // If no performance obligation is specified, find the first one
-  let poId = performanceObligationId;
-  if (!poId) {
-    const [firstPO] = await db
-      .select({ id: performanceObligations.id })
-      .from(performanceObligations)
-      .where(eq(performanceObligations.contractId, contractId))
-      .limit(1);
-      
-    if (firstPO) {
-      poId = firstPO.id;
-    }
-  }
-
-  // Create the revenue record
-  const [revenueRecord] = await db
-    .insert(revenueRecords)
-    .values({
-      contractId,
-      amount,
-      recognitionDate,
-      performanceObligationId: poId,
-      status: 'recognized',
-      description,
-      recognitionMethod: recognitionMethod as any,
-      recognitionReason,
-      revenueType: revenueType as any,
-      adjustmentType: 'initial'
-    })
-    .returning();
-
-  return revenueRecord;
-}
-
-/**
- * Generate a revenue schedule for a contract based on its performance obligations
- */
-export async function generateRevenueSchedule(contractId: number): Promise<{
-  scheduleItems: {
-    date: Date;
-    amount: number;
-    performanceObligationId: number;
-    poName: string;
-  }[];
-}> {
-  // Get contract details
-  const [contract] = await db
-    .select()
-    .from(contracts)
-    .where(eq(contracts.id, contractId));
-
-  if (!contract) {
-    throw new Error(`Contract with ID ${contractId} not found`);
-  }
-
-  // Make sure transaction price is allocated
-  await allocateTransactionPrice(contractId);
-
-  // Get all performance obligations
-  const pos = await db
-    .select()
-    .from(performanceObligations)
-    .where(eq(performanceObligations.contractId, contractId));
-
-  const scheduleItems = [];
-
-  // For each performance obligation, generate schedule items
-  for (const po of pos) {
-    const allocationPercentage = Number(po.allocationPercentage) || 0;
-    const allocatedAmount = Number(contract.totalTransactionPrice || contract.value) * (allocationPercentage / 100);
     
-    if (po.recognitionMethod === 'point_in_time') {
-      // For point-in-time recognition, use the end date
-      if (po.endDate) {
-        scheduleItems.push({
-          date: po.endDate,
-          amount: allocatedAmount,
-          performanceObligationId: po.id,
-          poName: po.name
-        });
-      }
-    } else if (po.recognitionMethod === 'over_time' && po.startDate && po.endDate) {
-      // For over-time recognition, spread evenly across months
-      const startDate = new Date(po.startDate);
-      const endDate = new Date(po.endDate);
-      
-      // Calculate total months
-      const totalMonths = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
-                          (endDate.getMonth() - startDate.getMonth()) + 1;
-                          
-      if (totalMonths <= 0) continue;
-      
-      // Calculate monthly amount
-      const monthlyAmount = allocatedAmount / totalMonths;
-      
-      // Create a schedule item for each month
-      for (let i = 0; i < totalMonths; i++) {
-        const date = new Date(startDate);
-        date.setMonth(date.getMonth() + i);
-        
-        scheduleItems.push({
-          date,
-          amount: monthlyAmount,
-          performanceObligationId: po.id,
-          poName: po.name
-        });
-      }
-    }
-    // Other recognition methods can be added here
+    return schedule;
+  } catch (error) {
+    console.error("Error generating revenue schedule:", error);
+    return [];
   }
+}
 
-  // Sort by date
-  scheduleItems.sort((a, b) => a.date.getTime() - b.date.getTime());
+/**
+ * Calculates the transaction price for a contract based on IFRS 15/ASC 606 standards
+ * @param contractText The full contract text
+ * @param contractData Basic contract data
+ * @returns The transaction price analysis
+ */
+export async function calculateTransactionPrice(contractText: string, contractData: any) {
+  try {
+    console.log("Calculating transaction price with AI");
+    
+    const prompt = `
+      As a revenue recognition expert specializing in IFRS 15/ASC 606, analyze this contract and determine the transaction price.
+      
+      Contract: ${contractText}
+      
+      Follow these steps:
+      1. Identify the basic contract price (fixed consideration)
+      2. Identify any variable consideration elements (e.g., bonuses, penalties, rebates)
+      3. Evaluate if any variable consideration should be constrained (high probability of reversal)
+      4. Identify any significant financing components
+      5. Identify any non-cash consideration
+      6. Calculate the total transaction price according to IFRS 15/ASC 606
+      
+      Format your response as a valid JSON object:
+      {
+        "basePrice": number,
+        "variableConsideration": [
+          {
+            "description": string,
+            "amount": number,
+            "constraint": number | null,
+            "explanation": string
+          }
+        ],
+        "financingComponent": {
+          "exists": boolean,
+          "amount": number | null,
+          "explanation": string
+        },
+        "nonCashConsideration": {
+          "exists": boolean,
+          "amount": number | null,
+          "explanation": string
+        },
+        "totalTransactionPrice": number,
+        "analysis": string
+      }
+      
+      Return ONLY the JSON object without any explanations or additional text.
+    `;
+    
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: "You are a specialized revenue recognition AI that calculates transaction price according to IFRS 15/ASC 606 standards."
+        },
+        { role: "user", content: prompt }
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.1
+    });
+    
+    try {
+      const result = JSON.parse(response.choices[0].message.content || '{}');
+      
+      // Ensure we always have a total transaction price
+      if (!result.totalTransactionPrice && contractData.value) {
+        result.totalTransactionPrice = contractData.value;
+      }
+      
+      return result;
+    } catch (parseError) {
+      console.error("Error parsing transaction price calculation:", parseError);
+      return {
+        basePrice: contractData.value,
+        variableConsideration: [],
+        financingComponent: { exists: false, amount: null, explanation: "Not applicable" },
+        nonCashConsideration: { exists: false, amount: null, explanation: "Not applicable" },
+        totalTransactionPrice: contractData.value,
+        analysis: "Used contract value as transaction price due to parsing error"
+      };
+    }
+  } catch (error) {
+    console.error("Error calculating transaction price:", error);
+    return {
+      basePrice: contractData.value,
+      variableConsideration: [],
+      financingComponent: { exists: false, amount: null, explanation: "Not applicable" },
+      nonCashConsideration: { exists: false, amount: null, explanation: "Not applicable" },
+      totalTransactionPrice: contractData.value,
+      analysis: "Used contract value as transaction price due to API error"
+    };
+  }
+}
 
-  return { scheduleItems };
+/**
+ * Generates disclosure notes for financial reporting based on the contract
+ * @param contractText The full contract text
+ * @param contractData Basic contract data
+ * @param revenueSchedule The calculated revenue schedule
+ * @returns The disclosure notes
+ */
+export async function generateDisclosureNotes(contractText: string, contractData: any, revenueSchedule: any[]) {
+  try {
+    console.log("Generating disclosure notes with AI");
+    
+    const totalRecognized = revenueSchedule.reduce((sum, record) => sum + record.amount, 0);
+    
+    const prompt = `
+      As a financial reporting expert specializing in IFRS 15/ASC 606, generate comprehensive disclosure notes for this revenue contract.
+      
+      Contract: ${JSON.stringify(contractData)}
+      
+      Revenue Schedule: ${JSON.stringify(revenueSchedule)}
+      
+      Total Contract Value: ${contractData.value}
+      Total Recognized Revenue: ${totalRecognized}
+      
+      Follow these steps:
+      1. Create robust disclosure notes following IFRS 15/ASC 606 requirements
+      2. Include sections on:
+         - Nature of performance obligations
+         - Significant judgments in revenue recognition
+         - Timing of satisfaction of performance obligations
+         - Transaction price determination and allocation
+         - Contract assets and liabilities
+      3. Provide clear quantitative information aligned with the revenue schedule
+      
+      Format your response as valid HTML that could be included in financial statements.
+      Be specific, detailed, and precise, using actual contract details and figures.
+    `;
+    
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: "You are a specialized financial reporting AI that generates IFRS 15/ASC 606 disclosure notes."
+        },
+        { role: "user", content: prompt }
+      ],
+      temperature: 0.2
+    });
+    
+    return response.choices[0].message.content || '';
+  } catch (error) {
+    console.error("Error generating disclosure notes:", error);
+    return `<div class="disclosure-notes">
+      <h3>Revenue Recognition Disclosure Notes</h3>
+      <p>The Company recognizes revenue in accordance with IFRS 15/ASC 606. For the contract "${contractData.name}" with ${contractData.clientName}, 
+      revenue of ${contractData.value} is being recognized over the contract term from ${new Date(contractData.startDate).toLocaleDateString()} 
+      to ${contractData.endDate ? new Date(contractData.endDate).toLocaleDateString() : 'ongoing'}.</p>
+      <p>Note: Complete disclosure notes could not be generated due to a system error.</p>
+    </div>`;
+  }
 }

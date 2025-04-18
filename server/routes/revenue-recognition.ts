@@ -1,10 +1,9 @@
 import { Express, Request, Response } from "express";
 import { 
-  allocateTransactionPrice, 
-  calculateRevenueRecognition, 
-  calculateTransactionPrice, 
+  identifyPerformanceObligations,
   generateRevenueSchedule,
-  recognizeRevenue
+  calculateTransactionPrice,
+  generateDisclosureNotes
 } from "../utils/revenue-recognition";
 import { db } from "../db";
 import { 
@@ -15,6 +14,7 @@ import {
 } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
+import { supabase } from "../supabase";
 
 export function registerRevenueRecognitionRoutes(app: Express) {
   // Get transaction price for a contract
@@ -25,15 +25,57 @@ export function registerRevenueRecognitionRoutes(app: Express) {
         return res.status(400).json({ error: "Invalid contract ID" });
       }
 
-      const totalPrice = await calculateTransactionPrice(contractId);
-      return res.json({ contractId, totalPrice });
+      // Get contract data
+      const [contract] = await db
+        .select()
+        .from(contracts)
+        .where(eq(contracts.id, contractId));
+      
+      if (!contract) {
+        return res.status(404).json({ error: "Contract not found" });
+      }
+
+      // Get contract text - either from database or from stored file
+      let contractText = '';
+      
+      if (contract.fileUrl) {
+        try {
+          // Try to get the file from Supabase storage
+          const { data, error } = await supabase.storage
+            .from('contracts')
+            .download(contract.fileUrl);
+            
+          if (data) {
+            // Convert the blob to text
+            contractText = await data.text();
+          } else if (error) {
+            console.error("Error retrieving contract file:", error);
+          }
+        } catch (downloadErr) {
+          console.error("Error downloading contract file:", downloadErr);
+        }
+      }
+      
+      // Use AI to calculate transaction price based on the contract
+      const priceAnalysis = await calculateTransactionPrice(contractText, {
+        value: contract.value,
+        name: contract.name,
+        startDate: contract.startDate,
+        endDate: contract.endDate
+      });
+      
+      return res.json({ 
+        contractId, 
+        baseValue: contract.value,
+        analysis: priceAnalysis 
+      });
     } catch (error: any) {
       console.error("Error calculating transaction price:", error);
       return res.status(500).json({ error: error.message });
     }
   });
 
-  // Allocate transaction price to performance obligations
+  // Identify and allocate transaction price to performance obligations
   app.post("/api/revenue/allocate/:contractId", async (req: Request, res: Response) => {
     try {
       const contractId = parseInt(req.params.contractId);
@@ -41,20 +83,85 @@ export function registerRevenueRecognitionRoutes(app: Express) {
         return res.status(400).json({ error: "Invalid contract ID" });
       }
 
-      await allocateTransactionPrice(contractId);
-      
-      // Return updated performance obligations
-      const pos = await db
+      // Get contract data
+      const [contract] = await db
         .select()
-        .from(performanceObligations)
+        .from(contracts)
+        .where(eq(contracts.id, contractId));
+      
+      if (!contract) {
+        return res.status(404).json({ error: "Contract not found" });
+      }
+      
+      // Get contract text - either from database or from stored file
+      let contractText = '';
+      
+      if (contract.fileUrl) {
+        try {
+          // Try to get the file from Supabase storage
+          const { data, error } = await supabase.storage
+            .from('contracts')
+            .download(contract.fileUrl);
+            
+          if (data) {
+            // Convert the blob to text
+            contractText = await data.text();
+          } else if (error) {
+            console.error("Error retrieving contract file:", error);
+          }
+        } catch (downloadErr) {
+          console.error("Error downloading contract file:", downloadErr);
+        }
+      }
+      
+      // Use AI to identify performance obligations
+      const obligations = await identifyPerformanceObligations(contractText, {
+        value: contract.value,
+        name: contract.name,
+        startDate: contract.startDate,
+        endDate: contract.endDate
+      });
+      
+      console.log("Identified obligations:", obligations);
+      
+      // Store the obligations in the database
+      const storedObligations = [];
+      
+      // Remove any existing obligations for this contract first
+      await db.delete(performanceObligations)
         .where(eq(performanceObligations.contractId, contractId));
-        
+      
+      // Store the new obligations
+      for (const obligation of obligations) {
+        try {
+          const [stored] = await db.insert(performanceObligations)
+            .values({
+              contractId,
+              name: obligation.description.substring(0, 100), // Truncate if needed
+              description: obligation.description,
+              standaloneSellingPrice: obligation.estimatedValue,
+              allocationPercentage: obligation.allocatedAmount / contract.value,
+              startDate: contract.startDate,
+              endDate: contract.endDate,
+              status: 'active',
+              recognitionMethod: obligation.satisfactionMethod === 'over_time' 
+                ? 'over_time' 
+                : 'point_in_time'
+            })
+            .returning();
+            
+          storedObligations.push(stored);
+        } catch (insertErr) {
+          console.error("Error inserting obligation:", insertErr);
+        }
+      }
+      
       return res.json({ 
-        message: "Transaction price allocated successfully", 
-        performanceObligations: pos 
+        message: "Performance obligations identified and allocated successfully", 
+        performanceObligations: storedObligations 
       });
     } catch (error: any) {
-      console.error("Error allocating transaction price:", error);
+      console.error("Error identifying performance obligations:", error);
       return res.status(500).json({ error: error.message });
     }
   });
