@@ -1,11 +1,11 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ButtonProps } from "@/components/ui/button";
+import type { ButtonProps } from "@/components/ui/button";
 import { ReactNode } from "react";
 
-interface AnimatedButtonProps extends ButtonProps {
+interface AnimatedButtonProps extends Omit<ButtonProps, 'variant'> {
   children: ReactNode;
-  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | "primary";
+  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
   size?: "default" | "sm" | "lg" | "icon";
   icon?: ReactNode;
   iconPosition?: "left" | "right";

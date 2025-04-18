@@ -4,6 +4,7 @@ import { NavBar } from '@/components/ui/navbar';
 import { Footer } from '@/components/ui/footer';
 import { FeatureCard } from '@/components/ui/feature-card';
 import { TestimonialCard } from '@/components/ui/testimonial-card';
+import { motion } from 'framer-motion';
 import { 
   DollarSignIcon, 
   FileTextIcon, 
@@ -338,30 +339,82 @@ export default function Home() {
         </div>
         
         <div className="relative max-w-7xl mx-auto py-20 px-4 sm:px-6 lg:py-32 lg:px-8">
-          <div className="max-w-3xl mx-auto text-center mb-16">
-            <span className="inline-flex items-center rounded-full bg-secondary/10 px-3 py-1 text-sm font-medium text-secondary ring-1 ring-inset ring-secondary/30 mb-3">
+          <motion.div 
+            className="max-w-3xl mx-auto text-center mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ 
+              duration: 0.6, 
+              ease: [0.22, 1, 0.36, 1] 
+            }}
+          >
+            <motion.span 
+              className="inline-flex items-center rounded-full bg-secondary/10 px-3 py-1 text-sm font-medium text-secondary ring-1 ring-inset ring-secondary/30 mb-3"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.1, duration: 0.5 }}
+            >
               <svg className="mr-1 h-1.5 w-1.5 fill-secondary animate-pulse" viewBox="0 0 6 6" aria-hidden="true"><circle cx="3" cy="3" r="3" /></svg>
               AI-Powered Platform
-            </span>
-            <h2 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent pb-2">
+            </motion.span>
+            <motion.h2 
+              className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent pb-2"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.6 }}
+            >
               Our Comprehensive Solution Suite
-            </h2>
-            <p className="mt-4 text-lg text-neutral font-light max-w-2xl mx-auto">
+            </motion.h2>
+            <motion.p 
+              className="mt-4 text-lg text-neutral font-light max-w-2xl mx-auto"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3, duration: 0.6 }}
+            >
               PRA's integrated tools work together to streamline your financial operations with advanced AI and automation technologies.
-            </p>
-          </div>
+            </motion.p>
+          </motion.div>
           
-          <div className="grid grid-cols-1 gap-y-8 sm:grid-cols-2 sm:gap-x-8 sm:gap-y-10 lg:grid-cols-4">
+          <motion.div 
+            className="grid grid-cols-1 gap-y-8 sm:grid-cols-2 sm:gap-x-8 sm:gap-y-10 lg:grid-cols-4"
+            variants={{
+              hidden: { opacity: 0 },
+              show: {
+                opacity: 1,
+                transition: {
+                  staggerChildren: 0.15
+                }
+              }
+            }}
+            initial="hidden"
+            animate="show"
+          >
             {features.map((feature, index) => (
-              <FeatureCard
+              <motion.div
                 key={index}
-                title={feature.title}
-                description={feature.description}
-                features={feature.features}
-                icon={feature.icon}
-              />
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  show: { 
+                    opacity: 1, 
+                    y: 0, 
+                    transition: { 
+                      duration: 0.5,
+                      type: "spring",
+                      stiffness: 100,
+                      damping: 12 
+                    } 
+                  }
+                }}
+              >
+                <FeatureCard
+                  title={feature.title}
+                  description={feature.description}
+                  features={feature.features}
+                  icon={feature.icon}
+                />
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </div>
       
