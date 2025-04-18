@@ -8,34 +8,9 @@ import { ComplianceUpdates } from '@/components/ui/compliance-updates';
 import { DollarSign, FileText, BarChart2, TrendingUp } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { useAuth } from '@/lib/auth';
-import { motion } from 'framer-motion';
 
 export default function Dashboard() {
   const { user } = useAuth();
-  
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { 
-      opacity: 1,
-      transition: { 
-        staggerChildren: 0.1,
-        delayChildren: 0.2
-      } 
-    }
-  };
-  
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: { 
-        type: "spring",
-        stiffness: 100,
-        damping: 12
-      }
-    }
-  };
   
   return (
     <div className="flex h-screen bg-gradient-to-br from-primary-50 via-blue-50/60 to-indigo-50/50">
@@ -47,32 +22,19 @@ export default function Dashboard() {
         <main className="flex-1 overflow-y-auto">
           <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
             {/* Welcome Message */}
-            <motion.div 
-              className="px-4 py-2 sm:px-0 mb-6"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5 }}
-            >
+            <div className="px-4 py-2 sm:px-0 mb-6">
               <h2 className="text-lg text-primary/80 font-medium">
                 Welcome back, <span className="font-semibold">{user?.fullName || user?.username}</span>
               </h2>
               <p className="text-neutral/70 text-sm">
                 Here's what's happening with your revenue metrics today
               </p>
-            </motion.div>
+            </div>
             
             {/* Dashboard overview */}
-            <motion.div 
-              className="px-4 sm:px-0"
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-            >
+            <div className="px-4 sm:px-0">
               {/* Metrics Cards */}
-              <motion.div 
-                className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4"
-                variants={itemVariants}
-              >
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
                 <MetricsCard
                   title="Total Revenue"
                   value={formatCurrency(3427892)}
@@ -116,36 +78,27 @@ export default function Dashboard() {
                   icon={<BarChart2 className="h-6 w-6 text-violet-600" />}
                   iconColor="bg-violet-100"
                 />
-              </motion.div>
+              </div>
               
               {/* Revenue Chart */}
-              <motion.div 
-                className="mt-6"
-                variants={itemVariants}
-              >
+              <div className="mt-6">
                 <RevenueChart />
-              </motion.div>
+              </div>
               
               {/* Recent Contracts */}
-              <motion.div 
-                className="mt-6"
-                variants={itemVariants}
-              >
+              <div className="mt-6">
                 <ContractsTable limit={4} />
-              </motion.div>
+              </div>
               
               {/* Quick Actions */}
-              <motion.div 
-                className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2"
-                variants={itemVariants}
-              >
+              <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
                 {/* Revenue Recognition Tasks */}
                 <TaskList />
                 
                 {/* Compliance Updates */}
                 <ComplianceUpdates />
-              </motion.div>
-            </motion.div>
+              </div>
+            </div>
           </div>
         </main>
       </div>

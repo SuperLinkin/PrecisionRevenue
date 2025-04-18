@@ -110,12 +110,7 @@ export function Sidebar() {
   );
   
   return (
-    <motion.div 
-      className="w-64 bg-gradient-to-b from-primary-900 to-primary-800 text-white h-screen flex flex-col shadow-xl"
-      initial={{ x: -20, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      transition={{ duration: 0.3, ease: "easeOut" }}
-    >
+    <div className="w-64 bg-gradient-to-b from-primary-900 to-primary-800 text-white h-screen flex flex-col shadow-xl">
       <div className="px-5 py-6 border-b border-primary-700/50">
         <Link href="/dashboard">
           <motion.div 
@@ -182,6 +177,6 @@ export function Sidebar() {
           </Button>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
