@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { ArrowUpIcon } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface MetricsCardProps {
   title: string;
@@ -14,29 +15,41 @@ interface MetricsCardProps {
 
 export function MetricsCard({ title, value, change, icon, iconColor }: MetricsCardProps) {
   return (
-    <div className="bg-white overflow-hidden shadow rounded-lg">
+    <motion.div 
+      className="overflow-hidden rounded-lg border border-indigo-100/50 shadow-md bg-gradient-to-br from-white to-indigo-50/30"
+      whileHover={{ 
+        boxShadow: "0 8px 30px rgba(59, 130, 246, 0.12)",
+        borderColor: "rgba(129, 140, 248, 0.3)"
+      }}
+      transition={{ duration: 0.2 }}
+    >
       <div className="p-5">
         <div className="flex items-center">
-          <div className={`flex-shrink-0 ${iconColor} rounded-md p-3`}>
+          <div className={`flex-shrink-0 ${iconColor} rounded-md p-3 shadow-sm`}>
             {icon}
           </div>
           <div className="ml-5 w-0 flex-1">
             <dl>
-              <dt className="text-sm font-medium text-neutral truncate">
+              <dt className="text-sm font-semibold text-primary/80 uppercase tracking-wide">
                 {title}
               </dt>
               <dd>
-                <div className="text-lg font-medium text-primary">{value}</div>
+                <div className="text-2xl font-bold text-primary mt-1">{value}</div>
                 {change && (
-                  <div className="flex items-center text-sm text-accent">
+                  <div className="flex items-center text-sm font-medium mt-1">
                     {change.isPositive ? (
-                      <ArrowUpIcon className="w-4 h-4 mr-1" />
+                      <>
+                        <ArrowUpIcon className="w-4 h-4 mr-1 text-emerald-500" />
+                        <span className="text-emerald-600">{change.value}</span>
+                      </>
                     ) : (
-                      <svg className="w-4 h-4 mr-1 rotate-180" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
+                      <>
+                        <svg className="w-4 h-4 mr-1 rotate-180 text-rose-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                        <span className="text-rose-600">{change.value}</span>
+                      </>
                     )}
-                    {change.value}
                   </div>
                 )}
               </dd>
@@ -44,6 +57,6 @@ export function MetricsCard({ title, value, change, icon, iconColor }: MetricsCa
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

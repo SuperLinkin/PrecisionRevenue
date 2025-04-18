@@ -11,11 +11,13 @@ import {
   TrendingUp as TrendingUpIcon,
   Clipboard as ClipboardIcon,
   Briefcase as BriefcaseIcon,
-  Building as BuildingIcon
+  Building as BuildingIcon,
+  ChevronRight as ChevronRightIcon
 } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { getInitials } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
 
 export function Sidebar() {
   const [location] = useLocation();
@@ -25,100 +27,174 @@ export function Sidebar() {
     { 
       path: '/dashboard', 
       label: 'CFO Dashboard', 
-      icon: <HomeIcon className="mr-3 h-6 w-6" />
+      icon: <HomeIcon className="h-5 w-5" />
     },
     { 
       path: '/contracts', 
       label: 'Contracts', 
-      icon: <FileTextIcon className="mr-3 h-6 w-6" />
+      icon: <FileTextIcon className="h-5 w-5" />
     },
     { 
       path: '/revenue', 
       label: 'Revenue', 
-      icon: <DollarSignIcon className="mr-3 h-6 w-6" />
+      icon: <DollarSignIcon className="h-5 w-5" />
     },
     { 
       path: '/claus', 
       label: 'CLAUS', 
-      icon: <ScaleIcon className="mr-3 h-6 w-6" />
+      icon: <ScaleIcon className="h-5 w-5" />
     },
     { 
       path: '/moca', 
       label: 'MOCA', 
-      icon: <TrendingUpIcon className="mr-3 h-6 w-6" />
+      icon: <TrendingUpIcon className="h-5 w-5" />
     },
     { 
       path: '/disclosure', 
       label: 'Disclosure Generator', 
-      icon: <ClipboardIcon className="mr-3 h-6 w-6" />
+      icon: <ClipboardIcon className="h-5 w-5" />
     },
     { 
       path: '/analytics', 
       label: 'Revenue Analytics', 
-      icon: <BarChart2Icon className="mr-3 h-6 w-6" />
+      icon: <BarChart2Icon className="h-5 w-5" />
     },
     { 
       path: '/deal-desk', 
       label: 'Deal Desk', 
-      icon: <BriefcaseIcon className="mr-3 h-6 w-6" />
+      icon: <BriefcaseIcon className="h-5 w-5" />
     },
     { 
       path: '/company', 
       label: 'Company Settings', 
-      icon: <BuildingIcon className="mr-3 h-6 w-6" />
+      icon: <BuildingIcon className="h-5 w-5" />
     },
     { 
       path: '/settings', 
       label: 'Settings', 
-      icon: <SettingsIcon className="mr-3 h-6 w-6" />
+      icon: <SettingsIcon className="h-5 w-5" />
     },
   ];
+
+  // Group items into categories
+  const mainItems = menuItems.slice(0, 3); // Dashboard, Contracts, Revenue
+  const toolItems = menuItems.slice(3, 8); // CLAUS, MOCA, Disclosure, Analytics, Deal Desk
+  const settingsItems = menuItems.slice(8); // Company Settings, Settings
+  
+  const navItemVariants = {
+    initial: { x: -15, opacity: 0 },
+    animate: { x: 0, opacity: 1, transition: { type: 'spring', stiffness: 300, damping: 24 } },
+    hover: { 
+      x: 5, 
+      transition: { type: 'spring', stiffness: 400, damping: 17 } 
+    }
+  };
+  
+  const renderNavItem = (item) => (
+    <Link key={item.path} href={item.path}>
+      <motion.div
+        initial="initial"
+        animate="animate"
+        whileHover="hover"
+        variants={navItemVariants}
+        className={`flex items-center px-4 py-2.5 mb-1 text-sm font-medium rounded-md cursor-pointer group transition-colors ${
+          location === item.path 
+            ? 'bg-gradient-to-r from-indigo-600/90 to-indigo-700 text-white shadow-md'
+            : 'text-indigo-100 hover:bg-primary-700/50'
+        }`}
+      >
+        <div className={`flex items-center justify-center h-8 w-8 rounded-lg mr-3 ${
+          location === item.path ? 'bg-indigo-500/40' : 'bg-primary-800/40'
+        }`}>
+          {item.icon}
+        </div>
+        <span className="flex-1">{item.label}</span>
+        {location === item.path && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.2 }}
+          >
+            <ChevronRightIcon className="h-4 w-4 text-indigo-300" />
+          </motion.div>
+        )}
+      </motion.div>
+    </Link>
+  );
   
   return (
-    <div className="w-64 bg-primary text-white h-screen flex flex-col">
-      <div className="p-4 border-b border-primary-700">
-        <div className="flex items-center justify-between">
-          <Link href="/dashboard">
-            <span className="text-xl font-bold cursor-pointer">PRA</span>
-          </Link>
-        </div>
-      </div>
-      <nav className="mt-5 px-2 flex-1 overflow-y-auto">
-        {menuItems.map((item) => (
-          <Link key={item.path} href={item.path}>
-            <span className={`group flex items-center px-2 py-2 text-base font-medium rounded-md cursor-pointer ${
-              location === item.path 
-                ? 'bg-primary-700 text-white' 
-                : 'text-white hover:bg-primary-700'
-            }`}>
-              {item.icon}
-              {item.label}
+    <motion.div 
+      className="w-64 bg-gradient-to-b from-primary-900 to-primary-800 text-white h-screen flex flex-col shadow-xl"
+      initial={{ x: -20, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+    >
+      <div className="px-5 py-6 border-b border-primary-700/50">
+        <Link href="/dashboard">
+          <motion.div 
+            className="flex items-center cursor-pointer"
+            whileHover={{ scale: 1.02 }}
+          >
+            <div className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-indigo-300 bg-clip-text text-transparent">
+              PRA
+            </div>
+            <span className="ml-2 text-xs text-indigo-200 tracking-widest uppercase">
+              Precision Revenue
             </span>
-          </Link>
-        ))}
-      </nav>
-      <div className="p-4 border-t border-primary-700">
-        <div className="flex items-center">
-          <div className="flex-shrink-0">
-            <Avatar className="h-10 w-10">
-              <AvatarFallback>{user?.fullName ? getInitials(user.fullName) : getInitials(user?.username || '')}</AvatarFallback>
-            </Avatar>
+          </motion.div>
+        </Link>
+      </div>
+      
+      <div className="flex-1 overflow-y-auto px-3 py-4">
+        <nav className="space-y-6">
+          {/* Main Navigation */}
+          <div>
+            <h3 className="px-4 text-xs font-semibold text-indigo-200 uppercase tracking-wider mb-2">
+              Main
+            </h3>
+            {mainItems.map(renderNavItem)}
           </div>
+          
+          {/* Tools */}
+          <div>
+            <h3 className="px-4 text-xs font-semibold text-indigo-200 uppercase tracking-wider mb-2">
+              Tools
+            </h3>
+            {toolItems.map(renderNavItem)}
+          </div>
+          
+          {/* Settings */}
+          <div>
+            <h3 className="px-4 text-xs font-semibold text-indigo-200 uppercase tracking-wider mb-2">
+              Settings
+            </h3>
+            {settingsItems.map(renderNavItem)}
+          </div>
+        </nav>
+      </div>
+      
+      <div className="p-4 border-t border-primary-700/50 bg-primary-800/60">
+        <div className="flex items-center">
+          <Avatar className="h-10 w-10 shadow-md">
+            <AvatarFallback className="bg-indigo-600 text-white">
+              {user?.fullName ? getInitials(user.fullName) : getInitials(user?.username || '')}
+            </AvatarFallback>
+          </Avatar>
           <div className="ml-3 flex-1">
             <p className="text-sm font-medium text-white">{user?.fullName || user?.username}</p>
-            <p className="text-xs text-gray-300">{user?.email}</p>
+            <p className="text-xs text-indigo-200">{user?.email}</p>
           </div>
           <Button
             variant="ghost"
             size="icon"
-            className="ml-auto bg-primary-800 flex-shrink-0 p-1 rounded-full text-gray-400 hover:text-white"
+            className="ml-auto bg-indigo-700/60 flex-shrink-0 p-1.5 rounded-full text-indigo-200 hover:text-white hover:bg-indigo-600 transition-colors"
             onClick={() => logout()}
           >
             <span className="sr-only">Log out</span>
-            <LogOutIcon className="h-6 w-6" />
+            <LogOutIcon className="h-4 w-4" />
           </Button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

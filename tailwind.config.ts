@@ -5,6 +5,10 @@ export default {
   content: ["./client/index.html", "./client/src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
+      fontFamily: {
+        inter: ['Inter', 'sans-serif'],
+        sans: ['Inter', 'sans-serif'],
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
@@ -24,6 +28,17 @@ export default {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          50: "#F0F7FF",
+          100: "#E0EFFF",
+          200: "#C0DFFF",
+          300: "#80BFFF",
+          400: "#4099FF",
+          500: "#2563EB",
+          600: "#1D4ED8",
+          700: "#1E40AF",
+          800: "#1E3A8A",
+          900: "#172554",
+          950: "#101E3C",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",

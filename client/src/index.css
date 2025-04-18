@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -50,7 +52,15 @@
   }
   
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply font-inter antialiased bg-background text-foreground;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-inter font-semibold tracking-tight;
+  }
+  
+  p {
+    @apply font-inter font-normal;
   }
 }
 
@@ -61,5 +71,24 @@
   
   .text-neutral {
     color: hsl(var(--neutral));
+  }
+  
+  /* Improved Card Styles */
+  .card-gradient {
+    @apply bg-gradient-to-br from-white to-indigo-50/30 border border-indigo-100/50 shadow-md;
+  }
+  
+  /* Gradient Text */
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary via-blue-700 to-primary bg-clip-text text-transparent;
+  }
+  
+  /* Soft Background Gradients */
+  .bg-soft-gradient {
+    @apply bg-gradient-to-br from-primary-50 via-blue-50/60 to-indigo-50/50;
+  }
+  
+  .bg-soft-gradient-alt {
+    @apply bg-gradient-to-br from-indigo-50/60 via-blue-50/60 to-primary-50/50;
   }
 }
