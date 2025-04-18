@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { initDB } from "./init-db";
+import { runMigrations } from "./migrations";
 
 const app = express();
 // Increase payload size limit for contract uploads (50mb)
@@ -41,6 +42,9 @@ app.use((req, res, next) => {
 (async () => {
   // Initialize database
   await initDB();
+  
+  // Run any necessary migrations
+  await runMigrations();
   
   const server = await registerRoutes(app);
 

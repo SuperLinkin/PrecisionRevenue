@@ -19,6 +19,9 @@ import contractApiRouter from './contract-api';
 // Import Revenue Recognition Routes
 import { registerRevenueRecognitionRoutes } from './routes/revenue-recognition';
 
+// Supabase connection health check
+import { checkSupabaseConnection } from './supabase';
+
 const SessionStore = MemoryStore(session);
 
 export async function registerRoutes(app: Express): Promise<Server> {
