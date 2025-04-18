@@ -11,9 +11,12 @@ import Revenue from "@/pages/revenue";
 import Reports from "@/pages/reports";
 import Settings from "@/pages/settings";
 import { useAuth } from "@/lib/auth";
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
 import { PageTransition } from "@/lib/animations";
+import { HelpButton } from "@/components/ui/help-button";
+import { GuidanceWizard } from "@/components/ui/guidance-wizard";
+import { useGuidance } from "@/hooks/use-guidance";
 
 // Protected route component
 const ProtectedRoute = ({ component: Component, ...rest }: any) => {
@@ -35,6 +38,61 @@ const ProtectedRoute = ({ component: Component, ...rest }: any) => {
 
 function App() {
   const [location] = useLocation();
+  const { 
+    isOpen, 
+    steps, 
+    closeGuidance, 
+    markGuidanceAsCompleted, 
+    currentMode,
+    hasCompletedGuidance,
+    openGuidance
+  } = useGuidance();
+
+  // Check if we should show the welcome guidance on first visit
+  useEffect(() => {
+    const isFirstVisit = !hasCompletedGuidance('welcome');
+    
+    // Only show welcome guidance on the home page, not on login/signup
+    if (isFirstVisit && location === '/') {
+      // Delay showing the guidance to let the page load first
+      const timer = setTimeout(() => {
+        openGuidance('welcome');
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [location, hasCompletedGuidance, openGuidance]);
+
+  const handleGuidanceComplete = () => {
+    if (currentMode) {
+      markGuidanceAsCompleted(currentMode);
+    }
+  };
+
+  // Define appropriate CSS selectors for each page
+  useEffect(() => {
+    // Add the appropriate CSS classes to elements for guidance targeting
+    const addCssClasses = () => {
+      // Add navigation class
+      const navElement = document.querySelector('nav');
+      if (navElement) navElement.classList.add('main-navigation');
+      
+      // Add dashboard class
+      const dashboardElement = document.querySelector('.dashboard-stats, .dashboard-overview');
+      if (dashboardElement) dashboardElement.classList.add('dashboard-overview');
+      
+      // Add REMY assistant class
+      const remyElement = document.querySelector('.remy-container, .chat-assistant');
+      if (remyElement) remyElement.classList.add('remy-assistant');
+      
+      // Add user account class
+      const userAccountElement = document.querySelector('.user-menu, .profile-section');
+      if (userAccountElement) userAccountElement.classList.add('user-account');
+    };
+    
+    // Run after a short delay to ensure DOM is ready
+    setTimeout(addCssClasses, 500);
+  }, [location]);
 
   return (
     <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-background">
@@ -72,6 +130,15 @@ function App() {
           </Switch>
         </PageTransition>
       </AnimatePresence>
+
+      {/* Help Button & Guidance Wizard */}
+      <HelpButton />
+      <GuidanceWizard 
+        steps={steps}
+        isOpen={isOpen}
+        onClose={closeGuidance}
+        onComplete={handleGuidanceComplete}
+      />
     </Suspense>
   );
 }
