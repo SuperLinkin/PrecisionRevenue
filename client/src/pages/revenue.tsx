@@ -100,7 +100,7 @@ export default function Revenue() {
   const { toast } = useToast();
   
   // Scroll to bottom of chat when messages change
-  React.useEffect(() => {
+  useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }

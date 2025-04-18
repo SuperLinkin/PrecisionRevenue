@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Sidebar } from '@/components/ui/sidebar';
 import { DashboardHeader } from '@/components/ui/dashboard-header';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -18,6 +18,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from '@/components/ui/card';
 import {
   Dialog,
@@ -42,10 +43,19 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Contract, insertContractSchema } from '@shared/schema';
 import { useToast } from '@/hooks/use-toast';
-import { CalendarIcon, FileTextIcon, PlusIcon, SearchIcon } from 'lucide-react';
+import { 
+  CalendarIcon, 
+  FileTextIcon, 
+  PlusIcon, 
+  SearchIcon, 
+  FileUpIcon, 
+  AlertCircleIcon,
+  CheckCircleIcon
+} from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
+import { motion } from 'framer-motion';
 
 const FormSchema = z.object({
   name: z.string().min(2, {
@@ -70,6 +80,12 @@ const FormSchema = z.object({
 export default function Contracts() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [fileUploadStatus, setFileUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
+  const [extractedData, setExtractedData] = useState<any>(null);
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
   
@@ -95,6 +111,65 @@ export default function Contracts() {
     },
   });
   
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+  
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+  
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleContractFile(e.dataTransfer.files[0]);
+    }
+  };
+  
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      handleContractFile(e.target.files[0]);
+    }
+  };
+  
+  const handleContractFile = (file: File) => {
+    setUploadedFile(file);
+    setFileUploadStatus('uploading');
+    
+    // Simulate file analysis and data extraction
+    setTimeout(() => {
+      setFileUploadStatus('success');
+      
+      // Mock extracted data - in a real application, this would come from an API
+      const mockExtractedData = {
+        name: file.name.replace(/\.\w+$/, ''),
+        clientName: 'Extracted Client Corp',
+        contractNumber: `CT-${Math.floor(Math.random() * 1000)}-${new Date().getFullYear()}`,
+        startDate: new Date(),
+        endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+        value: 100000,
+      };
+      
+      setExtractedData(mockExtractedData);
+      
+      // Update form with extracted data
+      form.setValue('name', mockExtractedData.name);
+      form.setValue('clientName', mockExtractedData.clientName);
+      form.setValue('contractNumber', mockExtractedData.contractNumber);
+      form.setValue('startDate', mockExtractedData.startDate);
+      form.setValue('endDate', mockExtractedData.endDate);
+      form.setValue('value', mockExtractedData.value);
+      
+      toast({
+        title: "Contract analyzed",
+        description: "Contract details have been extracted and populated in the form.",
+      });
+    }, 2000);
+  };
+  
   const createContractMutation = useMutation({
     mutationFn: async (values: z.infer<typeof FormSchema>) => {
       return apiRequest('POST', '/api/contracts', values);
@@ -103,6 +178,9 @@ export default function Contracts() {
       queryClient.invalidateQueries({ queryKey: ['/api/contracts'] });
       setIsDialogOpen(false);
       form.reset();
+      setUploadedFile(null);
+      setFileUploadStatus('idle');
+      setExtractedData(null);
       toast({
         title: "Contract created",
         description: "The contract has been successfully created.",
@@ -156,9 +234,73 @@ export default function Contracts() {
                         <DialogHeader>
                           <DialogTitle>Create New Contract</DialogTitle>
                           <DialogDescription>
-                            Enter the contract details below to create a new contract.
+                            Upload a contract file or enter details manually to create a new contract.
                           </DialogDescription>
                         </DialogHeader>
+                        
+                        {/* Hidden file input */}
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={handleFileInputChange}
+                          className="hidden"
+                          accept=".pdf,.doc,.docx,.txt"
+                        />
+                        
+                        {/* Contract file upload area */}
+                        <div 
+                          className={`border-2 border-dashed rounded-lg p-6 mb-4 text-center transition-colors cursor-pointer ${
+                            isDragging ? 'border-blue-400 bg-blue-50' : 'border-gray-200 hover:border-blue-300'
+                          }`}
+                          onDragOver={handleDragOver}
+                          onDragLeave={handleDragLeave}
+                          onDrop={handleDrop}
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          {fileUploadStatus === 'idle' && (
+                            <>
+                              <FileUpIcon className="h-8 w-8 mx-auto mb-2 text-neutral/50" />
+                              <p className="text-sm text-neutral/70">
+                                Drag & drop your contract document here, or click to browse
+                              </p>
+                              <p className="text-xs text-neutral/50 mt-1">
+                                Supported formats: PDF, DOC, DOCX, TXT
+                              </p>
+                            </>
+                          )}
+                          
+                          {fileUploadStatus === 'uploading' && (
+                            <div className="py-2">
+                              <div className="animate-spin h-8 w-8 border-2 border-blue-500 rounded-full border-t-transparent mx-auto mb-2"></div>
+                              <p className="text-sm text-blue-600">Analyzing contract document...</p>
+                            </div>
+                          )}
+                          
+                          {fileUploadStatus === 'success' && (
+                            <div className="py-2">
+                              <div className="flex items-center justify-center mb-2">
+                                <CheckCircleIcon className="h-8 w-8 text-green-500" />
+                              </div>
+                              <p className="text-sm text-green-600 font-medium">{uploadedFile?.name}</p>
+                              <p className="text-xs text-neutral/70 mt-1">
+                                Contract details extracted and populated below
+                              </p>
+                            </div>
+                          )}
+                          
+                          {fileUploadStatus === 'error' && (
+                            <div className="py-2">
+                              <div className="flex items-center justify-center mb-2">
+                                <AlertCircleIcon className="h-8 w-8 text-red-500" />
+                              </div>
+                              <p className="text-sm text-red-600">Error analyzing document</p>
+                              <p className="text-xs text-neutral/70 mt-1">
+                                Please try again or enter details manually
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                        
                         <Form {...form}>
                           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
