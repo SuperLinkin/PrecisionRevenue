@@ -28,7 +28,7 @@ export default function Home() {
       description: 'AI-powered Contract Legal Analysis Utility System that reads, analyzes, and generates legal contracts.',
       icon: <FileTextIcon className="h-6 w-6 text-secondary" />,
       features: [
-        'Neural contract parsing & generation',
+        'Advanced contract parsing & generation',
         'Automated performance obligation extraction',
         'AI-driven risk assessment & flagging'
       ]
@@ -103,7 +103,7 @@ export default function Home() {
                }}
           ></div>
           
-          {/* Animated neural network effect */}
+          {/* Animated network visualization effect */}
           <div className="absolute inset-0 opacity-15">
             <div className="absolute h-2 w-2 rounded-full bg-blue-500 top-1/4 left-1/4 animate-pulse"></div>
             <div className="absolute h-2 w-2 rounded-full bg-blue-500 top-3/4 left-1/3 animate-pulse" style={{ animationDelay: '0.5s' }}></div>
