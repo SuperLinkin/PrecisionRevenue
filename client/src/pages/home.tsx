@@ -434,8 +434,8 @@ export default function Home() {
               </svg>
               <span className="text-sm font-semibold">Continuous Improvement</span>
             </div>
-            <h3 className="text-3xl font-semibold text-white mb-3">Advanced Analytics That Evolve</h3>
-            <p className="max-w-2xl mx-auto text-neutral/80">
+            <h3 className="text-3xl font-semibold text-white mb-3 bg-primary/40 inline-block px-6 py-2 rounded-lg">Advanced Financial Intelligence</h3>
+            <p className="max-w-2xl mx-auto text-white mt-4">
               PRA's financial systems continuously adapt to new data, regulatory changes, and user feedback to enhance recognition accuracy and forecasting precision.
             </p>
           </div>
