@@ -31,6 +31,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Authentication middleware
   const authenticate = async (req: Request, res: Response, next: Function) => {
+    // DEMO MODE - Skip authentication for MVP demo
+    // Always provide a mock user for the demo
+    req.user = {
+      id: 1,
+      username: 'mvpranav',
+      email: 'admin@precisonrevenue.com',
+      fullName: 'Pranav Kumar',
+      role: 'admin',
+      companyId: 1,
+      password: 'mock-password-hash'
+    };
+    next();
+    
+    // Real authentication code (disabled for demo)
+    /*
     if (!req.session.userId) {
       return res.status(401).json({ message: "Authentication required" });
     }
@@ -41,6 +56,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     req.user = user;
     next();
+    */
   };
 
   // Admin middleware

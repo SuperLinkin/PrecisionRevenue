@@ -56,14 +56,14 @@ export function Sidebar() {
       <nav className="mt-5 px-2 flex-1 overflow-y-auto">
         {menuItems.map((item) => (
           <Link key={item.path} href={item.path}>
-            <a className={`group flex items-center px-2 py-2 text-base font-medium rounded-md ${
+            <span className={`group flex items-center px-2 py-2 text-base font-medium rounded-md cursor-pointer ${
               location === item.path 
                 ? 'bg-primary-700 text-white' 
                 : 'text-white hover:bg-primary-700'
             }`}>
               {item.icon}
               {item.label}
-            </a>
+            </span>
           </Link>
         ))}
       </nav>
