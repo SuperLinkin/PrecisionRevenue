@@ -1455,87 +1455,97 @@ export default function Home() {
             </motion.div>
             
             <motion.div
-              className="bg-indigo-900/95 rounded-xl p-6 border border-indigo-500/30 shadow-xl mb-4 max-w-3xl mx-auto"
+              className="bg-gradient-to-br from-primary/95 to-primary-900/90 rounded-xl shadow-xl mb-6 overflow-hidden"
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.2, duration: 0.5 }}
             >
-              <motion.h3 
-                className="text-3xl font-bold text-white mb-3"
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.3, duration: 0.5 }}
-              >
-                Advanced Financial Intelligence
-              </motion.h3>
+              {/* Section Header */}
+              <div className="border-b border-white/10 bg-white/5 backdrop-blur-sm px-6 py-4 flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="w-8 h-8 rounded-md bg-blue-500/30 flex items-center justify-center mr-3 border border-blue-400/30">
+                    <svg className="w-4 h-4 text-blue-100" viewBox="0 0 24 24" fill="none">
+                      <path d="M21 16V8.00002C20.9996 7.6493 20.9071 7.30483 20.7315 7.00119C20.556 6.69754 20.3037 6.44539 20 6.27002L13 2.27002C12.696 2.09449 12.3511 2.00208 12 2.00208C11.6489 2.00208 11.304 2.09449 11 2.27002L4 6.27002C3.69626 6.44539 3.44398 6.69754 3.26846 7.00119C3.09294 7.30483 3.00036 7.6493 3 8.00002V16C3.00036 16.3508 3.09294 16.6952 3.26846 16.9989C3.44398 17.3025 3.69626 17.5547 4 17.73L11 21.73C11.304 21.9056 11.6489 21.998 12 21.998C12.3511 21.998 12.696 21.9056 13 21.73L20 17.73C20.3037 17.5547 20.556 17.3025 20.7315 16.9989C20.9071 16.6952 20.9996 16.3508 21 16Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M3.27002 6.96002L12 12.01L20.73 6.96002" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M12 22.08V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-semibold text-white">Advanced Financial Intelligence</h3>
+                </div>
+                <div className="bg-white/10 backdrop-blur-md text-xs font-medium text-blue-100 px-3 py-1 rounded-full border border-white/10">
+                  Precision-driven
+                </div>
+              </div>
               
-              <motion.p 
-                className="text-lg text-white font-medium"
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.4, duration: 0.5 }}
-              >
-                PRA's financial systems continuously adapt to new data, regulatory changes, and user feedback to enhance recognition accuracy and forecasting precision.
-              </motion.p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                <motion.div 
-                  className="rounded-lg bg-blue-800/80 border border-blue-600/30 p-4"
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
+              {/* Content */}
+              <div className="p-6">
+                <motion.p 
+                  className="text-base text-blue-50 leading-relaxed mb-6"
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
                   viewport={{ once: true }}
-                  transition={{ delay: 0.5, duration: 0.4 }}
-                  whileHover={{ backgroundColor: "rgba(30, 64, 175, 0.9)" }}
+                  transition={{ delay: 0.4, duration: 0.5 }}
                 >
-                  <div className="w-10 h-10 bg-blue-700 rounded-lg flex items-center justify-center mb-3 border border-blue-500">
-                    <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none">
-                      <path d="M9 19L14 14L9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M14 19L19 14L14 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M5 19L5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </div>
-                  <h4 className="text-lg font-bold text-white mb-2">Adaptive Learning</h4>
-                  <p className="text-sm text-blue-100">Refines recognition models based on contract patterns and outcomes</p>
-                </motion.div>
+                  PRA's financial systems continuously adapt to new data, regulatory changes, and user feedback to enhance recognition accuracy and forecasting precision.
+                </motion.p>
                 
-                <motion.div 
-                  className="rounded-lg bg-indigo-800/80 border border-indigo-600/30 p-4"
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.6, duration: 0.4 }}
-                  whileHover={{ backgroundColor: "rgba(55, 48, 163, 0.9)" }}
-                >
-                  <div className="w-10 h-10 bg-indigo-700 rounded-lg flex items-center justify-center mb-3 border border-indigo-500">
-                    <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none">
-                      <path d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M12 12L16 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M12 8V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </div>
-                  <h4 className="text-lg font-bold text-white mb-2">Real-time Updates</h4>
-                  <p className="text-sm text-indigo-100">Incorporates regulatory changes and accounting standard updates</p>
-                </motion.div>
-                
-                <motion.div 
-                  className="rounded-lg bg-purple-800/80 border border-purple-600/30 p-4"
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.7, duration: 0.4 }}
-                  whileHover={{ backgroundColor: "rgba(91, 33, 182, 0.9)" }}
-                >
-                  <div className="w-10 h-10 bg-purple-700 rounded-lg flex items-center justify-center mb-3 border border-purple-500">
-                    <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none">
-                      <path d="M20.25 6.375C20.25 8.65317 16.5563 10.5 12 10.5C7.44365 10.5 3.75 8.65317 3.75 6.375M20.25 6.375C20.25 4.09683 16.5563 2.25 12 2.25C7.44365 2.25 3.75 4.09683 3.75 6.375M20.25 6.375V17.625C20.25 19.9032 16.5563 21.75 12 21.75C7.44365 21.75 3.75 19.9032 3.75 17.625V6.375M20.25 6.375V10.125M3.75 6.375V10.125" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </div>
-                  <h4 className="text-lg font-bold text-white mb-2">Audit-Ready</h4>
-                  <p className="text-sm text-purple-100">Ensures full IFRS 15/ASC 606 compliance with documentation</p>
-                </motion.div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <motion.div 
+                    className="rounded-lg bg-white/10 backdrop-blur-sm border border-white/10 p-4 transition-all duration-300"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.5, duration: 0.4 }}
+                    whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.15)", y: -4 }}
+                  >
+                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mb-3 shadow-md">
+                      <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none">
+                        <path d="M9 19L14 14L9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M14 19L19 14L14 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M5 19L5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
+                    <h4 className="text-base font-semibold text-white mb-2">Adaptive Learning</h4>
+                    <p className="text-sm text-blue-100/90">Refines recognition models based on contract patterns and outcomes</p>
+                  </motion.div>
+                  
+                  <motion.div 
+                    className="rounded-lg bg-white/10 backdrop-blur-sm border border-white/10 p-4 transition-all duration-300"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.6, duration: 0.4 }}
+                    whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.15)", y: -4 }}
+                  >
+                    <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg flex items-center justify-center mb-3 shadow-md">
+                      <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M12 12L16 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M12 8V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
+                    <h4 className="text-base font-semibold text-white mb-2">Real-time Updates</h4>
+                    <p className="text-sm text-blue-100/90">Incorporates regulatory changes and accounting standard updates</p>
+                  </motion.div>
+                  
+                  <motion.div 
+                    className="rounded-lg bg-white/10 backdrop-blur-sm border border-white/10 p-4 transition-all duration-300"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.7, duration: 0.4 }}
+                    whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.15)", y: -4 }}
+                  >
+                    <div className="w-10 h-10 bg-gradient-to-br from-teal-500 to-teal-600 rounded-lg flex items-center justify-center mb-3 shadow-md">
+                      <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none">
+                        <path d="M20.25 6.375C20.25 8.65317 16.5563 10.5 12 10.5C7.44365 10.5 3.75 8.65317 3.75 6.375M20.25 6.375C20.25 4.09683 16.5563 2.25 12 2.25C7.44365 2.25 3.75 4.09683 3.75 6.375M20.25 6.375V17.625C20.25 19.9032 16.5563 21.75 12 21.75C7.44365 21.75 3.75 19.9032 3.75 17.625V6.375M20.25 6.375V10.125M3.75 6.375V10.125" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
+                    <h4 className="text-base font-semibold text-white mb-2">Audit-Ready</h4>
+                    <p className="text-sm text-blue-100/90">Ensures full IFRS 15/ASC 606 compliance with documentation</p>
+                  </motion.div>
+                </div>
               </div>
             </motion.div>
           </motion.div>
