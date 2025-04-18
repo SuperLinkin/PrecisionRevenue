@@ -1,6 +1,16 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { auth } from './supabase';
+// import { auth } from './supabase'; // Not using real auth service for MVP demo
+
+// Mock user data for demonstration
+const MOCK_USER = {
+  id: 1,
+  username: 'mvpranav',
+  email: 'admin@precisonrevenue.com',
+  fullName: 'Pranav Kumar',
+  role: 'admin',
+  companyId: 1,
+};
 
 type User = {
   id: number;
@@ -22,55 +32,59 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Demo mode - using mock authentication
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<User | null>(MOCK_USER); // Start with mock user already logged in
+  const [isLoading, setIsLoading] = useState(false);
   const queryClient = useQueryClient();
   
-  const {
-    data: user,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ['/api/auth/me'],
-    queryFn: async () => {
-      try {
-        return await auth.getUser();
-      } catch (error) {
-        // Not authenticated, return null instead of throwing
-        return null;
-      }
-    },
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    retry: false,
-  });
-
-  const login = async (username: string, password: string) => {
-    const user = await auth.signIn({ username, password });
-    if (user.message) {
-      throw new Error(user.message);
+  // Mock login function
+  const login = async (username: string, password: string): Promise<User> => {
+    setIsLoading(true);
+    try {
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Always succeed with mock user in demo mode
+      setUser(MOCK_USER);
+      queryClient.setQueryData(['/api/auth/me'], MOCK_USER);
+      return MOCK_USER;
+    } finally {
+      setIsLoading(false);
     }
-    queryClient.setQueryData(['/api/auth/me'], user);
-    return user;
   };
 
-  const register = async (userData: any) => {
-    const user = await auth.signUp({
-      email: userData.email,
-      password: userData.password,
-      userData,
-    });
-    if (user.message) {
-      throw new Error(user.message);
+  // Mock register function
+  const register = async (userData: any): Promise<User> => {
+    setIsLoading(true);
+    try {
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Always succeed with mock user in demo mode
+      setUser(MOCK_USER);
+      queryClient.setQueryData(['/api/auth/me'], MOCK_USER);
+      return MOCK_USER;
+    } finally {
+      setIsLoading(false);
     }
-    return user;
   };
 
-  const logout = async () => {
-    await auth.signOut();
-    queryClient.setQueryData(['/api/auth/me'], null);
+  // Mock logout function
+  const logout = async (): Promise<void> => {
+    setIsLoading(true);
+    try {
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 300));
+      setUser(null);
+      queryClient.setQueryData(['/api/auth/me'], null);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const value = {
-    user: user as User | null,
+    user,
     isLoading,
     isAuthenticated: !!user,
     login,

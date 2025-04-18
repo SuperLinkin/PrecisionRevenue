@@ -40,14 +40,14 @@ export function NavBar() {
                   key={link.href} 
                   href={link.href}
                 >
-                  <a className={`${
+                  <span className={`${
                     isActive(link.href)
                       ? 'border-b-2 border-secondary text-white'
                       : 'border-transparent hover:border-white border-b-2 text-white'
-                    } px-1 pt-1 font-medium`}
+                    } px-1 pt-1 font-medium cursor-pointer`}
                   >
                     {link.label}
-                  </a>
+                  </span>
                 </Link>
               ))}
             </div>
@@ -100,14 +100,14 @@ export function NavBar() {
                       href={link.href}
                       onClick={() => setIsMenuOpen(false)}
                     >
-                      <a className={`${
+                      <span className={`${
                         isActive(link.href)
                           ? 'bg-primary-700 text-white'
                           : 'text-white hover:bg-primary-700'
-                        } px-3 py-2 rounded-md text-base font-medium`}
+                        } px-3 py-2 rounded-md text-base font-medium block cursor-pointer`}
                       >
                         {link.label}
-                      </a>
+                      </span>
                     </Link>
                   ))}
                   
@@ -115,11 +115,11 @@ export function NavBar() {
                     {isAuthenticated ? (
                       <>
                         <Link href="/dashboard" onClick={() => setIsMenuOpen(false)}>
-                          <a className="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-700">
+                          <span className="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-700 cursor-pointer">
                             Dashboard
-                          </a>
+                          </span>
                         </Link>
-                        <a 
+                        <span 
                           onClick={() => {
                             logout();
                             setIsMenuOpen(false);
@@ -127,19 +127,19 @@ export function NavBar() {
                           className="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-700 cursor-pointer"
                         >
                           Logout
-                        </a>
+                        </span>
                       </>
                     ) : (
                       <>
                         <Link href="/login" onClick={() => setIsMenuOpen(false)}>
-                          <a className="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-700">
+                          <span className="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-700 cursor-pointer">
                             Login
-                          </a>
+                          </span>
                         </Link>
                         <Link href="/signup" onClick={() => setIsMenuOpen(false)}>
-                          <a className="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-700">
+                          <span className="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-primary-700 cursor-pointer">
                             Sign Up
-                          </a>
+                          </span>
                         </Link>
                       </>
                     )}
