@@ -8,8 +8,13 @@ import Login from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
 import Contracts from "@/pages/contracts";
 import Revenue from "@/pages/revenue";
-import Reports from "@/pages/reports";
 import Settings from "@/pages/settings";
+import ClausPage from "@/pages/claus";
+import MocaPage from "@/pages/moca";
+import DisclosurePage from "@/pages/disclosure";
+import AnalyticsPage from "@/pages/analytics";
+import DealDeskPage from "@/pages/deal-desk";
+import CompanyPage from "@/pages/company";
 import { useAuth } from "@/lib/auth";
 import { Suspense, lazy, useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
@@ -49,8 +54,23 @@ function App() {
             <Route path="/revenue">
               {(params) => <ProtectedRoute component={Revenue} />}
             </Route>
-            <Route path="/reports">
-              {(params) => <ProtectedRoute component={Reports} />}
+            <Route path="/claus">
+              {(params) => <ProtectedRoute component={ClausPage} />}
+            </Route>
+            <Route path="/moca">
+              {(params) => <ProtectedRoute component={MocaPage} />}
+            </Route>
+            <Route path="/disclosure">
+              {(params) => <ProtectedRoute component={DisclosurePage} />}
+            </Route>
+            <Route path="/analytics">
+              {(params) => <ProtectedRoute component={AnalyticsPage} />}
+            </Route>
+            <Route path="/deal-desk">
+              {(params) => <ProtectedRoute component={DealDeskPage} />}
+            </Route>
+            <Route path="/company">
+              {(params) => <ProtectedRoute component={CompanyPage} />}
             </Route>
             <Route path="/settings">
               {(params) => <ProtectedRoute component={Settings} />}

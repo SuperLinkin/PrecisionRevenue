@@ -1,12 +1,17 @@
 import { Link, useLocation } from 'wouter';
 import { useAuth } from '@/lib/auth';
 import { 
-  HomeIcon, 
-  FileTextIcon, 
-  DollarSignIcon, 
-  BarChart2Icon, 
-  SettingsIcon, 
-  LogOutIcon
+  Home as HomeIcon, 
+  FileText as FileTextIcon, 
+  DollarSign as DollarSignIcon, 
+  BarChart2 as BarChart2Icon, 
+  Settings as SettingsIcon, 
+  LogOut as LogOutIcon,
+  Scale as ScaleIcon,
+  TrendingUp as TrendingUpIcon,
+  Clipboard as ClipboardIcon,
+  Briefcase as BriefcaseIcon,
+  Building as BuildingIcon
 } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { getInitials } from '@/lib/utils';
@@ -19,7 +24,7 @@ export function Sidebar() {
   const menuItems = [
     { 
       path: '/dashboard', 
-      label: 'Dashboard', 
+      label: 'CFO Dashboard', 
       icon: <HomeIcon className="mr-3 h-6 w-6" />
     },
     { 
@@ -33,9 +38,34 @@ export function Sidebar() {
       icon: <DollarSignIcon className="mr-3 h-6 w-6" />
     },
     { 
-      path: '/reports', 
-      label: 'Reports', 
+      path: '/claus', 
+      label: 'CLAUS', 
+      icon: <ScaleIcon className="mr-3 h-6 w-6" />
+    },
+    { 
+      path: '/moca', 
+      label: 'MOCA', 
+      icon: <TrendingUpIcon className="mr-3 h-6 w-6" />
+    },
+    { 
+      path: '/disclosure', 
+      label: 'Disclosure Generator', 
+      icon: <ClipboardIcon className="mr-3 h-6 w-6" />
+    },
+    { 
+      path: '/analytics', 
+      label: 'Revenue Analytics', 
       icon: <BarChart2Icon className="mr-3 h-6 w-6" />
+    },
+    { 
+      path: '/deal-desk', 
+      label: 'Deal Desk', 
+      icon: <BriefcaseIcon className="mr-3 h-6 w-6" />
+    },
+    { 
+      path: '/company', 
+      label: 'Company Settings', 
+      icon: <BuildingIcon className="mr-3 h-6 w-6" />
     },
     { 
       path: '/settings', 
