@@ -210,17 +210,39 @@ const renderAuditSummary = (summary: string, financingComponent: boolean) => {
 // Function to check if content contains JSON and try to parse REMY analysis
 const tryParseREMYAnalysis = (content: string): REMYAnalysisResult | null => {
   try {
-    // Look for what might be a JSON structure in the text
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      const jsonStr = jsonMatch[0];
-      const data = JSON.parse(jsonStr);
-      
-      // Verify this has the expected REMY fields
+    // First check if the whole content is JSON
+    try {
+      const data = JSON.parse(content);
       if (data.performanceObligations || data.revenueRecognitionSchedule) {
         return data as REMYAnalysisResult;
       }
+    } catch (wholeJsonError) {
+      // Not a full JSON object, try to extract JSON from text
     }
+    
+    // Look for what might be a JSON structure embedded in the text
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      const jsonStr = jsonMatch[0];
+      try {
+        const data = JSON.parse(jsonStr);
+        
+        // Verify this has the expected REMY fields
+        if (data.performanceObligations || data.revenueRecognitionSchedule) {
+          return data as REMYAnalysisResult;
+        }
+      } catch (embeddedJsonError) {
+        console.error("Failed to parse embedded JSON:", embeddedJsonError);
+      }
+    }
+    
+    // Check for fallback indicators
+    if (content.toLowerCase().includes("would you like me to")) {
+      console.warn("Detected incomplete contract analysis request");
+      // We'll handle this in the UI
+      return null;
+    }
+    
     return null;
   } catch (err) {
     console.error("Failed to parse REMY analysis:", err);
@@ -617,13 +639,32 @@ export default function Revenue() {
           // Remove the typing indicator and add the AI response
           // Try to parse any structured REMY data from the response
           let structuredData = null;
+          let displayAnswer = result.answer;
+          
           try {
             if (result.structuredData) {
               // If the server already separated the structured data
               structuredData = result.structuredData;
+              console.log("Using server-provided structured data:", structuredData);
             } else {
               // Try to extract structured data from the answer text
               structuredData = tryParseREMYAnalysis(result.answer);
+              
+              if (structuredData) {
+                console.log("Successfully extracted structured data from response text");
+              }
+            }
+            
+            // Handle fallback for "Would you like me to..." responses
+            if (!structuredData && displayAnswer.toLowerCase().includes("would you like me to")) {
+              displayAnswer = "REMY detected incomplete contract details. Please re-upload a full SaaS contract.";
+              
+              // Show an error toast to provide more context
+              toast({
+                title: "Insufficient Contract Information",
+                description: "The contract details appear to be incomplete. Please upload a more complete contract document for proper IFRS 15/ASC 606 analysis.",
+                variant: "destructive"
+              });
             }
           } catch (err) {
             console.error("Error parsing structured data:", err);
@@ -634,7 +675,7 @@ export default function Revenue() {
             {
               id: Date.now().toString(),
               role: 'assistant',
-              content: result.answer,
+              content: displayAnswer,
               timestamp: new Date(),
               structuredData: structuredData
             }

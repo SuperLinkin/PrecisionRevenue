@@ -179,11 +179,30 @@ router.post('/ask', async (req, res) => {
     try {
       // Use actual AI to answer the question with our contract text
       console.log("DEBUG - Calling answerContractQuestion...");
-      const answer = await answerContractQuestion(contractText, question);
-      console.log("DEBUG - Got answer from OpenAI, length:", answer?.length || 0);
+      const response = await answerContractQuestion(contractText, question);
       
-      // Return the AI response
-      res.json({ answer });
+      // Log response details
+      if (typeof response === 'string') {
+        console.log("DEBUG - Got string answer from OpenAI, length:", response.length || 0);
+        res.json({ answer: response });
+      } else if (response && typeof response === 'object') {
+        console.log("DEBUG - Got structured answer from OpenAI");
+        console.log("DEBUG - Text response length:", (response.answer && typeof response.answer === 'string') ? response.answer.length : 0);
+        console.log("DEBUG - Has structured data:", !!response.structuredData);
+        
+        // Return both the text answer and structured data if available
+        res.json({
+          answer: response.answer,
+          structuredData: response.structuredData
+        });
+      } else {
+        // Handle unexpected response format
+        console.error("DEBUG - Unexpected response format:", response);
+        res.json({
+          answer: "I'm sorry, I encountered an error while processing your contract. Please try again or upload a different contract document.",
+          structuredData: null
+        });
+      }
     } catch (aiError) {
       console.error("DEBUG - OpenAI API error:", aiError);
       throw aiError;

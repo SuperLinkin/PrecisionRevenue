@@ -102,15 +102,75 @@ ${text}`;
  * Answers questions about a contract using GPT-4o
  * @param contractText The contract text content
  * @param question The user's question about the contract
- * @returns The AI-generated answer based on the contract
+ * @returns The AI-generated answer and structured data if available
  */
 export async function answerContractQuestion(contractText: string, question: string) {
   try {
     console.log("DEBUG OPENAI - Starting answerContractQuestion with OpenAI");
     console.log("DEBUG OPENAI - API Key:", process.env.OPENAI_API_KEY ? "Key exists" : "Key missing");
     
+    // Check for revenue recognition related words in the question
+    const isRevenueQuestion = /revenue|recognition|ifrs|asc 606|performance obligation|transaction price|allocation/i.test(question);
+    
+    // Handle specifically if user is asking for a revenue recognition schedule
+    const isScheduleRequest = /schedule|generate schedule|revenue schedule|recognition schedule/i.test(question);
+    
     // Always enhance the question to be IFRS 15/ASC 606 focused
     const enhancedQuestion = `${question} - Please analyze according to IFRS 15/ASC 606 standards`;
+    
+    // Determine if we should request JSON structured response
+    const useStructuredResponse = isRevenueQuestion || isScheduleRequest;
+    
+    let systemPrompt = "";
+    
+    if (useStructuredResponse) {
+      systemPrompt = `You are REMY, a highly specialized revenue recognition AI assistant fully trained on IFRS 15/ASC 606 standards.
+      
+For this request, you must return a valid JSON object with the following structure:
+
+{
+  "textResponse": "Your natural language explanation here...",
+  "structuredData": {
+    "contractName": "Name of the contract",
+    "contractValue": 50000,
+    "contractTermMonths": 12,
+    "performanceObligations": [
+      {
+        "name": "Software License",
+        "isDistinct": true,
+        "deliveryTiming": "point",
+        "suggestedSSP": 30000
+      },
+      {
+        "name": "Implementation Services",
+        "isDistinct": true,
+        "deliveryTiming": "point",
+        "suggestedSSP": 10000
+      },
+      {
+        "name": "Support Services",
+        "isDistinct": true,
+        "deliveryTiming": "over-time",
+        "suggestedSSP": 10000
+      }
+    ],
+    "revenueRecognitionSchedule": [
+      { "month": "2023-01", "amount": 4166.67 },
+      { "month": "2023-02", "amount": 4166.67 }
+    ],
+    "terminationClauseImpact": {
+      "refundObligation": false,
+      "terminationRisk": "Low risk, no significant refund obligations"
+    },
+    "financingComponent": false,
+    "auditSummary": "The contract complies with IFRS 15/ASC 606 requirements..."
+  }
+}
+
+For the structuredData, only include fields that you can confidently extract from the contract information. If you cannot determine some fields with confidence, omit them from the JSON.`;
+    } else {
+      systemPrompt = "You are REMY, a highly specialized revenue recognition AI assistant fully trained on IFRS 15/ASC 606 standards. Always structure your answers with specific references to IFRS 15/ASC 606 sections and provide detailed technical analysis.";
+    }
     
     const prompt = `
       You are REMY, a specialized AI assistant for Revenue Management at Precision Revenue Automation.
@@ -132,6 +192,8 @@ export async function answerContractQuestion(contractText: string, question: str
       Analyze the following contract text and answer the user's question using ONLY the provided contract.
       Your answers must be specific, detailed, technically precise, and ALWAYS conform to IFRS 15/ASC 606 standards.
       
+      ${useStructuredResponse ? "IMPORTANT: The response MUST be a valid JSON object with the structure specified in the system message." : ""}
+      
       Contract text:
       ${contractText}
       
@@ -144,10 +206,11 @@ export async function answerContractQuestion(contractText: string, question: str
       messages: [
         { 
           role: "system", 
-          content: "You are REMY, a highly specialized revenue recognition AI assistant fully trained on IFRS 15/ASC 606 standards. Always structure your answers with specific references to IFRS 15/ASC 606 sections and provide detailed technical analysis." 
+          content: systemPrompt
         },
         { role: "user", content: prompt }
       ],
+      response_format: useStructuredResponse ? { type: "json_object" } : undefined,
       temperature: 0.1, // Lower temperature for more deterministic, precise answers
       max_tokens: 3000, // Increase token limit for more detailed responses
     });
@@ -155,12 +218,56 @@ export async function answerContractQuestion(contractText: string, question: str
     console.log("DEBUG OPENAI - Received response from OpenAI API");
     console.log("DEBUG OPENAI - Response status:", response.id ? "Success" : "Failed");
     
-    const content = response.choices[0].message.content;
-    console.log("DEBUG OPENAI - Content length:", content?.length || 0);
+    const content = response.choices[0].message.content || "";
+    console.log("DEBUG OPENAI - Content length:", content.length);
     
-    return content;
+    // If this was a structured request, try to parse the JSON
+    if (useStructuredResponse) {
+      try {
+        const parsedResponse = JSON.parse(content);
+        
+        // Check if we have a properly structured response
+        if (parsedResponse.textResponse && parsedResponse.structuredData) {
+          console.log("DEBUG OPENAI - Successfully parsed structured response");
+          return {
+            answer: parsedResponse.textResponse,
+            structuredData: parsedResponse.structuredData
+          };
+        } else {
+          console.warn("DEBUG OPENAI - Got JSON response but missing expected fields");
+          return {
+            answer: content,
+            structuredData: null
+          };
+        }
+      } catch (parseError) {
+        console.error("DEBUG OPENAI - Failed to parse JSON response:", parseError);
+        
+        // Check if this includes any typical non-json responses
+        if (content.toLowerCase().includes("would you like me to")) {
+          return {
+            answer: "REMY detected incomplete contract details. Please re-upload a full SaaS contract.",
+            structuredData: null
+          };
+        }
+        
+        return {
+          answer: content,
+          structuredData: null
+        };
+      }
+    }
+    
+    // For non-structured requests, just return the content
+    return {
+      answer: content,
+      structuredData: null
+    };
   } catch (error) {
     console.error("DEBUG OPENAI - Error in OpenAI API call:", error);
-    return "I'm sorry, I encountered an error while analyzing this contract. Please try again or rephrase your question.";
+    return {
+      answer: "I'm sorry, I encountered an error while analyzing this contract. Please try again or rephrase your question.",
+      structuredData: null
+    };
   }
 }
