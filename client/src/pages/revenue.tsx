@@ -51,6 +51,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
+import { RevenueCalculator } from '@/components/revenue-recognition/RevenueCalculator';
 
 const FormSchema = z.object({
   contractId: z.string().min(1, {
@@ -824,6 +825,17 @@ export default function Revenue() {
                       </CardContent>
                     </Card>
                   </div>
+                  
+                  {/* IFRS 15/ASC 606 Revenue Recognition */}
+                  {selectedContract && (
+                    <div className="mb-6">
+                      <RevenueCalculator 
+                        contractId={parseInt(selectedContractId as string)} 
+                        contractName={selectedContract.name}
+                        totalValue={selectedContract.value}
+                      />
+                    </div>
+                  )}
                   
                   {/* Revenue Records Table */}
                   <Card>

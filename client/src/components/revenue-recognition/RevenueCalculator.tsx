@@ -445,7 +445,7 @@ export function RevenueCalculator({ contractId, contractName, totalValue }: Reve
                               strokeWidth={0}
                               radius={4}
                               barSize={20}
-                              opacity={(data) => data.isProjected ? 0.5 : 1}
+                              opacity={0.8}
                             />
                           </BarChart>
                         </ResponsiveContainer>
