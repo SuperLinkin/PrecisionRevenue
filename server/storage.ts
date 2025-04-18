@@ -9,6 +9,7 @@ import {
 } from "@shared/schema";
 import { db } from './db';
 import { eq } from 'drizzle-orm';
+import { DatabaseStorage } from './db-storage';
 
 // Interface for all storage operations
 export interface IStorage {
@@ -299,4 +300,5 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Use DatabaseStorage for Supabase persistence instead of MemStorage
+export const storage = new DatabaseStorage();
