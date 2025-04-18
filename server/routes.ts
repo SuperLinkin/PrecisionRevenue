@@ -13,6 +13,9 @@ import bcrypt from "bcryptjs";
 import session from "express-session";
 import MemoryStore from "memorystore";
 
+// Emergency fix for contract API
+import contractApiRouter from './contract-api';
+
 const SessionStore = MemoryStore(session);
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -374,7 +377,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // AI Contract Analysis Routes
+  // AI Contract Analysis Routes - Use emergency fix for MVP demo
+  app.use('/api/contracts', contractApiRouter);
+  
+  // Original implementation (disabled for demo)
+  /*
   app.post("/api/contracts/extract", authenticate, async (req, res) => {
     try {
       const { text, fileName } = req.body;
@@ -561,5 +568,10 @@ Date: ${new Date().toISOString().split('T')[0]}
 
   const httpServer = createServer(app);
 
+  */
+
+  // Add this closing tag for the commented out API section
+  
+  const httpServer = createServer(app);
   return httpServer;
 }
