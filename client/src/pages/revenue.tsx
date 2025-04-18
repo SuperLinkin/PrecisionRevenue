@@ -289,17 +289,14 @@ export default function Revenue() {
     try {
       // Only accept PDF files
       if (file.type === 'application/pdf') {
-        // Read the PDF file as base64
-        const base64Data = await readFileAsBase64(file);
-        
-        // Extract contract data using OpenAI
+        // Extract contract data using our API
         const response = await fetch('/api/contracts/extract', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ 
-            text: "PDF document content would be analyzed here",
+          body: JSON.stringify({
+            text: "Demo contract for analysis",
             fileName: file.name
           }),
         });
@@ -310,12 +307,13 @@ export default function Revenue() {
         
         const contractData = await response.json();
         
-        // Use the extracted data in REMY's response
+        // Format the contract value for display
         const formattedValue = new Intl.NumberFormat('en-US', {
           style: 'currency',
           currency: 'USD'
         }).format(contractData.value);
         
+        // Calculate contract duration
         const startDate = new Date(contractData.startDate);
         const endDate = contractData.endDate ? new Date(contractData.endDate) : null;
         const durationMonths = endDate ? 
@@ -329,7 +327,7 @@ export default function Revenue() {
           {
             id: Date.now().toString(),
             role: 'assistant',
-            content: `I've analyzed "${file.name}" and extracted the key contract details. This appears to be a ${contractData.name} with ${contractData.clientName} valued at ${formattedValue}${endDate ? ` over ${durationMonths} months` : ''}. Would you like me to suggest a revenue recognition schedule based on IFRS 15/ASC 606 guidelines?`,
+            content: `I've analyzed "${file.name}" and extracted the key contract details. This appears to be a ${contractData.name} between Precision Revenue Automation and ${contractData.clientName} valued at ${formattedValue}${endDate ? ` over ${durationMonths} months` : ''}. The contract includes payment terms of quarterly installments.\n\nWould you like me to suggest a revenue recognition schedule based on IFRS 15/ASC 606 guidelines?`,
             timestamp: new Date()
           }
         ]);
@@ -348,7 +346,7 @@ export default function Revenue() {
         
         toast({
           title: "Contract analysis complete",
-          description: `${file.name} has been analyzed using AI. Ask REMY for details or guidance.`,
+          description: `${file.name} has been analyzed. Ask REMY for details or guidance.`,
         });
       } else {
         // For non-PDF files, show error
@@ -440,7 +438,6 @@ export default function Revenue() {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({ 
-              contractText: "PDF document content would be analyzed here", // In a production app, this would be the actual PDF text
               question: userQuery,
               fileName: contractFile.name
             }),

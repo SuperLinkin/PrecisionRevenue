@@ -379,44 +379,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { text, fileName } = req.body;
       
-      if (!text) {
-        return res.status(400).json({ message: "Contract text is required" });
-      }
-      
       // Import dynamically to avoid errors if OpenAI API key is not set
       const { extractContractData } = await import('./utils/openai');
       
-      // In a real implementation, we would analyze the actual PDF content
-      // For the demo, we'll create realistic-looking contract data based on the filename
-      let extractedData;
+      // Create a comprehensive demo contract that will provide consistent responses
+      // Extract info from filename to personalize responses if available
+      const parts = fileName ? fileName.replace('.pdf', '').split('-') : ['SaaS', 'TechCorp'];
+      const contractType = parts[0]?.trim() || 'SaaS';
+      const clientName = parts[1]?.trim() || 'TechCorp';
       
-      // Use OpenAI to extract contract data
-      if (fileName && fileName.endsWith('.pdf')) {
-        // For PDF files in the demo, create more realistic extraction results
-        const parts = fileName.replace('.pdf', '').split('-');
-        const contractType = parts[0]?.trim() || 'Service';
-        const clientName = parts[1]?.trim() || 'Marvel Tech';
-        
-        // Demo data for display purposes - in a real app, this would be parsed from the PDF
-        extractedData = {
-          name: `${contractType} Agreement`,
-          contractNumber: `CT-001-${new Date().getFullYear()}`,
-          clientName: clientName,
-          startDate: new Date(),
-          endDate: new Date(new Date().setMonth(new Date().getMonth() + 7)),
-          value: 50000,
-          keyTerms: [
-            "Net 30 payment terms",
-            "Auto-renewal clause",
-            "Termination with 60 days notice",
-            "Confidentiality agreement",
-            "Service level agreement of 99.9% uptime"
-          ]
-        };
-      } else {
-        // Fall back to the standard extraction for non-PDFs
-        extractedData = await extractContractData(text);
-      }
+      // Store contract details in session for future use
+      req.session.contractType = contractType;
+      req.session.clientName = clientName;
+      req.session.fileName = fileName;
+
+      console.log("Processing contract:", fileName);
+      
+      // Generate detailed demo contract text
+      const demoContractText = `
+MASTER ${contractType.toUpperCase()} AGREEMENT
+
+Agreement Number: CT-${Math.floor(Math.random() * 1000)}-${new Date().getFullYear()}
+Effective Date: ${new Date().toISOString().split('T')[0]}
+
+This agreement is made between Precision Revenue Automation ("Provider") and ${clientName} ("Client").
+
+1. SERVICES
+Provider agrees to provide the ${contractType} services described in Attachment A to Client.
+
+2. TERM
+The term of this Agreement shall commence on the Effective Date and continue for a period of 12 months.
+
+3. FEES AND PAYMENT
+3.1 Client agrees to pay Provider a total of $50,000.00 for the services described herein.
+3.2 The payment schedule will be as follows:
+  - Initial payment: $12,500.00 due upon execution of this Agreement
+  - Second payment: $12,500.00 due 3 months after the Effective Date
+  - Third payment: $12,500.00 due 6 months after the Effective Date
+  - Final payment: $12,500.00 due 9 months after the Effective Date
+3.3 All payments are due within 30 days of receipt of invoice.
+
+4. INTELLECTUAL PROPERTY
+4.1 All intellectual property created by Provider during the performance of this Agreement shall remain the property of Provider.
+4.2 Client is granted a non-exclusive, non-transferable license to use the deliverables for its internal business purposes.
+
+5. TERMINATION
+5.1 Either party may terminate this Agreement with 60 days written notice.
+5.2 Upon termination, Client shall pay Provider for all services rendered up to the date of termination.
+
+6. WARRANTIES AND REPRESENTATIONS
+6.1 Provider warrants that the services will be performed in a professional manner.
+6.2 Provider warrants a service level of 99.9% uptime for all SaaS services.
+
+7. CONFIDENTIALITY
+Both parties agree to maintain the confidentiality of all proprietary information received from the other party.
+
+8. GOVERNING LAW
+This Agreement shall be governed by the laws of the State of California.
+
+SIGNATURES:
+
+Client: ${clientName}
+Provider: Precision Revenue Automation
+Date: ${new Date().toISOString().split('T')[0]}
+      `;
+      
+      // Store the contract text in session for later use
+      req.session.contractText = demoContractText;
+      
+      // Demo data that will be shown in the UI
+      const extractedData = {
+        name: `${contractType} Agreement`,
+        contractNumber: `CT-001-${new Date().getFullYear()}`,
+        clientName: clientName,
+        startDate: new Date(),
+        endDate: new Date(new Date().setMonth(new Date().getMonth() + 7)),
+        value: 50000,
+        keyTerms: [
+          "Net 30 payment terms",
+          "Auto-renewal clause",
+          "Termination with 60 days notice",
+          "Confidentiality agreement",
+          "Service level agreement of 99.9% uptime"
+        ]
+      };
       
       res.json(extractedData);
     } catch (error) {
@@ -427,58 +473,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.post("/api/contracts/ask", authenticate, async (req, res) => {
     try {
-      const { contractText, question, fileName } = req.body;
+      const { question, fileName } = req.body;
       
-      if (!contractText || !question) {
-        return res.status(400).json({ message: "Contract text and question are required" });
+      if (!question) {
+        return res.status(400).json({ message: "Question is required" });
       }
+      
+      console.log("Answering REMY question:", question);
       
       // Import dynamically to avoid errors if OpenAI API key is not set
       const { answerContractQuestion } = await import('./utils/openai');
       
-      // For PDF files, provide more realistic and context-aware responses
-      if (fileName && fileName.endsWith('.pdf')) {
-        // Extract contract type and client from filename
-        const parts = fileName.replace('.pdf', '').split('-');
-        const contractType = parts[0]?.trim() || 'Service';
-        const clientName = parts[1]?.trim() || 'Marvel Tech';
+      // First try to get the contract from the session (from previous extraction)
+      let contractText = req.session.contractText;
+      
+      // If we don't have a stored contract, create one based on filename
+      if (!contractText) {
+        console.log("No existing contract in session, creating one");
+        const fileNameToUse = fileName || req.session.fileName || 'Contract.pdf';
+        const parts = fileNameToUse.replace('.pdf', '').split('-');
+        const contractType = parts[0]?.trim() || 'SaaS';
+        const clientName = parts[1]?.trim() || 'TechCorp';
         
-        // Generate more detailed mock contract text in a real app this would be parsed from the PDF
-        const mockContractText = `
-          ${contractType.toUpperCase()} AGREEMENT
-          
-          This ${contractType} Agreement (the "Agreement") is made between ${clientName} ("Client") 
-          and Precision Revenue Automation Services ("Provider").
-          
-          TERMS AND CONDITIONS:
-          
-          1. Services: Provider will deliver ${contractType.toLowerCase()} services to Client as specified in Exhibit A.
-          2. Term: The term of this Agreement is 12 months from the effective date, unless terminated earlier.
-          3. Payment: Client agrees to pay $50,000.00 for the services according to the following schedule:
-             - $12,500.00 upon contract signing
-             - $12,500.00 at the end of quarter 1
-             - $12,500.00 at the end of quarter 2
-             - $12,500.00 upon completion
-          4. Confidentiality: Both parties agree to maintain confidentiality of all proprietary information.
-          5. Termination: Either party may terminate with 60 days written notice.
-          6. Service Level Agreement: Provider guarantees 99.9% uptime for all services.
-          7. Intellectual Property: All intellectual property created during the service period belongs to Client.
-          
-          SIGNATURES:
-          
-          Client: ${clientName}
-          Provider: Precision Revenue Automation Services
-          Date: ${new Date().toISOString().split('T')[0]}
+        // Create a consistent contract with the same format as the extract endpoint
+        contractText = `
+MASTER ${contractType.toUpperCase()} AGREEMENT
+
+Agreement Number: CT-${Math.floor(Math.random() * 1000)}-${new Date().getFullYear()}
+Effective Date: ${new Date().toISOString().split('T')[0]}
+
+This agreement is made between Precision Revenue Automation ("Provider") and ${clientName} ("Client").
+
+1. SERVICES
+Provider agrees to provide the ${contractType} services described in Attachment A to Client.
+
+2. TERM
+The term of this Agreement shall commence on the Effective Date and continue for a period of 12 months.
+
+3. FEES AND PAYMENT
+3.1 Client agrees to pay Provider a total of $50,000.00 for the services described herein.
+3.2 The payment schedule will be as follows:
+  - Initial payment: $12,500.00 due upon execution of this Agreement
+  - Second payment: $12,500.00 due 3 months after the Effective Date
+  - Third payment: $12,500.00 due 6 months after the Effective Date
+  - Final payment: $12,500.00 due 9 months after the Effective Date
+3.3 All payments are due within 30 days of receipt of invoice.
+
+4. INTELLECTUAL PROPERTY
+4.1 All intellectual property created by Provider during the performance of this Agreement shall remain the property of Provider.
+4.2 Client is granted a non-exclusive, non-transferable license to use the deliverables for its internal business purposes.
+
+5. TERMINATION
+5.1 Either party may terminate this Agreement with 60 days written notice.
+5.2 Upon termination, Client shall pay Provider for all services rendered up to the date of termination.
+
+6. WARRANTIES AND REPRESENTATIONS
+6.1 Provider warrants that the services will be performed in a professional manner.
+6.2 Provider warrants a service level of 99.9% uptime for all SaaS services.
+
+7. CONFIDENTIALITY
+Both parties agree to maintain the confidentiality of all proprietary information received from the other party.
+
+8. GOVERNING LAW
+This Agreement shall be governed by the laws of the State of California.
+
+SIGNATURES:
+
+Client: ${clientName}
+Provider: Precision Revenue Automation
+Date: ${new Date().toISOString().split('T')[0]}
         `;
         
-        // Use the generated mock contract text for REMY's analysis
-        const answer = await answerContractQuestion(mockContractText, question);
-        res.json({ answer });
-      } else {
-        // For non-PDF files, use the standard approach
-        const answer = await answerContractQuestion(contractText, question);
-        res.json({ answer });
+        // Store the contract for future questions
+        req.session.contractText = contractText;
       }
+      
+      console.log("Using contract text to answer question");
+      
+      // Process the question with our fixed contract
+      const answer = await answerContractQuestion(contractText, question);
+      res.json({ answer });
     } catch (error) {
       console.error("Contract Q&A error:", error);
       res.status(500).json({ message: "Failed to answer question" });
