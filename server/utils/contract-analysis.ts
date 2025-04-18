@@ -4,6 +4,39 @@ import { Contract } from '@shared/schema';
 // The newest OpenAI model is "gpt-4o" which was released May 13, 2024
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+// Function to check if OpenAI API is available
+export async function checkOpenAIAvailability(): Promise<{
+  available: boolean;
+  message?: string;
+}> {
+  if (!process.env.OPENAI_API_KEY) {
+    return {
+      available: false,
+      message: 'OpenAI API key is not configured'
+    };
+  }
+
+  try {
+    // Make a lightweight API call to verify the key works
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [{ role: "user", content: "Test connection" }],
+      max_tokens: 5
+    });
+    
+    return {
+      available: true,
+      message: 'OpenAI API is available'
+    };
+  } catch (error: any) {
+    console.error('OpenAI API check failed:', error.message);
+    return {
+      available: false,
+      message: error.message || 'Unknown error accessing OpenAI API'
+    };
+  }
+}
+
 interface ContractRisk {
   category: string;
   severity: 'low' | 'medium' | 'high' | 'critical';

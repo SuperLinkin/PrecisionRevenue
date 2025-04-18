@@ -8,7 +8,8 @@ import {
   analyzeRevenueRecognition,
   extractContractEntities,
   analyzeContractObligations,
-  compareToStandardContract
+  compareToStandardContract,
+  checkOpenAIAvailability
 } from '../utils/contract-analysis';
 
 const router = Router();
@@ -284,11 +285,11 @@ router.post('/obligations', async (req: Request, res: Response) => {
       contractName: contract.name,
       obligations
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error analyzing contract obligations:', error);
     res.status(500).json({ 
       error: 'An error occurred during obligation analysis',
-      message: error.message
+      message: error.message || 'Unknown error'
     });
   }
 });
@@ -359,11 +360,11 @@ router.post('/compare', async (req: Request, res: Response) => {
       templateType,
       comparison
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error comparing contract to standard:', error);
     res.status(500).json({ 
       error: 'An error occurred during contract comparison',
-      message: error.message
+      message: error.message || 'Unknown error'
     });
   }
 });
