@@ -409,31 +409,40 @@ export default function Contracts() {
                                 render={({ field }) => (
                                   <FormItem className="flex flex-col">
                                     <FormLabel>Start Date</FormLabel>
-                                    <Popover>
-                                      <PopoverTrigger asChild>
-                                        <FormControl>
-                                          <Button
-                                            variant={"outline"}
-                                            className={`w-full pl-3 text-left font-normal ${!field.value ? "text-muted-foreground" : ""}`}
-                                          >
-                                            {field.value ? (
-                                              format(new Date(field.value), "PPP")
-                                            ) : (
-                                              <span>Pick a date</span>
-                                            )}
-                                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                          </Button>
-                                        </FormControl>
-                                      </PopoverTrigger>
-                                      <PopoverContent className="w-auto p-0" align="start">
-                                        <Calendar
-                                          mode="single"
-                                          selected={field.value instanceof Date ? field.value : undefined}
-                                          onSelect={field.onChange}
-                                          initialFocus
+                                    <div className="flex space-x-2">
+                                      <FormControl>
+                                        <Input 
+                                          placeholder="Enter start date" 
+                                          value={field.value ? format(new Date(field.value), "yyyy-MM-dd") : ""} 
+                                          onChange={(e) => {
+                                            try {
+                                              // Attempt to parse the date from input
+                                              const dateValue = e.target.value ? new Date(e.target.value) : null;
+                                              field.onChange(dateValue);
+                                            } catch (err) {
+                                              // If parsing fails, don't update the value
+                                              console.error("Date parsing error:", err);
+                                            }
+                                          }}
+                                          type="date"
                                         />
-                                      </PopoverContent>
-                                    </Popover>
+                                      </FormControl>
+                                      <Popover>
+                                        <PopoverTrigger asChild>
+                                          <Button variant="outline" type="button" size="icon">
+                                            <CalendarIcon className="h-4 w-4" />
+                                          </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                          <Calendar
+                                            mode="single"
+                                            selected={field.value instanceof Date ? field.value : undefined}
+                                            onSelect={field.onChange}
+                                            initialFocus
+                                          />
+                                        </PopoverContent>
+                                      </Popover>
+                                    </div>
                                     <FormMessage />
                                   </FormItem>
                                 )}
@@ -444,31 +453,40 @@ export default function Contracts() {
                                 render={({ field }) => (
                                   <FormItem className="flex flex-col">
                                     <FormLabel>End Date (Optional)</FormLabel>
-                                    <Popover>
-                                      <PopoverTrigger asChild>
-                                        <FormControl>
-                                          <Button
-                                            variant={"outline"}
-                                            className={`w-full pl-3 text-left font-normal ${!field.value ? "text-muted-foreground" : ""}`}
-                                          >
-                                            {field.value ? (
-                                              format(new Date(field.value), "PPP")
-                                            ) : (
-                                              <span>Pick a date</span>
-                                            )}
-                                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                          </Button>
-                                        </FormControl>
-                                      </PopoverTrigger>
-                                      <PopoverContent className="w-auto p-0" align="start">
-                                        <Calendar
-                                          mode="single"
-                                          selected={field.value instanceof Date ? field.value : undefined}
-                                          onSelect={field.onChange}
-                                          initialFocus
+                                    <div className="flex space-x-2">
+                                      <FormControl>
+                                        <Input 
+                                          placeholder="Enter end date" 
+                                          value={field.value ? format(new Date(field.value), "yyyy-MM-dd") : ""} 
+                                          onChange={(e) => {
+                                            try {
+                                              // Attempt to parse the date from input
+                                              const dateValue = e.target.value ? new Date(e.target.value) : null;
+                                              field.onChange(dateValue);
+                                            } catch (err) {
+                                              // If parsing fails, don't update the value
+                                              console.error("Date parsing error:", err);
+                                            }
+                                          }}
+                                          type="date"
                                         />
-                                      </PopoverContent>
-                                    </Popover>
+                                      </FormControl>
+                                      <Popover>
+                                        <PopoverTrigger asChild>
+                                          <Button variant="outline" type="button" size="icon">
+                                            <CalendarIcon className="h-4 w-4" />
+                                          </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                          <Calendar
+                                            mode="single"
+                                            selected={field.value instanceof Date ? field.value : undefined}
+                                            onSelect={field.onChange}
+                                            initialFocus
+                                          />
+                                        </PopoverContent>
+                                      </Popover>
+                                    </div>
                                     <FormMessage />
                                   </FormItem>
                                 )}
