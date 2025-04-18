@@ -202,6 +202,22 @@ export default function Revenue() {
       reader.readAsText(file);
     });
   };
+  
+  // Helper function to read a file as Base64-encoded string (better for PDFs and binary formats)
+  const readFileAsBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        // Extract the base64 content without the data URL prefix
+        const base64String = reader.result as string;
+        const contentStart = base64String.indexOf('base64,') + 'base64,'.length;
+        const extractedBase64 = base64String.substring(contentStart);
+        resolve(extractedBase64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
 
   const handleContractFile = async (file: File) => {
     setContractFile(file);
@@ -218,51 +234,72 @@ export default function Revenue() {
     ]);
     
     try {
-      // Read the file content
-      const fileText = await readFileAsText(file);
-      
-      // Extract contract data using OpenAI
-      const response = await fetch('/api/contracts/extract', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text: fileText }),
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to extract contract data');
-      }
-      
-      const contractData = await response.json();
-      
-      // Use the extracted data in REMY's response
-      const formattedValue = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD'
-      }).format(contractData.value);
-      
-      const startDate = new Date(contractData.startDate);
-      const endDate = contractData.endDate ? new Date(contractData.endDate) : null;
-      const durationMonths = endDate ? 
-        Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 30)) : 
-        12;
-      
-      setChatMessages(prev => [
-        // Remove the loading message
-        ...prev.slice(0, -1),
-        {
-          id: Date.now().toString(),
-          role: 'assistant',
-          content: `I've analyzed "${file.name}" and extracted the key contract details. This appears to be a ${contractData.name} with ${contractData.clientName} valued at ${formattedValue}${endDate ? ` over ${durationMonths} months` : ''}. Would you like me to suggest a revenue recognition schedule based on IFRS 15/ASC 606 guidelines?`,
-          timestamp: new Date()
+      // For text files, use text reading
+      if (file.type === 'text/plain') {
+        // Read the file content as text
+        const fileText = await readFileAsText(file);
+        
+        // Extract contract data using OpenAI
+        const response = await fetch('/api/contracts/extract', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ text: fileText }),
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to extract contract data');
         }
-      ]);
-      
-      toast({
-        title: "Contract analysis complete",
-        description: `${file.name} has been analyzed using AI. Ask REMY for details or guidance.`,
-      });
+        
+        const contractData = await response.json();
+        
+        // Use the extracted data in REMY's response
+        const formattedValue = new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD'
+        }).format(contractData.value);
+        
+        const startDate = new Date(contractData.startDate);
+        const endDate = contractData.endDate ? new Date(contractData.endDate) : null;
+        const durationMonths = endDate ? 
+          Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 30)) : 
+          12;
+        
+        setChatMessages(prev => [
+          // Remove the loading message
+          ...prev.slice(0, -1),
+          {
+            id: Date.now().toString(),
+            role: 'assistant',
+            content: `I've analyzed "${file.name}" and extracted the key contract details. This appears to be a ${contractData.name} with ${contractData.clientName} valued at ${formattedValue}${endDate ? ` over ${durationMonths} months` : ''}. Would you like me to suggest a revenue recognition schedule based on IFRS 15/ASC 606 guidelines?`,
+            timestamp: new Date()
+          }
+        ]);
+        
+        toast({
+          title: "Contract analysis complete",
+          description: `${file.name} has been analyzed using AI. Ask REMY for details or guidance.`,
+        });
+      } else {
+        // For other file types, return a message explaining the limitation
+        setChatMessages(prev => [
+          // Remove the loading message
+          ...prev.slice(0, -1),
+          {
+            id: Date.now().toString(),
+            role: 'assistant',
+            content: `I currently only support analyzing text (.txt) files. For ${file.type} files, please manually enter your questions about the contract, and I'll try to provide guidance based on standard IFRS 15/ASC 606 principles.`,
+            timestamp: new Date()
+          }
+        ]);
+        
+        toast({
+          title: "Unsupported file format",
+          description: "Currently only plain text files are supported for AI analysis.",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       console.error('Error extracting contract data:', error);
       
@@ -317,35 +354,49 @@ export default function Revenue() {
       
       // If a contract file has been uploaded, use the AI to answer questions about it
       if (contractFile) {
-        const fileText = await readFileAsText(contractFile);
-        
-        response = await fetch('/api/contracts/ask', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ 
-            contractText: fileText,
-            question: userQuery
-          }),
-        });
-        
-        if (!response.ok) {
-          throw new Error('Failed to get AI response');
-        }
-        
-        const result = await response.json();
-        
-        // Remove the typing indicator and add the AI response
-        setChatMessages(prev => [
-          ...prev.filter(msg => msg.id !== 'typing'),
-          {
-            id: Date.now().toString(),
-            role: 'assistant',
-            content: result.answer,
-            timestamp: new Date()
+        // Only process text files
+        if (contractFile.type === 'text/plain') {
+          const fileText = await readFileAsText(contractFile);
+          
+          response = await fetch('/api/contracts/ask', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+              contractText: fileText,
+              question: userQuery
+            }),
+          });
+          
+          if (!response.ok) {
+            throw new Error('Failed to get AI response');
           }
-        ]);
+          
+          const result = await response.json();
+          
+          // Remove the typing indicator and add the AI response
+          setChatMessages(prev => [
+            ...prev.filter(msg => msg.id !== 'typing'),
+            {
+              id: Date.now().toString(),
+              role: 'assistant',
+              content: result.answer,
+              timestamp: new Date()
+            }
+          ]);
+        } else {
+          // For non-text files, provide a helpful message
+          setChatMessages(prev => [
+            ...prev.filter(msg => msg.id !== 'typing'),
+            {
+              id: Date.now().toString(),
+              role: 'assistant',
+              content: `I can see you've uploaded a ${contractFile.type} file, but I can currently only process text files. I can still help with general questions about IFRS 15/ASC 606 guidelines and revenue recognition principles. What would you like to know?`,
+              timestamp: new Date()
+            }
+          ]);
+        }
       } else {
         // No contract uploaded yet, provide generic responses
         let responseContent = '';

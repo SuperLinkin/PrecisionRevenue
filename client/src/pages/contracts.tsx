@@ -148,38 +148,54 @@ export default function Contracts() {
     setFileUploadStatus('uploading');
     
     try {
-      // Read the file content
-      const fileText = await readFileAsText(file);
-      
-      // Extract contract data using OpenAI
-      const response = await fetch('/api/contracts/extract', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text: fileText }),
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to extract contract data');
+      // For text files, try to read as text
+      if (file.type === 'text/plain') {
+        // Read the file content as text
+        const reader = new FileReader();
+        const fileText = await new Promise<string>((resolve, reject) => {
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsText(file);
+        });
+        
+        // Extract contract data using OpenAI
+        const response = await fetch('/api/contracts/extract', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ text: fileText }),
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to extract contract data');
+        }
+        
+        const extractedData = await response.json();
+        setExtractedData(extractedData);
+        
+        // Update form with extracted data
+        form.setValue('name', extractedData.name);
+        form.setValue('clientName', extractedData.clientName);
+        form.setValue('contractNumber', extractedData.contractNumber);
+        form.setValue('startDate', extractedData.startDate);
+        form.setValue('endDate', extractedData.endDate);
+        form.setValue('value', extractedData.value);
+        
+        setFileUploadStatus('success');
+        toast({
+          title: "Contract analyzed with AI",
+          description: "Contract details have been extracted and populated in the form.",
+        });
+      } else {
+        // For other file types (PDF, DOC, etc.), suggest manual entry
+        setFileUploadStatus('error');
+        toast({
+          title: "Unsupported file format",
+          description: "We currently only support text files for AI analysis. Please enter details manually.",
+          variant: "destructive",
+        });
       }
-      
-      const extractedData = await response.json();
-      setExtractedData(extractedData);
-      
-      // Update form with extracted data
-      form.setValue('name', extractedData.name);
-      form.setValue('clientName', extractedData.clientName);
-      form.setValue('contractNumber', extractedData.contractNumber);
-      form.setValue('startDate', extractedData.startDate);
-      form.setValue('endDate', extractedData.endDate);
-      form.setValue('value', extractedData.value);
-      
-      setFileUploadStatus('success');
-      toast({
-        title: "Contract analyzed with AI",
-        description: "Contract details have been extracted and populated in the form.",
-      });
     } catch (error) {
       console.error('Error extracting contract data:', error);
       setFileUploadStatus('error');
@@ -191,13 +207,19 @@ export default function Contracts() {
     }
   };
   
-  // Helper function to read a file as text
-  const readFileAsText = (file: File): Promise<string> => {
+  // Helper function to read a file as Base64-encoded string (better for PDFs and binary formats)
+  const readFileAsBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
+      reader.onload = () => {
+        // Extract the base64 content without the data URL prefix
+        const base64String = reader.result as string;
+        const contentStart = base64String.indexOf('base64,') + 'base64,'.length;
+        const extractedBase64 = base64String.substring(contentStart);
+        resolve(extractedBase64);
+      };
       reader.onerror = reject;
-      reader.readAsText(file);
+      reader.readAsDataURL(file);
     });
   };
   
