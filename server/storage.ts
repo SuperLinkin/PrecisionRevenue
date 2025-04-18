@@ -260,6 +260,15 @@ export class MemStorage implements IStorage {
     return user;
   }
   
+  async updateUser(id: number, userUpdate: Partial<InsertUser>): Promise<User | undefined> {
+    const existingUser = this.users.get(id);
+    if (!existingUser) return undefined;
+    
+    const updatedUser = { ...existingUser, ...userUpdate };
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+  
   // Company methods
   async getCompany(id: number): Promise<Company | undefined> {
     return this.companies.get(id);
@@ -365,6 +374,12 @@ export class MemStorage implements IStorage {
   async getTasksByAssignee(assignedTo: number): Promise<Task[]> {
     return Array.from(this.tasks.values()).filter(
       task => task.assignedTo === assignedTo
+    );
+  }
+  
+  async getTasksByTenant(tenantId: number): Promise<Task[]> {
+    return Array.from(this.tasks.values()).filter(
+      task => task.tenantId === tenantId
     );
   }
   

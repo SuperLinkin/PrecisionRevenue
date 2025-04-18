@@ -5,13 +5,49 @@ import {
   revenueRecords, type RevenueRecord, type InsertRevenueRecord,
   tasks, type Task, type InsertTask,
   performanceObligations, type PerformanceObligation, type InsertPerformanceObligation,
-  transactionPriceAdjustments, type TransactionPriceAdjustment, type InsertTransactionPriceAdjustment
+  transactionPriceAdjustments, type TransactionPriceAdjustment, type InsertTransactionPriceAdjustment,
+  tenants, type Tenant, type InsertTenant
 } from "@shared/schema";
 import { db } from './db';
 import { eq } from 'drizzle-orm';
 import { IStorage } from './storage';
 
 export class DatabaseStorage implements IStorage {
+  // Tenant methods
+  async getTenant(id: number): Promise<Tenant | undefined> {
+    const [tenant] = await db.select().from(tenants).where(eq(tenants.id, id));
+    return tenant;
+  }
+
+  async getTenantBySubdomain(subdomain: string): Promise<Tenant | undefined> {
+    const [tenant] = await db.select().from(tenants).where(eq(tenants.subdomain, subdomain));
+    return tenant;
+  }
+
+  async getTenants(): Promise<Tenant[]> {
+    return await db.select().from(tenants);
+  }
+
+  async createTenant(insertTenant: InsertTenant): Promise<Tenant> {
+    const [tenant] = await db
+      .insert(tenants)
+      .values({
+        ...insertTenant,
+        settings: insertTenant.settings || {},
+      })
+      .returning();
+    return tenant;
+  }
+
+  async updateTenant(id: number, tenantUpdate: Partial<InsertTenant>): Promise<Tenant | undefined> {
+    const [updatedTenant] = await db
+      .update(tenants)
+      .set(tenantUpdate)
+      .where(eq(tenants.id, id))
+      .returning();
+    return updatedTenant;
+  }
+
   // User methods
   async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
@@ -36,9 +72,23 @@ export class DatabaseStorage implements IStorage {
         role: insertUser.role || 'user',
         fullName: insertUser.fullName || null,
         companyId: insertUser.companyId || null,
+        tenantId: insertUser.tenantId || null,
       })
       .returning();
     return user;
+  }
+  
+  async updateUser(id: number, userUpdate: Partial<InsertUser>): Promise<User | undefined> {
+    const [updatedUser] = await db
+      .update(users)
+      .set(userUpdate)
+      .where(eq(users.id, id))
+      .returning();
+    return updatedUser;
+  }
+  
+  async getUsersByTenant(tenantId: number): Promise<User[]> {
+    return await db.select().from(users).where(eq(users.tenantId, tenantId));
   }
   
   // Company methods
@@ -49,6 +99,10 @@ export class DatabaseStorage implements IStorage {
   
   async getCompanies(): Promise<Company[]> {
     return await db.select().from(companies);
+  }
+  
+  async getCompaniesByTenant(tenantId: number): Promise<Company[]> {
+    return await db.select().from(companies).where(eq(companies.tenantId, tenantId));
   }
   
   async createCompany(insertCompany: InsertCompany): Promise<Company> {
@@ -83,6 +137,10 @@ export class DatabaseStorage implements IStorage {
   
   async getContractsByCompany(companyId: number): Promise<Contract[]> {
     return await db.select().from(contracts).where(eq(contracts.companyId, companyId));
+  }
+  
+  async getContractsByTenant(tenantId: number): Promise<Contract[]> {
+    return await db.select().from(contracts).where(eq(contracts.tenantId, tenantId));
   }
   
   async createContract(insertContract: InsertContract): Promise<Contract> {
@@ -170,6 +228,10 @@ export class DatabaseStorage implements IStorage {
   
   async getTasksByAssignee(assignedTo: number): Promise<Task[]> {
     return await db.select().from(tasks).where(eq(tasks.assignedTo, assignedTo));
+  }
+  
+  async getTasksByTenant(tenantId: number): Promise<Task[]> {
+    return await db.select().from(tasks).where(eq(tasks.tenantId, tenantId));
   }
   
   async createTask(insertTask: InsertTask): Promise<Task> {
