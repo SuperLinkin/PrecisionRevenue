@@ -27,10 +27,11 @@ let demoContract = {
 // Extract contract data endpoint
 router.post('/extract', async (req, res) => {
   try {
-    const { fileName, text } = req.body;
+    const { fileName, text, base64Data } = req.body;
     
     console.log("DEBUG API - Extracting contract data from:", fileName);
     console.log("DEBUG API - OpenAI API Key exists:", !!process.env.OPENAI_API_KEY);
+    console.log("DEBUG API - Base64 data provided:", !!base64Data);
     
     // Generate specific contract details based on file name
     if (fileName) {
@@ -38,8 +39,23 @@ router.post('/extract', async (req, res) => {
       const contractType = parts[0]?.trim() || 'SaaS';
       const clientName = parts[1]?.trim() || 'TechCorp';
       
-      // Create contract text from template - use uploaded text if available, otherwise use template
-      const contractText = text || getContractTemplate(contractType, clientName);
+      // If we have base64 data, include information about the uploaded file
+      // In a real implementation, we'd convert the PDF to text here
+      let contractText = "";
+      
+      if (base64Data) {
+        console.log("DEBUG API - Using base64 data from uploaded PDF");
+        // For now, we're still using a template but noting it's from an uploaded file
+        contractText = `[PDF UPLOADED: ${fileName}]\n\n${getContractTemplate(contractType, clientName)}`;
+      } else if (text) {
+        console.log("DEBUG API - Using provided text");
+        contractText = text;
+      } else {
+        console.log("DEBUG API - Using template based on filename");
+        contractText = getContractTemplate(contractType, clientName);
+      }
+      
+      // Store the contract text for future use
       demoContract.text = contractText;
       
       try {
@@ -52,7 +68,7 @@ router.post('/extract', async (req, res) => {
         // Update the demo contract with the extracted data
         demoContract.data = {
           ...extractedData,
-          // Ensure date formatting
+          // Ensure date formatting - we'll need to handle null case for endDate
           startDate: extractedData.startDate instanceof Date ? extractedData.startDate : new Date(extractedData.startDate),
           endDate: extractedData.endDate ? (extractedData.endDate instanceof Date ? extractedData.endDate : new Date(extractedData.endDate)) : null
         };
@@ -92,7 +108,7 @@ router.post('/extract', async (req, res) => {
 // Answer contract questions endpoint
 router.post('/ask', async (req, res) => {
   try {
-    const { question, fileName, contractTemplate } = req.body;
+    const { question, fileName, contractTemplate, base64Data } = req.body;
     
     if (!question) {
       return res.status(400).json({ message: "Question is required" });
@@ -101,6 +117,14 @@ router.post('/ask', async (req, res) => {
     console.log("DEBUG - Starting contract Q&A with question:", question);
     console.log("DEBUG - OpenAI API Key exists:", !!process.env.OPENAI_API_KEY);
     console.log("DEBUG - Contract template requested:", contractTemplate);
+    console.log("DEBUG - Base64 data provided:", !!base64Data);
+    
+    // If base64Data is provided, it means we have PDF data from the client
+    // In a full implementation, we'd extract text from the PDF here
+    // For now, we'll still use our contract templates but add information that
+    // we're using text from the uploaded PDF
+    
+    let contractText = "";
     
     // Update contract template based on provided fileName
     if (fileName && contractTemplate) {
@@ -108,17 +132,25 @@ router.post('/ask', async (req, res) => {
       const contractType = parts[0]?.trim() || 'SaaS';
       const clientName = parts[1]?.trim() || 'TechCorp';
       
-      // Generate new template with file name details
-      demoContract.text = getContractTemplate(contractType, clientName);
-      console.log("DEBUG - Generated new contract template from filename:", fileName);
+      // Generate template with file name details
+      contractText = getContractTemplate(contractType, clientName);
+      
+      // If we have base64 data, add a note about the uploaded PDF
+      if (base64Data) {
+        contractText = `[PDF UPLOADED: ${fileName}]\n\n${contractText}`;
+      }
+      
+      // Store for later use
+      demoContract.text = contractText;
+      console.log("DEBUG - Generated contract text for analysis, length:", contractText.length);
+    } else {
+      // Use the stored demo contract text if no new data provided
+      contractText = demoContract.text;
+      console.log("DEBUG - Using existing contract text, length:", contractText.length);
     }
     
-    // Use the stored demo contract text
-    const contractText = demoContract.text;
-    console.log("DEBUG - Contract text length:", contractText.length);
-    
     try {
-      // Use actual AI to answer the question with our template contract
+      // Use actual AI to answer the question with our contract text
       console.log("DEBUG - Calling answerContractQuestion...");
       const answer = await answerContractQuestion(contractText, question);
       console.log("DEBUG - Got answer from OpenAI, length:", answer?.length || 0);

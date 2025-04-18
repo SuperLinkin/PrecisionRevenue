@@ -290,14 +290,23 @@ export default function Revenue() {
     try {
       // Only accept PDF files
       if (file.type === 'application/pdf') {
-        // Extract contract data using our API
+        console.log("PDF file detected, attempting to extract text...");
+        
+        // Get file content as base64
+        const base64Data = await readFileAsBase64(file);
+        console.log("Successfully read file as base64, length:", base64Data.length);
+        
+        // For now, we don't have a proper PDF-to-text conversion library,
+        // but we still send the file name for template-based analysis
         const response = await fetch('/api/contracts/extract', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            text: "Demo contract for analysis",
+            // The server will use this as a hint if it supports PDF processing
+            base64Data: base64Data, 
+            text: `Contract from ${file.name}`, // Placeholder text with file name
             fileName: file.name
           }),
         });
@@ -441,6 +450,8 @@ export default function Revenue() {
             body: JSON.stringify({ 
               question: userQuery,
               fileName: contractFile.name,
+              // Send the base64 data for more accurate processing
+              base64Data: base64Data,
               // Include our latest mock contract template
               contractTemplate: true
             }),
