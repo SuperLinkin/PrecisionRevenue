@@ -15,6 +15,7 @@ import DisclosurePage from "@/pages/disclosure";
 import AnalyticsPage from "@/pages/analytics";
 import DealDeskPage from "@/pages/deal-desk";
 import CompanyPage from "@/pages/company";
+import SystemStatusPage from "@/pages/system-status";
 import { useAuth } from "@/lib/auth";
 import { Suspense } from "react";
 
@@ -72,6 +73,9 @@ function App() {
         </Route>
         <Route path="/settings">
           {() => <ProtectedRoute component={Settings} />}
+        </Route>
+        <Route path="/system-status">
+          {() => <ProtectedRoute component={SystemStatusPage} />}
         </Route>
         
         {/* Fallback to 404 */}
