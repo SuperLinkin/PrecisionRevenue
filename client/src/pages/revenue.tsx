@@ -13,6 +13,7 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { 
   Card,
   CardContent,
@@ -70,12 +71,162 @@ const FormSchema = z.object({
 });
 
 // Types for chat messages
+interface PerformanceObligation {
+  name: string;
+  isDistinct: boolean;
+  deliveryTiming: 'point' | 'over-time';
+  suggestedSSP: number;
+}
+
+interface TerminationClauseImpact {
+  refundObligation: boolean;
+  terminationRisk: string;
+}
+
+interface RevenueScheduleItem {
+  month: string; // Format: YYYY-MM
+  amount: number;
+}
+
+interface REMYAnalysisResult {
+  contractName?: string;
+  contractValue?: number;
+  contractTermMonths?: number;
+  performanceObligations?: PerformanceObligation[];
+  revenueRecognitionSchedule?: RevenueScheduleItem[];
+  terminationClauseImpact?: TerminationClauseImpact;
+  financingComponent?: boolean;
+  auditSummary?: string;
+}
+
 interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  structuredData?: REMYAnalysisResult; // For REMY's structured responses
 }
+
+// Helper function to render a revenue recognition schedule
+const renderRevenueSchedule = (schedule: RevenueScheduleItem[]) => {
+  if (!schedule || schedule.length === 0) return null;
+  
+  return (
+    <div className="mt-4 mb-4">
+      <h4 className="text-sm font-semibold mb-2">Revenue Recognition Schedule</h4>
+      <div className="bg-white rounded-md border overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Period</TableHead>
+              <TableHead>Amount</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {schedule.map((item, index) => (
+              <TableRow key={index}>
+                <TableCell>{item.month}</TableCell>
+                <TableCell>{formatCurrency(item.amount)}</TableCell>
+              </TableRow>
+            ))}
+            <TableRow className="bg-gray-50">
+              <TableCell className="font-medium">Total</TableCell>
+              <TableCell className="font-medium">
+                {formatCurrency(schedule.reduce((sum, item) => sum + item.amount, 0))}
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  );
+};
+
+// Helper function to render performance obligations
+const renderPerformanceObligations = (obligations: PerformanceObligation[]) => {
+  if (!obligations || obligations.length === 0) return null;
+  
+  return (
+    <div className="mt-4 mb-4">
+      <h4 className="text-sm font-semibold mb-2">Performance Obligations</h4>
+      <ul className="list-disc pl-5 space-y-2">
+        {obligations.map((po, index) => (
+          <li key={index} className="text-sm">
+            <span className="font-medium">{po.name}</span>
+            <div className="text-xs text-gray-600 mt-1">
+              <div>Distinct: {po.isDistinct ? 'Yes' : 'No'}</div>
+              <div>Delivery: {po.deliveryTiming === 'point' ? 'Point in time' : 'Over time'}</div>
+              <div>Standalone Price: {formatCurrency(po.suggestedSSP)}</div>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+// Helper function to render termination clause impact
+const renderTerminationClause = (impact: TerminationClauseImpact) => {
+  if (!impact) return null;
+  
+  return (
+    <div className="mt-4 mb-4">
+      <h4 className="text-sm font-semibold mb-2">Termination Clause Impact</h4>
+      <div className="bg-white rounded-md border p-3 text-sm">
+        <div className="mb-1">
+          <span className="font-medium">Refund Obligation: </span>
+          {impact.refundObligation ? 'Yes' : 'No'}
+        </div>
+        <div>
+          <span className="font-medium">Risk Assessment: </span>
+          {impact.terminationRisk}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Helper function to render audit summary
+const renderAuditSummary = (summary: string, financingComponent: boolean) => {
+  if (!summary) return null;
+  
+  return (
+    <div className="mt-4 mb-4">
+      <h4 className="text-sm font-semibold mb-2">Audit Summary</h4>
+      <div className="bg-white rounded-md border p-3 text-sm">
+        <div className="mb-2">
+          <span className="font-medium">Significant Financing Component: </span>
+          {financingComponent ? 'Yes' : 'No'}
+        </div>
+        <div>
+          <span className="font-medium">Audit Notes: </span>
+          {summary}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Function to check if content contains JSON and try to parse REMY analysis
+const tryParseREMYAnalysis = (content: string): REMYAnalysisResult | null => {
+  try {
+    // Look for what might be a JSON structure in the text
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      const jsonStr = jsonMatch[0];
+      const data = JSON.parse(jsonStr);
+      
+      // Verify this has the expected REMY fields
+      if (data.performanceObligations || data.revenueRecognitionSchedule) {
+        return data as REMYAnalysisResult;
+      }
+    }
+    return null;
+  } catch (err) {
+    console.error("Failed to parse REMY analysis:", err);
+    return null;
+  }
+};
 
 export default function Revenue() {
   const [selectedContractId, setSelectedContractId] = useState<string | null>(null);
@@ -464,13 +615,28 @@ export default function Revenue() {
           const result = await response.json();
           
           // Remove the typing indicator and add the AI response
+          // Try to parse any structured REMY data from the response
+          let structuredData = null;
+          try {
+            if (result.structuredData) {
+              // If the server already separated the structured data
+              structuredData = result.structuredData;
+            } else {
+              // Try to extract structured data from the answer text
+              structuredData = tryParseREMYAnalysis(result.answer);
+            }
+          } catch (err) {
+            console.error("Error parsing structured data:", err);
+          }
+          
           setChatMessages(prev => [
             ...prev.filter(msg => msg.id !== 'typing'),
             {
               id: Date.now().toString(),
               role: 'assistant',
               content: result.answer,
-              timestamp: new Date()
+              timestamp: new Date(),
+              structuredData: structuredData
             }
           ]);
         } else {
@@ -740,7 +906,64 @@ export default function Revenue() {
                                     : 'bg-blue-600 text-white'
                                 }`}
                               >
+                                {/* Regular text content */}
                                 <p className="text-sm">{message.content}</p>
+                                
+                                {/* If there's structured data, or if we can extract it from the content */}
+                                {message.role === 'assistant' && (
+                                  <>
+                                    {(() => {
+                                      // Try to parse JSON if it hasn't been parsed already
+                                      const structuredData = message.structuredData || 
+                                        (message.content.includes('{') && tryParseREMYAnalysis(message.content));
+                                        
+                                      if (structuredData) {
+                                        return (
+                                          <div className="mt-4 pt-4 border-t border-gray-100">
+                                            <div className="text-xs font-medium text-blue-600 mb-2">
+                                              IFRS 15/ASC 606 Analysis
+                                            </div>
+                                            
+                                            {/* Contract Summary */}
+                                            {structuredData.contractName && (
+                                              <div className="mb-3">
+                                                <div className="text-sm font-medium">{structuredData.contractName}</div>
+                                                {structuredData.contractValue && (
+                                                  <div className="text-sm">
+                                                    Value: {formatCurrency(structuredData.contractValue)}
+                                                    {structuredData.contractTermMonths && 
+                                                      ` over ${structuredData.contractTermMonths} months`}
+                                                  </div>
+                                                )}
+                                              </div>
+                                            )}
+                                            
+                                            {/* Performance Obligations */}
+                                            {structuredData.performanceObligations && 
+                                              renderPerformanceObligations(structuredData.performanceObligations)}
+                                            
+                                            {/* Revenue Recognition Schedule */}
+                                            {structuredData.revenueRecognitionSchedule && 
+                                              renderRevenueSchedule(structuredData.revenueRecognitionSchedule)}
+                                            
+                                            {/* Termination Clause Impact */}
+                                            {structuredData.terminationClauseImpact && 
+                                              renderTerminationClause(structuredData.terminationClauseImpact)}
+                                            
+                                            {/* Audit Summary */}
+                                            {structuredData.auditSummary && 
+                                              renderAuditSummary(
+                                                structuredData.auditSummary, 
+                                                !!structuredData.financingComponent
+                                              )}
+                                          </div>
+                                        );
+                                      }
+                                      return null;
+                                    })()}
+                                  </>
+                                )}
+                                
                                 <p className="text-xs mt-1 opacity-60">
                                   {format(message.timestamp, 'h:mm a')}
                                 </p>
