@@ -226,34 +226,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/contracts", authenticate, async (req, res) => {
     try {
-      const validatedData = insertContractSchema.parse({
+      // Format dates properly before validation
+      const formattedBody = {
         ...req.body,
         companyId: req.user.companyId,
-        createdBy: req.user.id
-      });
+        createdBy: req.user.id,
+        // Ensure dates are in ISO format for proper parsing
+        startDate: req.body.startDate ? new Date(req.body.startDate) : undefined,
+        endDate: req.body.endDate ? new Date(req.body.endDate) : undefined
+      };
+
+      const validatedData = insertContractSchema.parse(formattedBody);
       
       const contract = await storage.createContract(validatedData);
       res.status(201).json(contract);
     } catch (error) {
       if (error instanceof z.ZodError) {
+        console.error("Validation error:", error.errors);
         return res.status(400).json({ message: error.errors });
       }
+      console.error("Contract creation error:", error);
       res.status(500).json({ message: "Failed to create contract" });
     }
   });
 
   app.put("/api/contracts/:id", authenticate, async (req, res) => {
     try {
-      const validatedData = insertContractSchema.partial().parse(req.body);
+      // Format dates properly before validation
+      const formattedBody = {
+        ...req.body,
+        // Ensure dates are in ISO format for proper parsing
+        startDate: req.body.startDate ? new Date(req.body.startDate) : undefined,
+        endDate: req.body.endDate ? new Date(req.body.endDate) : undefined
+      };
+
+      const validatedData = insertContractSchema.transform((data) => data).partial().parse(formattedBody);
       const contract = await storage.updateContract(parseInt(req.params.id), validatedData);
+      
       if (!contract) {
         return res.status(404).json({ message: "Contract not found" });
       }
       res.json(contract);
     } catch (error) {
       if (error instanceof z.ZodError) {
+        console.error("Validation error:", error.errors);
         return res.status(400).json({ message: error.errors });
       }
+      console.error("Contract update error:", error);
       res.status(500).json({ message: "Failed to update contract" });
     }
   });

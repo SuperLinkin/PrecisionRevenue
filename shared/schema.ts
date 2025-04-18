@@ -57,18 +57,29 @@ export const contracts = pgTable("contracts", {
   fileUrl: text("file_url"),
 });
 
-export const insertContractSchema = createInsertSchema(contracts).pick({
-  name: true,
-  contractNumber: true,
-  clientName: true,
-  startDate: true,
-  endDate: true,
-  value: true,
-  status: true,
-  companyId: true,
-  createdBy: true,
-  fileUrl: true,
-});
+export const insertContractSchema = createInsertSchema(contracts)
+  .pick({
+    name: true,
+    contractNumber: true,
+    clientName: true,
+    startDate: true,
+    endDate: true,
+    value: true,
+    status: true,
+    companyId: true,
+    createdBy: true,
+    fileUrl: true,
+  })
+  .transform((data) => {
+    // Ensure dates are properly formatted
+    if (data.startDate && typeof data.startDate === 'string') {
+      data.startDate = new Date(data.startDate);
+    }
+    if (data.endDate && typeof data.endDate === 'string') {
+      data.endDate = new Date(data.endDate);
+    }
+    return data;
+  });
 
 // Revenue records
 export const revenueRecords = pgTable("revenue_records", {

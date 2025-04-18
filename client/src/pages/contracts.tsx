@@ -57,6 +57,14 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { format } from 'date-fns';
 import { motion } from 'framer-motion';
 
+// Define a schema that accepts either Date objects or ISO strings
+const dateSchema = z.union([
+  z.date(),
+  z.string().refine((val) => !isNaN(Date.parse(val)), {
+    message: "Invalid date string format",
+  }),
+]);
+
 const FormSchema = z.object({
   name: z.string().min(2, {
     message: "Contract name must be at least 2 characters.",
@@ -67,10 +75,10 @@ const FormSchema = z.object({
   clientName: z.string().min(2, {
     message: "Client name is required.",
   }),
-  startDate: z.date({
-    required_error: "Start date is required.",
+  startDate: dateSchema.refine(val => Boolean(val), {
+    message: "Start date is required.",
   }),
-  endDate: z.date().optional(),
+  endDate: dateSchema.optional(),
   value: z.coerce.number().min(1, {
     message: "Value must be at least 1.",
   }),
@@ -171,7 +179,7 @@ export default function Contracts() {
   };
   
   const createContractMutation = useMutation({
-    mutationFn: async (values: z.infer<typeof FormSchema>) => {
+    mutationFn: async (values: any) => {
       return apiRequest('POST', '/api/contracts', values);
     },
     onSuccess: () => {
@@ -196,7 +204,14 @@ export default function Contracts() {
   });
   
   function onSubmit(values: z.infer<typeof FormSchema>) {
-    createContractMutation.mutate(values);
+    // Format dates to ISO strings for API submission
+    const formattedValues = {
+      ...values,
+      // Convert to ISO strings for API
+      startDate: values.startDate instanceof Date ? values.startDate.toISOString() : values.startDate,
+      endDate: values.endDate instanceof Date ? values.endDate.toISOString() : values.endDate,
+    };
+    createContractMutation.mutate(formattedValues);
   }
   
   return (
