@@ -45,7 +45,7 @@ export default function Home() {
     },
     {
       title: 'NOVA',
-      description: 'Neural Operational Visualization Analytics - your intelligent CFO dashboard with advanced KPI insights.',
+      description: 'Next-gen Operational Visualization Analytics - your intelligent CFO dashboard with advanced KPI insights.',
       icon: <LineChartIcon className="h-6 w-6 text-secondary" />,
       features: [
         'Real-time KPI monitoring & alerts',
@@ -58,7 +58,7 @@ export default function Home() {
   // AI capabilities showcase data
   const aiCapabilities = [
     {
-      title: "Neural Contract Analysis",
+      title: "Advanced Contract Analysis",
       description: "Our proprietary natural language processing models understand complex legal language with human-level comprehension.",
       icon: "🧠",
       stats: {
@@ -136,7 +136,7 @@ export default function Home() {
               </h1>
               
               <p className="mt-6 text-xl max-w-3xl text-blue-100">
-                Revolutionize your financial operations with our state-of-the-art <span className="font-semibold text-white">neural revenue recognition</span>, 
+                Revolutionize your financial operations with our state-of-the-art <span className="font-semibold text-white">advanced revenue recognition</span>, 
                 <span className="font-semibold text-white"> AI contract analysis</span>, and <span className="font-semibold text-white">intelligent forecasting</span>.
               </p>
               
@@ -163,7 +163,7 @@ export default function Home() {
               {/* AI badges */}
               <div className="mt-8 flex flex-wrap gap-3">
                 <div className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-indigo-500/20 text-indigo-200 ring-1 ring-inset ring-indigo-500/30">
-                  Neural Networks
+                  Deep Learning
                 </div>
                 <div className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-purple-500/20 text-purple-200 ring-1 ring-inset ring-purple-500/30">
                   Machine Learning
@@ -197,7 +197,7 @@ export default function Home() {
                           <path d="M4.93 19.07L6.34 17.66" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                           <path d="M17.66 6.34L19.07 4.93" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                         </svg>
-                        NEURAL REVENUE AI INTERFACE
+                        ADVANCED REVENUE AI INTERFACE
                       </div>
                       <div className="flex items-center space-x-1.5">
                         <div className="w-4 h-4 rounded-full bg-blue-500/30 flex items-center justify-center">
@@ -249,7 +249,7 @@ export default function Home() {
                         <div className="flex justify-between items-center mb-3">
                           <div className="text-sm font-medium text-white flex items-center">
                             <div className="w-2 h-2 rounded-full bg-blue-500 mr-2 animate-pulse"></div>
-                            Neural Revenue Prediction
+                            Advanced Revenue Prediction
                           </div>
                           <div className="flex space-x-2 text-xs">
                             <div className="px-2 py-1 rounded bg-blue-500/20 text-blue-300">Q1</div>
@@ -312,7 +312,7 @@ export default function Home() {
                 <div className="absolute -bottom-8 -right-8 w-32 h-32 bg-gradient-to-br from-blue-600/30 to-indigo-600/30 rounded-full blur-2xl"></div>
                 <div className="absolute -top-8 -left-8 w-24 h-24 bg-gradient-to-br from-purple-600/30 to-blue-600/30 rounded-full blur-2xl"></div>
                 
-                {/* Neural network node animation */}
+                {/* Network node animation */}
                 <div className="absolute -top-4 -left-4 w-2 h-2 bg-blue-500 rounded-full animate-ping"></div>
                 <div className="absolute top-1/2 -right-4 w-2 h-2 bg-indigo-500 rounded-full animate-ping" style={{ animationDelay: '1s' }}></div>
                 <div className="absolute -bottom-4 left-1/2 w-2 h-2 bg-purple-500 rounded-full animate-ping" style={{ animationDelay: '2s' }}></div>
@@ -389,7 +389,7 @@ export default function Home() {
               Powered by Cutting-Edge Intelligence
             </h2>
             <p className="mt-4 text-lg text-neutral font-light max-w-2xl mx-auto">
-              Our proprietary AI models blend neural networks, machine learning, and financial expertise to deliver unprecedented automation and insights.
+              Our proprietary AI models blend deep learning, machine learning, and financial expertise to deliver unprecedented automation and insights.
             </p>
           </div>
           
@@ -436,7 +436,7 @@ export default function Home() {
             </div>
             <h3 className="text-3xl font-semibold text-white mb-3">Our AI Gets Smarter Every Day</h3>
             <p className="max-w-2xl mx-auto text-neutral/80">
-              PRA's neural systems continuously learn from new financial data, regulatory changes, and user interactions to improve recognition accuracy and forecasting precision.
+              PRA's intelligent systems continuously learn from new financial data, regulatory changes, and user interactions to improve recognition accuracy and forecasting precision.
             </p>
           </div>
         </div>
