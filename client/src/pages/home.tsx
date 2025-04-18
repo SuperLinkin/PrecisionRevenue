@@ -4,6 +4,7 @@ import { NavBar } from '@/components/ui/navbar';
 import { Footer } from '@/components/ui/footer';
 import { FeatureCard } from '@/components/ui/feature-card';
 import { TestimonialCard } from '@/components/ui/testimonial-card';
+import { AnimatedButton } from '@/components/ui/animated-button';
 import { motion } from 'framer-motion';
 import { 
   DollarSignIcon, 
@@ -433,65 +434,207 @@ export default function Home() {
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto py-24 px-4 sm:px-6 lg:py-36 lg:px-8">
-          <div className="max-w-3xl mx-auto text-center mb-20">
-            <span className="inline-flex items-center rounded-full bg-white/5 px-3 py-1 text-sm font-medium text-blue-300 ring-1 ring-inset ring-blue-300/20 mb-3">
+          <motion.div 
+            className="max-w-3xl mx-auto text-center mb-20"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <motion.span 
+              className="inline-flex items-center rounded-full bg-white/5 px-3 py-1 text-sm font-medium text-blue-300 ring-1 ring-inset ring-blue-300/20 mb-3"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.1, duration: 0.4 }}
+            >
               <svg className="mr-1 h-1.5 w-1.5 fill-blue-300 animate-pulse" viewBox="0 0 6 6" aria-hidden="true"><circle cx="3" cy="3" r="3" /></svg>
               Precision Technology
-            </span>
-            <h2 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent pb-2">
+            </motion.span>
+            <motion.h2 
+              className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent pb-2"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.6 }}
+            >
               Powered by Advanced Financial Intelligence
-            </h2>
-            <p className="mt-4 text-lg text-neutral font-light max-w-2xl mx-auto">
+            </motion.h2>
+            <motion.p 
+              className="mt-4 text-lg text-neutral font-light max-w-2xl mx-auto"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3, duration: 0.6 }}
+            >
               Our proprietary systems combine sophisticated algorithms with financial expertise to deliver unprecedented automation and insights for revenue operations.
-            </p>
-          </div>
+            </motion.p>
+          </motion.div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+          <motion.div 
+            className="grid grid-cols-1 md:grid-cols-3 gap-10"
+            variants={{
+              hidden: { opacity: 0 },
+              visible: {
+                opacity: 1,
+                transition: {
+                  staggerChildren: 0.2
+                }
+              }
+            }}
+            initial="hidden"
+            animate="visible"
+          >
             {aiCapabilities.map((capability, index) => (
-              <div 
+              <motion.div 
                 key={index}
                 className="relative group overflow-hidden"
+                variants={{
+                  hidden: { opacity: 0, y: 30 },
+                  visible: { 
+                    opacity: 1, 
+                    y: 0,
+                    transition: {
+                      type: "spring",
+                      stiffness: 100,
+                      damping: 15,
+                      duration: 0.5
+                    }
+                  }
+                }}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 opacity-0 group-hover:opacity-100 transform translate-y-full group-hover:translate-y-0 transition-all duration-500 rounded-2xl"></div>
-                <div className="relative z-10 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-8 h-full transform transition-transform duration-300 group-hover:-translate-y-2 group-hover:shadow-2xl">
-                  <div className="w-16 h-16 flex items-center justify-center rounded-xl bg-white/10 text-4xl mb-6">
+                <motion.div 
+                  className="relative z-10 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-8 h-full transform transition-transform duration-300 group-hover:-translate-y-2 group-hover:shadow-2xl"
+                  whileHover={{ 
+                    y: -10, 
+                    boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+                    transition: { type: "spring", stiffness: 300, damping: 15 }
+                  }}
+                >
+                  <motion.div 
+                    className="w-16 h-16 flex items-center justify-center rounded-xl bg-white/10 text-4xl mb-6"
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.2 * index, duration: 0.4 }}
+                  >
                     {capability.icon}
-                  </div>
+                  </motion.div>
                   
-                  <h3 className="text-xl font-bold text-primary mb-3">{capability.title}</h3>
-                  <p className="text-neutral mb-6">{capability.description}</p>
+                  <motion.h3 
+                    className="text-xl font-bold text-primary mb-3"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 + (0.2 * index), duration: 0.3 }}
+                  >
+                    {capability.title}
+                  </motion.h3>
+                  <motion.p 
+                    className="text-neutral mb-6"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.2 + (0.2 * index), duration: 0.3 }}
+                  >
+                    {capability.description}
+                  </motion.p>
                   
-                  <div className="grid grid-cols-3 gap-2 mt-auto">
-                    <div className="bg-white/10 rounded-lg p-4 text-center">
+                  <motion.div 
+                    className="grid grid-cols-3 gap-2 mt-auto"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 + (0.2 * index), duration: 0.3 }}
+                  >
+                    <motion.div 
+                      className="bg-white/10 rounded-lg p-4 text-center"
+                      whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.15)" }}
+                    >
                       <div className="text-lg font-bold text-accent">{capability.stats.accuracy}</div>
                       <div className="text-xs text-neutral/80">Accuracy</div>
-                    </div>
-                    <div className="bg-white/10 rounded-lg p-4 text-center">
+                    </motion.div>
+                    <motion.div 
+                      className="bg-white/10 rounded-lg p-4 text-center"
+                      whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.15)" }}
+                    >
                       <div className="text-lg font-bold text-secondary">{capability.stats.speedImprovement}</div>
                       <div className="text-xs text-neutral/80">Faster</div>
-                    </div>
-                    <div className="bg-white/10 rounded-lg p-4 text-center">
+                    </motion.div>
+                    <motion.div 
+                      className="bg-white/10 rounded-lg p-4 text-center"
+                      whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.15)" }}
+                    >
                       <div className="text-lg font-bold text-primary">{capability.stats.dataPoints}</div>
                       <div className="text-xs text-neutral/80">Data Points</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                    </motion.div>
+                  </motion.div>
+                </motion.div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
           
-          <div className="mt-20 pt-10 border-t border-white/10 text-center">
-            <div className="inline-flex items-center justify-center rounded-full px-4 py-1 bg-white/5 text-blue-200 mb-4">
-              <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <motion.div 
+            className="mt-20 pt-10 border-t border-white/10 text-center"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.4 }}
+            transition={{ 
+              duration: 0.7,
+              type: "spring",
+              stiffness: 100,
+              damping: 15
+            }}
+          >
+            <motion.div 
+              className="inline-flex items-center justify-center rounded-full px-4 py-1 bg-white/5 text-blue-200 mb-4"
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1, duration: 0.4 }}
+              whileHover={{ 
+                backgroundColor: "rgba(255, 255, 255, 0.1)",
+                transition: { duration: 0.2 }
+              }}
+            >
+              <motion.svg 
+                className="w-4 h-4 mr-2" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                xmlns="http://www.w3.org/2000/svg"
+                animate={{ 
+                  x: [0, 3, 0],
+                  transition: { 
+                    repeat: Infinity, 
+                    repeatType: "reverse",
+                    duration: 1.5,
+                    ease: "easeInOut"
+                  }
+                }}
+              >
                 <path d="M9.31 17.25L14.53 12.03L9.31 6.81001" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+              </motion.svg>
               <span className="text-sm font-semibold">Continuous Improvement</span>
-            </div>
-            <h3 className="text-3xl font-semibold text-white mb-3 bg-primary/40 inline-block px-6 py-2 rounded-lg">Advanced Financial Intelligence</h3>
-            <p className="max-w-2xl mx-auto text-white mt-4">
+            </motion.div>
+            
+            <motion.h3 
+              className="text-3xl font-semibold text-white mb-3 bg-primary/40 inline-block px-6 py-2 rounded-lg"
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              whileHover={{ 
+                backgroundColor: "rgba(15, 23, 42, 0.5)",
+                scale: 1.02,
+                transition: { duration: 0.2 }
+              }}
+            >
+              Advanced Financial Intelligence
+            </motion.h3>
+            
+            <motion.p 
+              className="max-w-2xl mx-auto text-white mt-4"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+            >
               PRA's financial systems continuously adapt to new data, regulatory changes, and user feedback to enhance recognition accuracy and forecasting precision.
-            </p>
-          </div>
+            </motion.p>
+          </motion.div>
         </div>
       </div>
       
@@ -509,44 +652,133 @@ export default function Home() {
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:py-24 lg:px-8">
-          <div className="lg:grid lg:grid-cols-2 lg:gap-12 items-center">
-            <div>
-              <h2 className="text-4xl font-bold tracking-tight text-white md:text-5xl">
-                <span className="block mb-2">Ready to streamline your</span>
-                <span className="block text-gradient bg-gradient-to-r from-white via-accent-200 to-white bg-clip-text text-transparent">
+          <motion.div 
+            className="lg:grid lg:grid-cols-2 lg:gap-12 items-center"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ 
+                delay: 0.2, 
+                duration: 0.7,
+                type: "spring",
+                stiffness: 50,
+                damping: 10
+              }}
+            >
+              <motion.h2 
+                className="text-4xl font-bold tracking-tight text-white md:text-5xl"
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+              >
+                <motion.span 
+                  className="block mb-2"
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.4, duration: 0.4 }}
+                >
+                  Ready to streamline your
+                </motion.span>
+                <motion.span 
+                  className="block text-gradient bg-gradient-to-r from-white via-accent-200 to-white bg-clip-text text-transparent"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.6, duration: 0.5 }}
+                >
                   revenue operations?
-                </span>
-              </h2>
-              <p className="mt-4 text-lg text-white/70 max-w-md">
+                </motion.span>
+              </motion.h2>
+              <motion.p 
+                className="mt-4 text-lg text-white/70 max-w-md"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.7, duration: 0.5 }}
+              >
                 Join forward-thinking financial teams using PRA to automate compliance, 
                 maximize revenue recognition, and gain unprecedented insights.
-              </p>
+              </motion.p>
               
-              <div className="mt-8 flex flex-wrap gap-4">
+              <motion.div 
+                className="mt-8 flex flex-wrap gap-4"
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.8, duration: 0.5 }}
+              >
                 <Link href="/signup">
-                  <Button className="relative group overflow-hidden rounded-full bg-white px-6 py-3 text-primary shadow-lg hover:shadow-xl transition-all duration-300">
-                    <span className="relative z-10 font-semibold flex items-center">
-                      Request Demo
-                      <svg className="ml-2 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <AnimatedButton 
+                    className="relative group overflow-hidden rounded-full bg-white px-6 py-3 text-primary shadow-lg hover:shadow-xl transition-all duration-300"
+                    hoverEffect="lift"
+                    icon={
+                      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                       </svg>
-                    </span>
-                    <span className="absolute bottom-0 left-0 right-0 h-0 bg-accent/20 transition-all duration-300 group-hover:h-full z-0"></span>
-                  </Button>
+                    }
+                    iconPosition="right"
+                  >
+                    Request Demo
+                  </AnimatedButton>
                 </Link>
                 
                 <Link href="/knowledge-center">
-                  <Button className="relative group overflow-hidden rounded-full bg-transparent px-6 py-3 text-white border border-white/30 hover:bg-white/10 transition-all duration-300">
-                    <span className="relative z-10 font-semibold flex items-center">
-                      Learn more
-                    </span>
-                  </Button>
+                  <AnimatedButton 
+                    className="relative group overflow-hidden rounded-full bg-transparent px-6 py-3 text-white border border-white/30 hover:bg-white/10 transition-all duration-300"
+                    variant="outline"
+                    hoverEffect="glow"
+                  >
+                    Learn more
+                  </AnimatedButton>
                 </Link>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
             
-            <div className="hidden lg:block relative mt-12 lg:mt-0">
-              <div className="relative z-10 bg-white rounded-xl shadow-2xl transform rotate-1 hover:rotate-0 transition-transform duration-700 overflow-hidden">
+            <motion.div 
+              className="hidden lg:block relative mt-12 lg:mt-0"
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ 
+                delay: 0.4, 
+                duration: 0.7, 
+                type: "spring",
+                stiffness: 50,
+                damping: 10
+              }}
+            >
+              <motion.div 
+                className="relative z-10 bg-white rounded-xl shadow-2xl overflow-hidden"
+                initial={{ rotate: 1 }}
+                whileInView={{ 
+                  rotate: 0,
+                  transition: { 
+                    delay: 0.7, 
+                    duration: 1,
+                    type: "spring",
+                    stiffness: 50,
+                    damping: 10
+                  }
+                }}
+                viewport={{ once: true }}
+                whileHover={{ 
+                  y: -10,
+                  boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+                  transition: { 
+                    type: "spring", 
+                    stiffness: 300, 
+                    damping: 15 
+                  }
+                }}
+              >
                 <div className="bg-white rounded-xl overflow-hidden">
                   {/* Dashboard Header with Tabs */}
                   <div className="bg-gray-100 border-b border-gray-200">
@@ -724,12 +956,12 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
               
               <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-blue-400/10 rounded-full filter blur-3xl"></div>
               <div className="absolute -top-10 -right-10 w-40 h-40 bg-indigo-400/10 rounded-full filter blur-3xl"></div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
       </div>
       
