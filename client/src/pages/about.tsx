@@ -2,9 +2,9 @@ import { NavBar } from '@/components/ui/navbar';
 import { Footer } from '@/components/ui/footer';
 import { Link } from 'wouter';
 
-// Placeholder images for co-founders until we can properly load the attached assets
-const pranavImage = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop';
-const pratimaImage = 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&auto=format&fit=crop';
+// Using the images from attached assets that have been copied to public/assets
+const pranavImage = '/assets/pranav.png';
+const pratimaImage = '/assets/pratima.png';
 
 export default function About() {
   return (
