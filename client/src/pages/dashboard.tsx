@@ -33,51 +33,59 @@ export default function Dashboard() {
             
             {/* Dashboard overview */}
             <div className="px-4 sm:px-0">
-              {/* Metrics Cards */}
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                <MetricsCard
-                  title="Total Revenue"
-                  value={formatCurrency(3427892)}
-                  change={{
-                    value: "8.2% from last quarter",
-                    isPositive: true
-                  }}
-                  icon={<DollarSign className="h-6 w-6 text-blue-600" />}
-                  iconColor="bg-blue-100"
-                />
-                
-                <MetricsCard
-                  title="Active Contracts"
-                  value="248"
-                  change={{
-                    value: "12 new this month",
-                    isPositive: true
-                  }}
-                  icon={<FileText className="h-6 w-6 text-emerald-600" />}
-                  iconColor="bg-emerald-100"
-                />
-                
-                <MetricsCard
-                  title="Revenue Forecast"
-                  value={formatCurrency(4182654)}
-                  change={{
-                    value: "18.4% annual growth",
-                    isPositive: true
-                  }}
-                  icon={<TrendingUp className="h-6 w-6 text-indigo-600" />}
-                  iconColor="bg-indigo-100"
-                />
-                
-                <MetricsCard
-                  title="Compliance Score"
-                  value="97.5%"
-                  change={{
-                    value: "2.3% improvement",
-                    isPositive: true
-                  }}
-                  icon={<BarChart2 className="h-6 w-6 text-violet-600" />}
-                  iconColor="bg-violet-100"
-                />
+              {/* KPI Dashboard Section */}
+              <div className="mb-6">
+                <h2 className="text-lg font-medium text-primary mb-3">KPI Dashboard</h2>
+                <div className="bg-white rounded-lg border border-gray-200 shadow-md p-4">
+                  <p className="text-gray-500 mb-4">
+                    Real-time revenue performance metrics across all business units
+                  </p>
+                  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                    <MetricsCard
+                      title="Total Revenue"
+                      value={formatCurrency(3427892)}
+                      change={{
+                        value: "8.2% from last quarter",
+                        isPositive: true
+                      }}
+                      icon={<DollarSign className="h-6 w-6 text-blue-600" />}
+                      iconColor="bg-blue-100"
+                    />
+                    
+                    <MetricsCard
+                      title="Active Contracts"
+                      value="248"
+                      change={{
+                        value: "12 new this month",
+                        isPositive: true
+                      }}
+                      icon={<FileText className="h-6 w-6 text-emerald-600" />}
+                      iconColor="bg-emerald-100"
+                    />
+                    
+                    <MetricsCard
+                      title="Revenue Forecast"
+                      value={formatCurrency(4182654)}
+                      change={{
+                        value: "18.4% annual growth",
+                        isPositive: true
+                      }}
+                      icon={<TrendingUp className="h-6 w-6 text-indigo-600" />}
+                      iconColor="bg-indigo-100"
+                    />
+                    
+                    <MetricsCard
+                      title="Compliance Score"
+                      value="97.5%"
+                      change={{
+                        value: "2.3% improvement",
+                        isPositive: true
+                      }}
+                      icon={<BarChart2 className="h-6 w-6 text-violet-600" />}
+                      iconColor="bg-violet-100"
+                    />
+                  </div>
+                </div>
               </div>
               
               {/* Revenue Chart */}
