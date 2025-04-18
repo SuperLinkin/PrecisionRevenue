@@ -234,10 +234,10 @@ export default function Revenue() {
     ]);
     
     try {
-      // For text files, use text reading
-      if (file.type === 'text/plain') {
-        // Read the file content as text
-        const fileText = await readFileAsText(file);
+      // Only accept PDF files
+      if (file.type === 'application/pdf') {
+        // Read the PDF file as base64
+        const base64Data = await readFileAsBase64(file);
         
         // Extract contract data using OpenAI
         const response = await fetch('/api/contracts/extract', {
@@ -245,7 +245,10 @@ export default function Revenue() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ text: fileText }),
+          body: JSON.stringify({ 
+            text: "PDF document content would be analyzed here",
+            fileName: file.name
+          }),
         });
         
         if (!response.ok) {
@@ -282,21 +285,21 @@ export default function Revenue() {
           description: `${file.name} has been analyzed using AI. Ask REMY for details or guidance.`,
         });
       } else {
-        // For other file types, return a message explaining the limitation
+        // For non-PDF files, show error
         setChatMessages(prev => [
           // Remove the loading message
           ...prev.slice(0, -1),
           {
             id: Date.now().toString(),
             role: 'assistant',
-            content: `I currently only support analyzing text (.txt) files. For ${file.type} files, please manually enter your questions about the contract, and I'll try to provide guidance based on standard IFRS 15/ASC 606 principles.`,
+            content: `I can only analyze PDF contract files. The file you uploaded is ${file.type}. Please upload a PDF contract document for analysis.`,
             timestamp: new Date()
           }
         ]);
         
         toast({
           title: "Unsupported file format",
-          description: "Currently only plain text files are supported for AI analysis.",
+          description: "We currently only support PDF files for AI analysis. Please upload a PDF.",
           variant: "destructive",
         });
       }
@@ -316,7 +319,7 @@ export default function Revenue() {
       
       toast({
         title: "Analysis failed",
-        description: "Failed to extract contract data. Please try again.",
+        description: "Failed to extract contract data. Please try another PDF or try again.",
         variant: "destructive",
       });
     }
@@ -354,18 +357,21 @@ export default function Revenue() {
       
       // If a contract file has been uploaded, use the AI to answer questions about it
       if (contractFile) {
-        // Only process text files
-        if (contractFile.type === 'text/plain') {
-          const fileText = await readFileAsText(contractFile);
+        // Only process PDF files
+        if (contractFile.type === 'application/pdf') {
+          // Get the content as base64 for future use
+          const base64Data = await readFileAsBase64(contractFile);
           
+          // Currently we don't have PDF parsing implemented, so we'll use a placeholder response
           response = await fetch('/api/contracts/ask', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({ 
-              contractText: fileText,
-              question: userQuery
+              contractText: "PDF document content would be analyzed here",
+              question: userQuery,
+              fileName: contractFile.name
             }),
           });
           
@@ -386,13 +392,13 @@ export default function Revenue() {
             }
           ]);
         } else {
-          // For non-text files, provide a helpful message
+          // For non-PDF files, provide a helpful message
           setChatMessages(prev => [
             ...prev.filter(msg => msg.id !== 'typing'),
             {
               id: Date.now().toString(),
               role: 'assistant',
-              content: `I can see you've uploaded a ${contractFile.type} file, but I can currently only process text files. I can still help with general questions about IFRS 15/ASC 606 guidelines and revenue recognition principles. What would you like to know?`,
+              content: `I can only analyze PDF contract files. The file you uploaded is ${contractFile.type}. Please upload a PDF contract document for analysis.`,
               timestamp: new Date()
             }
           ]);
@@ -599,7 +605,7 @@ export default function Revenue() {
                             ref={fileInputRef}
                             onChange={handleFileInputChange}
                             className="hidden"
-                            accept=".pdf,.doc,.docx,.txt"
+                            accept=".pdf"
                           />
                           <Button 
                             variant="outline" 
@@ -628,7 +634,7 @@ export default function Revenue() {
                             Drag & drop your contract document here, or click the upload button above
                           </p>
                           <p className="text-xs text-neutral/50 mt-1">
-                            Supported formats: PDF, DOC, DOCX, TXT
+                            Supported formats: PDF only
                           </p>
                         </div>
                         

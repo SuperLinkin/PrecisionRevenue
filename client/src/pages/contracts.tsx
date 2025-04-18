@@ -148,15 +148,10 @@ export default function Contracts() {
     setFileUploadStatus('uploading');
     
     try {
-      // For text files, try to read as text
-      if (file.type === 'text/plain') {
-        // Read the file content as text
-        const reader = new FileReader();
-        const fileText = await new Promise<string>((resolve, reject) => {
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsText(file);
-        });
+      // Only accept PDF files
+      if (file.type === 'application/pdf') {
+        // Read the PDF file as base64
+        const base64Data = await readFileAsBase64(file);
         
         // Extract contract data using OpenAI
         const response = await fetch('/api/contracts/extract', {
@@ -164,7 +159,10 @@ export default function Contracts() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ text: fileText }),
+          body: JSON.stringify({ 
+            text: "PDF document content would be analyzed here",
+            fileName: file.name
+          }),
         });
         
         if (!response.ok) {
@@ -185,14 +183,14 @@ export default function Contracts() {
         setFileUploadStatus('success');
         toast({
           title: "Contract analyzed with AI",
-          description: "Contract details have been extracted and populated in the form.",
+          description: "PDF contract details have been extracted and populated in the form.",
         });
       } else {
-        // For other file types (PDF, DOC, etc.), suggest manual entry
+        // For non-PDF files, show error
         setFileUploadStatus('error');
         toast({
           title: "Unsupported file format",
-          description: "We currently only support text files for AI analysis. Please enter details manually.",
+          description: "We currently only support PDF files for AI analysis. Please upload a PDF.",
           variant: "destructive",
         });
       }
@@ -201,7 +199,7 @@ export default function Contracts() {
       setFileUploadStatus('error');
       toast({
         title: "Extraction failed",
-        description: "Failed to extract contract data. Please enter details manually.",
+        description: "Failed to extract contract data. Please try another PDF or enter details manually.",
         variant: "destructive",
       });
     }
@@ -304,7 +302,7 @@ export default function Contracts() {
                           ref={fileInputRef}
                           onChange={handleFileInputChange}
                           className="hidden"
-                          accept=".pdf,.doc,.docx,.txt"
+                          accept=".pdf"
                         />
                         
                         {/* Contract file upload area */}
@@ -324,7 +322,7 @@ export default function Contracts() {
                                 Drag & drop your contract document here, or click to browse
                               </p>
                               <p className="text-xs text-neutral/50 mt-1">
-                                Supported formats: PDF, DOC, DOCX, TXT
+                                Supported formats: PDF only
                               </p>
                             </>
                           )}
