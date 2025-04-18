@@ -34,16 +34,16 @@ export function Footer() {
                 <ul className="mt-4 space-y-4">
                   <li>
                     <Link href="/knowledge-center">
-                      <a className="text-base text-neutral hover:text-secondary">
+                      <span className="text-base text-neutral hover:text-secondary cursor-pointer">
                         Revenue Recognition
-                      </a>
+                      </span>
                     </Link>
                   </li>
                   <li>
                     <Link href="/knowledge-center">
-                      <a className="text-base text-neutral hover:text-secondary">
+                      <span className="text-base text-neutral hover:text-secondary cursor-pointer">
                         Contract Analysis
-                      </a>
+                      </span>
                     </Link>
                   </li>
                   <li>

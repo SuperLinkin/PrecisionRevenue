@@ -30,9 +30,16 @@ type AuthContextType = {
   logout: () => Promise<void>;
 };
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+// Create Auth Context with default mock values for demo mode
+const AuthContext = createContext<AuthContextType>({
+  user: MOCK_USER,
+  isLoading: false,
+  isAuthenticated: true,
+  login: async () => MOCK_USER,
+  register: async () => MOCK_USER,
+  logout: async () => {},
+});
 
-// Demo mode - using mock authentication
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(MOCK_USER); // Start with mock user already logged in
   const [isLoading, setIsLoading] = useState(false);
@@ -97,8 +104,5 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
   return context;
 };
