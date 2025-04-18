@@ -493,48 +493,188 @@ export default function Home() {
             </div>
             
             <div className="hidden lg:block relative mt-12 lg:mt-0">
-              <div className="relative z-10 bg-white/10 backdrop-blur-sm rounded-2xl p-1 border border-white/20 shadow-2xl transform rotate-2 hover:rotate-0 transition-transform duration-700">
-                <div className="bg-gradient-to-br from-background/90 to-background border border-white/5 rounded-xl overflow-hidden">
-                  <div className="p-5">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex space-x-1">
-                        <div className="w-3 h-3 bg-red-400 rounded-full"></div>
-                        <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
-                        <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+              <div className="relative z-10 bg-white rounded-xl shadow-2xl transform rotate-1 hover:rotate-0 transition-transform duration-700 overflow-hidden">
+                <div className="bg-white rounded-xl overflow-hidden">
+                  {/* Dashboard Header with Tabs */}
+                  <div className="bg-gray-100 border-b border-gray-200">
+                    <div className="flex items-center justify-between p-4">
+                      <div className="flex items-center space-x-2">
+                        <div className="flex space-x-1">
+                          <div className="w-3 h-3 bg-red-400 rounded-full"></div>
+                          <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                          <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                        </div>
+                        <div className="text-sm font-semibold text-gray-700 ml-3">PRA Executive Dashboard</div>
                       </div>
-                      <div className="text-xs text-white/70">PRA Analytics</div>
-                    </div>
-                    
-                    <div className="space-y-3">
-                      <div className="h-3 w-3/4 bg-white/10 rounded-full"></div>
-                      <div className="h-3 w-full bg-white/10 rounded-full"></div>
-                      <div className="h-3 w-2/3 bg-white/10 rounded-full"></div>
-                    </div>
-                    
-                    <div className="mt-6 grid grid-cols-2 gap-3">
-                      <div className="bg-white/5 rounded-lg p-3">
-                        <div className="h-2 w-1/2 bg-white/10 rounded-full mb-2"></div>
-                        <div className="h-10 bg-accent/10 rounded"></div>
-                      </div>
-                      <div className="bg-white/5 rounded-lg p-3">
-                        <div className="h-2 w-1/2 bg-white/10 rounded-full mb-2"></div>
-                        <div className="h-10 bg-secondary/10 rounded"></div>
+                      <div className="flex items-center space-x-3">
+                        <div className="text-xs text-gray-500 px-2 py-1 rounded-md bg-white border border-gray-200">
+                          Last updated: Today 9:30 AM
+                        </div>
                       </div>
                     </div>
-                    
-                    <div className="mt-4 bg-white/5 rounded-lg p-3">
-                      <div className="flex justify-between mb-2">
-                        <div className="h-2 w-1/4 bg-white/10 rounded-full"></div>
-                        <div className="h-2 w-1/5 bg-white/10 rounded-full"></div>
+                    <div className="flex px-4">
+                      <div className="px-4 py-2 border-b-2 border-blue-600 text-blue-600 font-medium text-sm">Revenue Recognition</div>
+                      <div className="px-4 py-2 text-gray-500 text-sm">Deal Desk</div>
+                      <div className="px-4 py-2 text-gray-500 text-sm">Forecasting</div>
+                      <div className="px-4 py-2 text-gray-500 text-sm">KPI Dashboard</div>
+                    </div>
+                  </div>
+                  
+                  {/* Dashboard Content */}
+                  <div className="p-4">
+                    {/* KPI Cards */}
+                    <div className="grid grid-cols-3 gap-4 mb-4">
+                      <div className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm">
+                        <div className="text-xs font-medium text-gray-500 mb-1">Recognized Revenue</div>
+                        <div className="text-xl font-bold text-gray-800">$2.4M</div>
+                        <div className="flex items-center mt-1">
+                          <div className="text-xs font-medium text-emerald-600 flex items-center">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-1">
+                              <path d="M18 15L12 9L6 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                            8.2%
+                          </div>
+                          <div className="text-xs text-gray-500 ml-2">vs. last period</div>
+                        </div>
                       </div>
-                      <div className="h-20 bg-gradient-to-r from-secondary/20 via-accent/20 to-primary/20 rounded"></div>
+                      <div className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm">
+                        <div className="text-xs font-medium text-gray-500 mb-1">Pending Approval</div>
+                        <div className="text-xl font-bold text-gray-800">$842K</div>
+                        <div className="flex items-center mt-1">
+                          <div className="text-xs font-medium text-blue-600">
+                            3 contracts awaiting review
+                          </div>
+                        </div>
+                      </div>
+                      <div className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm">
+                        <div className="text-xs font-medium text-gray-500 mb-1">AI-Assisted Accuracy</div>
+                        <div className="text-xl font-bold text-gray-800">99.2%</div>
+                        <div className="flex items-center mt-1">
+                          <div className="text-xs font-medium text-emerald-600 flex items-center">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-1">
+                              <path d="M18 15L12 9L6 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                            1.4%
+                          </div>
+                          <div className="text-xs text-gray-500 ml-2">improvement</div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Revenue Recognition Chart */}
+                    <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm mb-4">
+                      <div className="flex justify-between items-center mb-4">
+                        <div className="text-sm font-semibold text-gray-800">Revenue Recognition Timeline</div>
+                        <div className="flex items-center space-x-2">
+                          <div className="flex items-center text-xs">
+                            <div className="w-3 h-3 bg-blue-500 rounded-full mr-1"></div>
+                            <span className="text-gray-600">Recognized</span>
+                          </div>
+                          <div className="flex items-center text-xs">
+                            <div className="w-3 h-3 bg-indigo-300 rounded-full mr-1"></div>
+                            <span className="text-gray-600">Scheduled</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="h-32 w-full">
+                        {/* Chart Visualization */}
+                        <div className="relative h-full w-full">
+                          {/* X Axis */}
+                          <div className="absolute bottom-0 left-0 right-0 border-t border-gray-200 flex justify-between px-2 pt-1">
+                            <div className="text-xs text-gray-500">Jan</div>
+                            <div className="text-xs text-gray-500">Feb</div>
+                            <div className="text-xs text-gray-500">Mar</div>
+                            <div className="text-xs text-gray-500">Apr</div>
+                            <div className="text-xs text-gray-500">May</div>
+                            <div className="text-xs text-gray-500">Jun</div>
+                          </div>
+                          
+                          {/* Chart Bars */}
+                          <div className="absolute bottom-6 left-0 right-0 h-[calc(100%-24px)] flex items-end">
+                            <div className="w-1/6 h-full flex flex-col justify-end px-1">
+                              <div className="bg-blue-500 w-full h-[70%] rounded-t"></div>
+                            </div>
+                            <div className="w-1/6 h-full flex flex-col justify-end px-1">
+                              <div className="bg-blue-500 w-full h-[85%] rounded-t"></div>
+                            </div>
+                            <div className="w-1/6 h-full flex flex-col justify-end px-1">
+                              <div className="bg-blue-500 w-full h-[60%] rounded-t"></div>
+                            </div>
+                            <div className="w-1/6 h-full flex flex-col justify-end px-1">
+                              <div className="bg-blue-500 w-full h-[90%] rounded-t"></div>
+                            </div>
+                            <div className="w-1/6 h-full flex flex-col justify-end px-1">
+                              <div className="bg-blue-500 w-full h-[75%] rounded-t-md"></div>
+                              <div className="bg-indigo-300 w-full h-[15%] opacity-70"></div>
+                            </div>
+                            <div className="w-1/6 h-full flex flex-col justify-end px-1">
+                              <div className="bg-indigo-300 w-full h-[60%] rounded-t opacity-70"></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Deal Desk & AI Insights */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                        <div className="flex justify-between items-center mb-3">
+                          <div className="text-sm font-semibold text-gray-800">Deal Desk Pipeline</div>
+                          <div className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded">
+                            3 new deals this week
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="p-2 rounded-md border border-gray-100 bg-gray-50 flex justify-between">
+                            <div className="text-xs font-medium text-gray-700">Enterprise SaaS</div>
+                            <div className="text-xs font-medium text-amber-600">$420K</div>
+                          </div>
+                          <div className="p-2 rounded-md border border-gray-100 bg-gray-50 flex justify-between">
+                            <div className="text-xs font-medium text-gray-700">Cloud Services</div>
+                            <div className="text-xs font-medium text-amber-600">$275K</div>
+                          </div>
+                          <div className="p-2 rounded-md border border-gray-100 bg-gray-50 flex justify-between">
+                            <div className="text-xs font-medium text-gray-700">Data Processing</div>
+                            <div className="text-xs font-medium text-amber-600">$195K</div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                        <div className="flex justify-between items-center mb-3">
+                          <div className="text-sm font-semibold text-gray-800">AI-Powered Forecast</div>
+                          <div className="bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded">
+                            Updated Today
+                          </div>
+                        </div>
+                        <div className="h-24 w-full relative">
+                          {/* Line Chart */}
+                          <svg viewBox="0 0 100 40" preserveAspectRatio="none" className="h-full w-full">
+                            <path d="M0,35 L10,32 L20,34 L30,25 L40,28 L50,20 L60,15 L70,18 L80,10 L90,13 L100,5" 
+                                  stroke="#3b82f6" 
+                                  strokeWidth="2" 
+                                  fill="none" 
+                                  className="drop-shadow-md" />
+                            <path d="M0,35 L10,32 L20,34 L30,25 L40,28 L50,20 L60,15 L70,18 L80,10 L90,13 L100,5 L100,40 L0,40 Z" 
+                                  fill="url(#gradient)" 
+                                  opacity="0.2" />
+                            <defs>
+                              <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.7" />
+                                <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
+                              </linearGradient>
+                            </defs>
+                          </svg>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
               
-              <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-accent/20 rounded-full filter blur-3xl"></div>
-              <div className="absolute -top-10 -right-10 w-40 h-40 bg-secondary/20 rounded-full filter blur-3xl"></div>
+              <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-blue-400/10 rounded-full filter blur-3xl"></div>
+              <div className="absolute -top-10 -right-10 w-40 h-40 bg-indigo-400/10 rounded-full filter blur-3xl"></div>
             </div>
           </div>
         </div>

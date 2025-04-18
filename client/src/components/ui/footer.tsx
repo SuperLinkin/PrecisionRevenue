@@ -47,18 +47,22 @@ export function Footer() {
                     </Link>
                   </li>
                   <li>
-                    <Link href="/knowledge-center">
-                      <a className="text-base text-neutral hover:text-secondary">
-                        Compliance
-                      </a>
-                    </Link>
+                    <div className="inline-block">
+                      <Link href="/knowledge-center">
+                        <span className="text-base text-neutral hover:text-secondary cursor-pointer">
+                          Compliance
+                        </span>
+                      </Link>
+                    </div>
                   </li>
                   <li>
-                    <Link href="/knowledge-center">
-                      <a className="text-base text-neutral hover:text-secondary">
-                        Financial Reporting
-                      </a>
-                    </Link>
+                    <div className="inline-block">
+                      <Link href="/knowledge-center">
+                        <span className="text-base text-neutral hover:text-secondary cursor-pointer">
+                          Financial Reporting
+                        </span>
+                      </Link>
+                    </div>
                   </li>
                 </ul>
               </div>
@@ -68,25 +72,31 @@ export function Footer() {
                 </h3>
                 <ul className="mt-4 space-y-4">
                   <li>
-                    <Link href="/knowledge-center">
-                      <a className="text-base text-neutral hover:text-secondary">
-                        Knowledge Center
-                      </a>
-                    </Link>
+                    <div className="inline-block">
+                      <Link href="/knowledge-center">
+                        <span className="text-base text-neutral hover:text-secondary cursor-pointer">
+                          Knowledge Center
+                        </span>
+                      </Link>
+                    </div>
                   </li>
                   <li>
-                    <Link href="/knowledge-center">
-                      <a className="text-base text-neutral hover:text-secondary">
-                        Documentation
-                      </a>
-                    </Link>
+                    <div className="inline-block">
+                      <Link href="/knowledge-center">
+                        <span className="text-base text-neutral hover:text-secondary cursor-pointer">
+                          Documentation
+                        </span>
+                      </Link>
+                    </div>
                   </li>
                   <li>
-                    <Link href="/knowledge-center">
-                      <a className="text-base text-neutral hover:text-secondary">
-                        Guides
-                      </a>
-                    </Link>
+                    <div className="inline-block">
+                      <Link href="/knowledge-center">
+                        <span className="text-base text-neutral hover:text-secondary cursor-pointer">
+                          Guides
+                        </span>
+                      </Link>
+                    </div>
                   </li>
                   <li>
                     <a href="#" className="text-base text-neutral hover:text-secondary">
@@ -103,11 +113,13 @@ export function Footer() {
                 </h3>
                 <ul className="mt-4 space-y-4">
                   <li>
-                    <Link href="/about">
-                      <a className="text-base text-neutral hover:text-secondary">
-                        About
-                      </a>
-                    </Link>
+                    <div className="inline-block">
+                      <Link href="/about">
+                        <span className="text-base text-neutral hover:text-secondary cursor-pointer">
+                          About
+                        </span>
+                      </Link>
+                    </div>
                   </li>
                   <li>
                     <a href="#" className="text-base text-neutral hover:text-secondary">
