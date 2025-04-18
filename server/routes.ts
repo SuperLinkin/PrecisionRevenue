@@ -1,4 +1,4 @@
-import type { Express, Request, Response } from "express";
+import express, { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
@@ -16,6 +16,7 @@ import MemoryStore from "memorystore";
 const SessionStore = MemoryStore(session);
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Express middleware configuration is handled in index.ts
   // Set up session middleware
   app.use(
     session({
