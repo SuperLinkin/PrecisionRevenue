@@ -9,7 +9,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { useAuth } from '@/lib/auth';
+// import { useAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
 
@@ -27,7 +27,8 @@ const signupSchema = z.object({
 type SignupFormValues = z.infer<typeof signupSchema>;
 
 export default function Signup() {
-  const { register } = useAuth();
+  // Temporarily define a mock register function instead of using useAuth()
+  const mockRegister = () => Promise.resolve({});
   const [location, navigate] = useLocation();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,21 +47,24 @@ export default function Signup() {
   const onSubmit = async (values: SignupFormValues) => {
     try {
       setIsSubmitting(true);
-      await register({
+      // For now we'll just show a toast message
+      // Mock registration functionality
+      /* await register({
         username: values.username,
         email: values.email,
         fullName: values.fullName,
         password: values.password,
         role: 'user'
-      });
+      }); */
       
       toast({
-        title: "Account created successfully",
-        description: "Please log in with your new credentials",
+        title: "Demo Mode",
+        description: "Registration functionality is available in the complete version.",
         variant: "default",
       });
       
-      navigate('/login');
+      // Normally would navigate to login
+      // navigate('/login');
     } catch (error) {
       console.error('Registration error:', error);
       toast({

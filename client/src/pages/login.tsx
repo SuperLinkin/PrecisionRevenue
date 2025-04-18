@@ -9,7 +9,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { useAuth } from '@/lib/auth';
+// import { useAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -23,16 +23,18 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function Login() {
-  const { login, isAuthenticated } = useAuth();
+  // Mock auth functions temporarily
+  const login = (username: string, password: string) => Promise.resolve({});
+  const isAuthenticated = false;
   const [location, navigate] = useLocation();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Redirect if already authenticated
-  if (isAuthenticated) {
+  // Redirect logic - commented out as we're not using real auth
+  /* if (isAuthenticated) {
     navigate('/dashboard');
     return null;
-  }
+  } */
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -46,13 +48,14 @@ export default function Login() {
   const onSubmit = async (values: LoginFormValues) => {
     try {
       setIsSubmitting(true);
-      await login(values.username, values.password);
+      // Mock login - just showing a toast message
+      // await login(values.username, values.password);
       toast({
-        title: "Login successful",
-        description: "Welcome to PRA Dashboard",
+        title: "Demo Mode",
+        description: "Authentication functionality is available in the complete version.",
         variant: "default",
       });
-      navigate('/dashboard');
+      // navigate('/dashboard');
     } catch (error) {
       console.error('Login error:', error);
       toast({
