@@ -15,21 +15,10 @@ import { Suspense, lazy, useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
 import { PageTransition } from "@/lib/animations";
 
-// Protected route component
+// For demo purposes, all routes are accessible without login
 const ProtectedRoute = ({ component: Component, ...rest }: any) => {
-  const { isAuthenticated, isLoading } = useAuth();
-  
-  if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-secondary"></div>
-    </div>;
-  }
-  
-  if (!isAuthenticated) {
-    window.location.href = "/login";
-    return null;
-  }
-  
+  // In a real application, this would check authentication
+  // For MVP demo, we'll always allow access
   return <Component {...rest} />;
 };
 

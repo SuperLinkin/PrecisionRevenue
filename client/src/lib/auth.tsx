@@ -5,9 +5,9 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 // Mock user data for demonstration
 const MOCK_USER = {
   id: 1,
-  username: 'mvpranav',
+  username: 'user1',
   email: 'admin@precisonrevenue.com',
-  fullName: 'Pranav Kumar',
+  fullName: 'User 1',
   role: 'admin',
   companyId: 1,
 };
