@@ -1454,30 +1454,90 @@ export default function Home() {
               <span className="text-sm font-semibold">Continuous Improvement</span>
             </motion.div>
             
-            <motion.h3 
-              className="text-3xl font-semibold text-white mb-3 bg-primary/40 inline-block px-6 py-2 rounded-lg"
+            <motion.div
+              className="bg-white/15 backdrop-blur-md rounded-xl p-6 border border-white/20 shadow-xl mb-4 max-w-3xl mx-auto"
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.2, duration: 0.5 }}
-              whileHover={{ 
-                backgroundColor: "rgba(15, 23, 42, 0.5)",
-                scale: 1.02,
-                transition: { duration: 0.2 }
-              }}
             >
-              Advanced Financial Intelligence
-            </motion.h3>
-            
-            <motion.p 
-              className="max-w-2xl mx-auto text-white mt-4"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.3, duration: 0.5 }}
-            >
-              PRA's financial systems continuously adapt to new data, regulatory changes, and user feedback to enhance recognition accuracy and forecasting precision.
-            </motion.p>
+              <motion.h3 
+                className="text-3xl font-semibold text-white mb-3"
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+              >
+                Advanced Financial Intelligence
+              </motion.h3>
+              
+              <motion.p 
+                className="text-lg text-blue-100"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.4, duration: 0.5 }}
+              >
+                PRA's financial systems continuously adapt to new data, regulatory changes, and user feedback to enhance recognition accuracy and forecasting precision.
+              </motion.p>
+              
+              <div className="grid grid-cols-3 gap-4 mt-6">
+                <motion.div 
+                  className="rounded-lg bg-white/10 border border-white/10 p-3"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.5, duration: 0.4 }}
+                  whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.15)" }}
+                >
+                  <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center mb-2">
+                    <svg className="w-4 h-4 text-blue-300" viewBox="0 0 24 24" fill="none">
+                      <path d="M9 19L14 14L9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M14 19L19 14L14 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M5 19L5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                  <h4 className="text-sm font-medium text-white mb-1">Adaptive Learning</h4>
+                  <p className="text-xs text-blue-200">Continuously improves through contract patterns</p>
+                </motion.div>
+                
+                <motion.div 
+                  className="rounded-lg bg-white/10 border border-white/10 p-3"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.6, duration: 0.4 }}
+                  whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.15)" }}
+                >
+                  <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center mb-2">
+                    <svg className="w-4 h-4 text-purple-300" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M12 12L16 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M12 8V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                  <h4 className="text-sm font-medium text-white mb-1">Real-time Updates</h4>
+                  <p className="text-xs text-blue-200">Reflects latest regulatory changes</p>
+                </motion.div>
+                
+                <motion.div 
+                  className="rounded-lg bg-white/10 border border-white/10 p-3"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.7, duration: 0.4 }}
+                  whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.15)" }}
+                >
+                  <div className="w-8 h-8 bg-teal-500/20 rounded-lg flex items-center justify-center mb-2">
+                    <svg className="w-4 h-4 text-teal-300" viewBox="0 0 24 24" fill="none">
+                      <path d="M20.25 6.375C20.25 8.65317 16.5563 10.5 12 10.5C7.44365 10.5 3.75 8.65317 3.75 6.375M20.25 6.375C20.25 4.09683 16.5563 2.25 12 2.25C7.44365 2.25 3.75 4.09683 3.75 6.375M20.25 6.375V17.625C20.25 19.9032 16.5563 21.75 12 21.75C7.44365 21.75 3.75 19.9032 3.75 17.625V6.375M20.25 6.375V10.125M3.75 6.375V10.125" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                  <h4 className="text-sm font-medium text-white mb-1">Audit-Ready</h4>
+                  <p className="text-xs text-blue-200">Full IFRS 15/ASC 606 compliance</p>
+                </motion.div>
+              </div>
+            </motion.div>
           </motion.div>
         </div>
       </div>
