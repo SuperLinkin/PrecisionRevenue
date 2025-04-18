@@ -4,8 +4,23 @@ import { getContractTemplate } from './contract-template';
 import { answerContractQuestion } from './utils/openai';
 const router = express.Router();
 
+// Define an interface for our contract data for better type safety
+interface ContractData {
+  name: string;
+  contractNumber: string;
+  clientName: string;
+  startDate: Date;
+  endDate: Date | null; // Allow null for contracts without end date
+  value: number;
+  keyTerms: string[];
+  performanceObligations?: string[]; // Optional field for IFRS 15 specific data
+}
+
 // In-memory storage for demo contracts
-let demoContract = {
+let demoContract: {
+  text: string;
+  data: ContractData;
+} = {
   text: getContractTemplate('SaaS', 'DemoTech'),
   data: {
     name: 'SaaS Agreement',
@@ -66,19 +81,20 @@ router.post('/extract', async (req, res) => {
         const extractedData = await extractContractData(contractText);
         
         // Update the demo contract with the extracted data
-        // Convert dates properly
-        const processedData = {
-          ...extractedData,
-          startDate: extractedData.startDate instanceof Date ? extractedData.startDate : new Date(extractedData.startDate)
+        // Create a properly typed contract data object from extracted data
+        const processedData: ContractData = {
+          name: String(extractedData.name || 'Untitled Contract'),
+          contractNumber: String(extractedData.contractNumber || `CT-${Math.floor(Math.random() * 1000)}-${new Date().getFullYear()}`),
+          clientName: String(extractedData.clientName || 'Unnamed Client'),
+          startDate: extractedData.startDate instanceof Date ? extractedData.startDate : new Date(extractedData.startDate || new Date()),
+          endDate: extractedData.endDate ? (extractedData.endDate instanceof Date ? extractedData.endDate : new Date(extractedData.endDate)) : null,
+          value: Number(extractedData.value || 0),
+          keyTerms: Array.isArray(extractedData.keyTerms) ? extractedData.keyTerms.map(String) : [],
         };
         
-        // Handle endDate separately to avoid type issues
-        if (extractedData.endDate) {
-          processedData.endDate = extractedData.endDate instanceof Date 
-            ? extractedData.endDate 
-            : new Date(extractedData.endDate);
-        } else {
-          processedData.endDate = null;
+        // Add performance obligations if present
+        if (Array.isArray(extractedData.performanceObligations)) {
+          processedData.performanceObligations = extractedData.performanceObligations.map(String);
         }
         
         // Update contract data
