@@ -3,8 +3,12 @@ import {
   companies, type Company, type InsertCompany,
   contracts, type Contract, type InsertContract,
   revenueRecords, type RevenueRecord, type InsertRevenueRecord,
-  tasks, type Task, type InsertTask
+  tasks, type Task, type InsertTask,
+  performanceObligations, type PerformanceObligation, type InsertPerformanceObligation,
+  transactionPriceAdjustments, type TransactionPriceAdjustment, type InsertTransactionPriceAdjustment
 } from "@shared/schema";
+import { db } from './db';
+import { eq } from 'drizzle-orm';
 
 // Interface for all storage operations
 export interface IStorage {
