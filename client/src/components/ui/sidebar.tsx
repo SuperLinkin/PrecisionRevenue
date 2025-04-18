@@ -19,11 +19,17 @@ import { getInitials } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 
+interface MenuItem {
+  path: string;
+  label: string;
+  icon: JSX.Element;
+}
+
 export function Sidebar() {
   const [location] = useLocation();
   const { user, logout } = useAuth();
   
-  const menuItems = [
+  const menuItems: MenuItem[] = [
     { 
       path: '/dashboard', 
       label: 'CFO Dashboard', 
@@ -81,22 +87,9 @@ export function Sidebar() {
   const toolItems = menuItems.slice(3, 8); // CLAUS, MOCA, Disclosure, Analytics, Deal Desk
   const settingsItems = menuItems.slice(8); // Company Settings, Settings
   
-  const navItemVariants = {
-    initial: { x: -15, opacity: 0 },
-    animate: { x: 0, opacity: 1, transition: { type: 'spring', stiffness: 300, damping: 24 } },
-    hover: { 
-      x: 5, 
-      transition: { type: 'spring', stiffness: 400, damping: 17 } 
-    }
-  };
-  
-  const renderNavItem = (item) => (
+  const renderNavItem = (item: { path: string; label: string; icon: JSX.Element }) => (
     <Link key={item.path} href={item.path}>
-      <motion.div
-        initial="initial"
-        animate="animate"
-        whileHover="hover"
-        variants={navItemVariants}
+      <div
         className={`flex items-center px-4 py-2.5 mb-1 text-sm font-medium rounded-md cursor-pointer group transition-colors ${
           location === item.path 
             ? 'bg-gradient-to-r from-indigo-600/90 to-indigo-700 text-white shadow-md'
@@ -110,15 +103,9 @@ export function Sidebar() {
         </div>
         <span className="flex-1">{item.label}</span>
         {location === item.path && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.2 }}
-          >
-            <ChevronRightIcon className="h-4 w-4 text-indigo-300" />
-          </motion.div>
+          <ChevronRightIcon className="h-4 w-4 text-indigo-300" />
         )}
-      </motion.div>
+      </div>
     </Link>
   );
   
