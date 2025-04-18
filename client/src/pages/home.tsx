@@ -212,10 +212,164 @@ export default function Home() {
                     </div>
                     
                     <div className="p-5 space-y-5">
+                      {/* REMY Contract Analysis Interface */}
+                      <div className="rounded-lg bg-gradient-to-b from-primary-800/40 to-primary-900/40 border border-white/5 p-4">
+                        <div className="flex justify-between items-center mb-2">
+                          <div className="text-sm font-bold text-white flex items-center">
+                            <div className="w-2 h-2 rounded-full bg-blue-500 mr-2 animate-pulse"></div>
+                            REMY Contract Analysis
+                          </div>
+                          <div className="flex items-center space-x-2 text-xs">
+                            <div className="px-2 py-1 rounded-full bg-emerald-500/20 text-emerald-300 flex items-center">
+                              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></div>
+                              Online
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Contract Drop Zone */}
+                        <motion.div 
+                          className="relative h-24 mb-3 rounded-lg border border-dashed border-blue-500/40 bg-blue-500/5 flex flex-col items-center justify-center cursor-pointer overflow-hidden group"
+                          whileHover={{ 
+                            borderColor: "rgba(59, 130, 246, 0.7)",
+                            backgroundColor: "rgba(59, 130, 246, 0.1)",
+                            transition: { duration: 0.2 }
+                          }}
+                          whileTap={{ scale: 0.98 }}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ duration: 0.5 }}
+                        >
+                          <motion.div
+                            className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2, duration: 0.3 }}
+                          >
+                            <motion.div 
+                              className="absolute inset-0 -z-10"
+                              animate={{ 
+                                backgroundPosition: ["0% 0%", "100% 100%"],
+                                transition: { 
+                                  repeat: Infinity, 
+                                  repeatType: "mirror", 
+                                  duration: 5,
+                                  ease: "linear"
+                                }
+                              }}
+                              style={{
+                                backgroundImage: "radial-gradient(circle, rgba(59, 130, 246, 0.1) 10%, transparent 10.5%)",
+                                backgroundSize: "20px 20px"
+                              }}
+                            />
+                          </motion.div>
+                          
+                          <motion.div 
+                            className="text-blue-300"
+                            animate={{ y: [0, -5, 0] }}
+                            transition={{ 
+                              repeat: Infinity, 
+                              duration: 2,
+                              ease: "easeInOut"
+                            }}
+                          >
+                            <svg className="h-8 w-8 mb-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M7 10V9C7 6.23858 9.23858 4 12 4C14.7614 4 17 6.23858 17 9V10C19.2091 10 21 11.7909 21 14C21 16.2091 19.2091 18 17 18H7C4.79086 18 3 16.2091 3 14C3 11.7909 4.79086 10 7 10Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                              <path d="M12 12V15M12 15L14 13M12 15L10 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </motion.div>
+                          <div className="text-sm font-medium text-blue-200">Drag & Drop Contract</div>
+                          <div className="text-xs text-blue-300/70 mt-1">or click to upload PDF</div>
+                        </motion.div>
+                        
+                        {/* REMY Chat Interface */}
+                        <div className="rounded-lg border border-white/10 overflow-hidden">
+                          <div className="bg-gradient-to-r from-primary-900/80 to-primary-800/80 px-4 py-2.5 flex items-center">
+                            <div className="w-2 h-2 rounded-full bg-emerald-400 mr-2 animate-pulse"></div>
+                            <div className="font-medium text-sm text-white">REMY <span className="opacity-50 text-xs">| Your Contract Assistant</span></div>
+                          </div>
+                          
+                          <motion.div 
+                            className="bg-primary-900/60 p-3 space-y-3 h-[150px] overflow-y-auto"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.3, duration: 0.5 }}
+                          >
+                            {/* Chat Messages */}
+                            <motion.div 
+                              className="flex items-start gap-2"
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.5, duration: 0.3 }}
+                            >
+                              <div className="w-6 h-6 rounded-full bg-blue-600/30 flex items-center justify-center flex-shrink-0 mt-1">
+                                <span className="text-xs font-bold text-blue-300">R</span>
+                              </div>
+                              <div className="bg-primary-800/40 rounded-lg p-2 text-sm text-white max-w-[85%]">
+                                Hello! I'm REMY, your contract analysis assistant. Drop your contract and ask me anything about its terms and compliance.
+                              </div>
+                            </motion.div>
+                            
+                            <motion.div 
+                              className="flex items-start justify-end gap-2"
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.8, duration: 0.3 }}
+                            >
+                              <div className="bg-blue-600/20 rounded-lg p-2 text-sm text-white max-w-[85%]">
+                                Does this contract have a significant financing component?
+                              </div>
+                              <div className="w-6 h-6 rounded-full bg-purple-600/30 flex items-center justify-center flex-shrink-0 mt-1">
+                                <span className="text-xs font-bold text-purple-300">U</span>
+                              </div>
+                            </motion.div>
+                            
+                            <motion.div 
+                              className="flex items-start gap-2"
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 1.1, duration: 0.3 }}
+                            >
+                              <div className="w-6 h-6 rounded-full bg-blue-600/30 flex items-center justify-center flex-shrink-0 mt-1">
+                                <span className="text-xs font-bold text-blue-300">R</span>
+                              </div>
+                              <div className="bg-primary-800/40 rounded-lg p-2 text-sm text-white max-w-[85%]">
+                                <p className="font-semibold text-blue-300">Yes</p>
+                                <p className="mt-1">This contract contains a significant financing component in section 4.3. The payment terms extend beyond 12 months with no explicit interest rate, which under IFRS 15/ASC 606 requires separate accounting for the time value of money.</p>
+                                <div className="mt-2 text-xs text-blue-200 border-t border-blue-500/20 pt-1 flex justify-between">
+                                  <span>Confidence: 96.8%</span>
+                                  <span>References: Sec 4.3, 7.2</span>
+                                </div>
+                              </div>
+                            </motion.div>
+                          </motion.div>
+                          
+                          <div className="bg-primary-900/80 p-2 border-t border-white/5">
+                            <div className="relative">
+                              <input 
+                                type="text" 
+                                className="w-full bg-white/5 rounded-full py-2 pl-4 pr-10 text-sm text-white placeholder-white/40 focus:outline-none focus:ring-1 focus:ring-blue-500/50" 
+                                placeholder="Ask about contract terms, compliance, risks..."
+                              />
+                              <motion.button 
+                                className="absolute right-1 top-1 rounded-full p-1.5 bg-blue-600 text-white"
+                                whileHover={{ scale: 1.05, backgroundColor: "#2563EB" }}
+                                whileTap={{ scale: 0.95 }}
+                              >
+                                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <path d="M22 2L11 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                  <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                              </motion.button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
                       {/* Top stats row */}
                       <div className="grid grid-cols-3 gap-4">
                         <div className="rounded-lg bg-gradient-to-br from-blue-500/20 to-primary-800/40 border border-white/5 p-3">
-                          <div className="text-xs text-white/60 mb-1">AI Accuracy</div>
+                          <div className="text-xs text-white/60 mb-1">REMY Accuracy</div>
                           <div className="text-xl font-bold text-white">98.7%</div>
                           <div className="text-xs text-emerald-400 flex items-center mt-1">
                             <svg className="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -225,17 +379,7 @@ export default function Home() {
                           </div>
                         </div>
                         <div className="rounded-lg bg-gradient-to-br from-indigo-500/20 to-primary-800/40 border border-white/5 p-3">
-                          <div className="text-xs text-white/60 mb-1">Revenue</div>
-                          <div className="text-xl font-bold text-white">$3.4M</div>
-                          <div className="text-xs text-emerald-400 flex items-center mt-1">
-                            <svg className="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                            </svg>
-                            +8.2%
-                          </div>
-                        </div>
-                        <div className="rounded-lg bg-gradient-to-br from-purple-500/20 to-primary-800/40 border border-white/5 p-3">
-                          <div className="text-xs text-white/60 mb-1">Contracts</div>
+                          <div className="text-xs text-white/60 mb-1">Contracts Analyzed</div>
                           <div className="text-xl font-bold text-white">248</div>
                           <div className="text-xs text-emerald-400 flex items-center mt-1">
                             <svg className="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -244,65 +388,14 @@ export default function Home() {
                             +24
                           </div>
                         </div>
-                      </div>
-                      
-                      {/* AI Revenue chart */}
-                      <div className="rounded-lg bg-gradient-to-b from-primary-800/40 to-primary-900/40 border border-white/5 p-4">
-                        <div className="flex justify-between items-center mb-3">
-                          <div className="text-sm font-medium text-white flex items-center">
-                            <div className="w-2 h-2 rounded-full bg-blue-500 mr-2 animate-pulse"></div>
-                            Advanced Revenue Prediction
-                          </div>
-                          <div className="flex space-x-2 text-xs">
-                            <div className="px-2 py-1 rounded bg-blue-500/20 text-blue-300">Q1</div>
-                            <div className="px-2 py-1 rounded bg-blue-500/20 text-blue-300">Q2</div>
-                            <div className="px-2 py-1 rounded bg-white/20 text-white">Q3</div>
-                            <div className="px-2 py-1 rounded bg-blue-500/20 text-blue-300">Q4</div>
-                          </div>
-                        </div>
-                        
-                        <div className="relative h-32">
-                          {/* Chart line */}
-                          <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                            <path 
-                              d="M0,50 C20,30 40,70 60,40 C80,10 100,50 100,50" 
-                              stroke="url(#gradient)" 
-                              strokeWidth="2" 
-                              fill="url(#areaGradient)"
-                              vectorEffect="non-scaling-stroke"
-                            />
-                            <defs>
-                              <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                <stop offset="0%" stopColor="#3B82F6" />
-                                <stop offset="100%" stopColor="#8B5CF6" />
-                              </linearGradient>
-                              <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.2" />
-                                <stop offset="100%" stopColor="#3B82F6" stopOpacity="0" />
-                              </linearGradient>
-                            </defs>
-                          </svg>
-                          
-                          {/* Data points with glowing effect */}
-                          <div className="absolute left-[20%] top-[30%] h-3 w-3 rounded-full bg-blue-500 shadow-[0_0_10px_2px_rgba(59,130,246,0.5)]"></div>
-                          <div className="absolute left-[40%] top-[70%] h-3 w-3 rounded-full bg-blue-500 shadow-[0_0_10px_2px_rgba(59,130,246,0.5)]"></div>
-                          <div className="absolute left-[60%] top-[40%] h-3 w-3 rounded-full bg-indigo-500 shadow-[0_0_10px_2px_rgba(99,102,241,0.5)]"></div>
-                          <div className="absolute left-[80%] top-[10%] h-3 w-3 rounded-full bg-purple-500 shadow-[0_0_10px_2px_rgba(139,92,246,0.5)]"></div>
-                          <div className="absolute left-[100%] top-[50%] h-3 w-3 rounded-full bg-blue-500 shadow-[0_0_10px_2px_rgba(59,130,246,0.5)]"></div>
-                        </div>
-                        
-                        <div className="grid grid-cols-3 gap-2 mt-2">
-                          <div className="rounded bg-white/5 p-2 text-center">
-                            <div className="text-xs text-white/60">Actual</div>
-                            <div className="text-sm font-medium text-white">$1.8M</div>
-                          </div>
-                          <div className="rounded bg-white/5 p-2 text-center">
-                            <div className="text-xs text-white/60">Predicted</div>
-                            <div className="text-sm font-medium text-blue-400">$1.9M</div>
-                          </div>
-                          <div className="rounded bg-white/5 p-2 text-center">
-                            <div className="text-xs text-white/60">Variance</div>
-                            <div className="text-sm font-medium text-emerald-400">+5.5%</div>
+                        <div className="rounded-lg bg-gradient-to-br from-purple-500/20 to-primary-800/40 border border-white/5 p-3">
+                          <div className="text-xs text-white/60 mb-1">Time Saved</div>
+                          <div className="text-xl font-bold text-white">342h</div>
+                          <div className="text-xs text-emerald-400 flex items-center mt-1">
+                            <svg className="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                            </svg>
+                            +18h
                           </div>
                         </div>
                       </div>
