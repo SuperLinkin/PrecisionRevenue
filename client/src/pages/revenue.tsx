@@ -553,7 +553,8 @@ export default function Revenue() {
   };
   
   const selectedContract = contracts?.find(c => c.id.toString() === selectedContractId);
-  const totalRecognized = revenueRecords?.reduce((sum, record) => sum + record.amount, 0) || 0;
+  // Convert string amounts to numbers for calculations
+  const totalRecognized = revenueRecords?.reduce((sum, record) => sum + parseFloat(record.amount), 0) || 0;
   const remainingToRecognize = selectedContract ? selectedContract.value - totalRecognized : 0;
   
   return (

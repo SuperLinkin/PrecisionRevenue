@@ -66,12 +66,23 @@ router.post('/extract', async (req, res) => {
         const extractedData = await extractContractData(contractText);
         
         // Update the demo contract with the extracted data
-        demoContract.data = {
+        // Convert dates properly
+        const processedData = {
           ...extractedData,
-          // Ensure date formatting - we'll need to handle null case for endDate
-          startDate: extractedData.startDate instanceof Date ? extractedData.startDate : new Date(extractedData.startDate),
-          endDate: extractedData.endDate ? (extractedData.endDate instanceof Date ? extractedData.endDate : new Date(extractedData.endDate)) : null
+          startDate: extractedData.startDate instanceof Date ? extractedData.startDate : new Date(extractedData.startDate)
         };
+        
+        // Handle endDate separately to avoid type issues
+        if (extractedData.endDate) {
+          processedData.endDate = extractedData.endDate instanceof Date 
+            ? extractedData.endDate 
+            : new Date(extractedData.endDate);
+        } else {
+          processedData.endDate = null;
+        }
+        
+        // Update contract data
+        demoContract.data = processedData;
         
         console.log("DEBUG API - Successfully extracted data using AI");
         console.log("DEBUG API - Contract name:", demoContract.data.name);
