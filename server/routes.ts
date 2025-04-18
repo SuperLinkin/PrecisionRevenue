@@ -584,17 +584,23 @@ Date: ${new Date().toISOString().split('T')[0]}
   // Health check and database status routes
   app.get("/api/health", async (req, res) => {
     try {
-      // Check Supabase connection
+      // Import here to avoid circular dependencies
+      const { checkDatabaseConnection } = await import('./db');
+      
+      // Check both database connections
       const supabaseStatus = await checkSupabaseConnection();
+      const postgresStatus = await checkDatabaseConnection();
       
       // Return health status
       res.json({
         status: "online",
-        database: supabaseStatus,
+        supabase: supabaseStatus,
+        postgres: postgresStatus,
         timestamp: new Date().toISOString(),
         environment: process.env.NODE_ENV
       });
     } catch (error) {
+      console.error("Health check error:", error);
       res.status(500).json({ 
         status: "error",
         message: "Health check failed",
