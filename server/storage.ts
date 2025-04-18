@@ -58,12 +58,14 @@ export interface IStorage {
 }
 
 export class MemStorage implements IStorage {
+  private tenants: Map<number, Tenant>;
   private users: Map<number, User>;
   private companies: Map<number, Company>;
   private contracts: Map<number, Contract>;
   private revenueRecords: Map<number, RevenueRecord>;
   private tasks: Map<number, Task>;
   
+  private tenantCurrentId: number;
   private userCurrentId: number;
   private companyCurrentId: number;
   private contractCurrentId: number;
@@ -71,17 +73,28 @@ export class MemStorage implements IStorage {
   private taskCurrentId: number;
 
   constructor() {
+    this.tenants = new Map();
     this.users = new Map();
     this.companies = new Map();
     this.contracts = new Map();
     this.revenueRecords = new Map();
     this.tasks = new Map();
     
+    this.tenantCurrentId = 1;
     this.userCurrentId = 1;
     this.companyCurrentId = 1;
     this.contractCurrentId = 1;
     this.revenueRecordCurrentId = 1;
     this.taskCurrentId = 1;
+    
+    // Create a default tenant
+    this.createTenant({
+      name: "PRA Demo Organization",
+      subdomain: "demo",
+      plan: "enterprise",
+      status: "active",
+      maxUsers: 25
+    });
     
     // Add a default admin user
     this.createUser({
@@ -175,6 +188,48 @@ export class MemStorage implements IStorage {
     });
   }
 
+  // Tenant methods
+  async getTenant(id: number): Promise<Tenant | undefined> {
+    return this.tenants.get(id);
+  }
+
+  async getTenantBySubdomain(subdomain: string): Promise<Tenant | undefined> {
+    return Array.from(this.tenants.values()).find(
+      (tenant) => tenant.subdomain === subdomain,
+    );
+  }
+
+  async getTenants(): Promise<Tenant[]> {
+    return Array.from(this.tenants.values());
+  }
+
+  async createTenant(insertTenant: InsertTenant): Promise<Tenant> {
+    const id = this.tenantCurrentId++;
+    const now = new Date();
+    const tenant: Tenant = { 
+      ...insertTenant, 
+      id, 
+      createdAt: now,
+      updatedAt: now,
+      settings: insertTenant.settings || {}
+    };
+    this.tenants.set(id, tenant);
+    return tenant;
+  }
+
+  async updateTenant(id: number, tenantUpdate: Partial<InsertTenant>): Promise<Tenant | undefined> {
+    const existingTenant = this.tenants.get(id);
+    if (!existingTenant) return undefined;
+    
+    const updatedTenant = { 
+      ...existingTenant, 
+      ...tenantUpdate,
+      updatedAt: new Date()
+    };
+    this.tenants.set(id, updatedTenant);
+    return updatedTenant;
+  }
+
   // User methods
   async getUser(id: number): Promise<User | undefined> {
     return this.users.get(id);
@@ -189,6 +244,12 @@ export class MemStorage implements IStorage {
   async getUserByEmail(email: string): Promise<User | undefined> {
     return Array.from(this.users.values()).find(
       (user) => user.email === email,
+    );
+  }
+  
+  async getUsersByTenant(tenantId: number): Promise<User[]> {
+    return Array.from(this.users.values()).filter(
+      (user) => user.tenantId === tenantId
     );
   }
 
@@ -206,6 +267,12 @@ export class MemStorage implements IStorage {
   
   async getCompanies(): Promise<Company[]> {
     return Array.from(this.companies.values());
+  }
+  
+  async getCompaniesByTenant(tenantId: number): Promise<Company[]> {
+    return Array.from(this.companies.values()).filter(
+      company => company.tenantId === tenantId
+    );
   }
   
   async createCompany(insertCompany: InsertCompany): Promise<Company> {
@@ -232,6 +299,12 @@ export class MemStorage implements IStorage {
   async getContractsByCompany(companyId: number): Promise<Contract[]> {
     return Array.from(this.contracts.values()).filter(
       contract => contract.companyId === companyId
+    );
+  }
+  
+  async getContractsByTenant(tenantId: number): Promise<Contract[]> {
+    return Array.from(this.contracts.values()).filter(
+      contract => contract.tenantId === tenantId
     );
   }
   
