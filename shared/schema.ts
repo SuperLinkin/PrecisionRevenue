@@ -13,6 +13,11 @@ export const users = pgTable("users", {
   fullName: text("full_name"),
   role: text("role").default("user").notNull(),
   companyId: integer("company_id"),
+  tenantId: integer("tenant_id").references(() => tenants.id),
+  status: text("status").default("active"),
+  lastLoginAt: timestamp("last_login_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -22,11 +27,36 @@ export const insertUserSchema = createInsertSchema(users).pick({
   fullName: true,
   role: true,
   companyId: true,
+  tenantId: true,
+  status: true,
 });
 
-// Companies table
+// Tenants table
+export const tenants = pgTable("tenants", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  subdomain: text("subdomain").notNull().unique(),
+  plan: text("plan").default("basic").notNull(),
+  status: text("status").default("active").notNull(),
+  maxUsers: integer("max_users").default(5),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  settings: jsonb("settings").default({}).notNull(),
+});
+
+export const insertTenantSchema = createInsertSchema(tenants).pick({
+  name: true,
+  subdomain: true,
+  plan: true,
+  status: true,
+  maxUsers: true,
+  settings: true,
+});
+
+// Companies table - now connected to tenants
 export const companies = pgTable("companies", {
   id: serial("id").primaryKey(),
+  tenantId: integer("tenant_id").notNull().references(() => tenants.id),
   name: text("name").notNull(),
   industry: text("industry"),
   size: text("size"),
@@ -37,6 +67,7 @@ export const companies = pgTable("companies", {
 
 export const insertCompanySchema = createInsertSchema(companies).pick({
   name: true,
+  tenantId: true,
   industry: true,
   size: true, 
   address: true,
@@ -55,6 +86,7 @@ export const contracts = pgTable("contracts", {
   value: integer("value").notNull(),
   status: text("status").default("draft").notNull(),
   companyId: integer("company_id").notNull(),
+  tenantId: integer("tenant_id").notNull().references(() => tenants.id),
   createdBy: integer("created_by").notNull(),
   fileUrl: text("file_url"),
   // IFRS 15/ASC 606 specific fields
@@ -83,6 +115,7 @@ export const insertContractSchema = createInsertSchema(contracts)
     value: true,
     status: true,
     companyId: true,
+    tenantId: true,
     createdBy: true,
     fileUrl: true,
     // IFRS 15/ASC 606 fields
@@ -279,6 +312,7 @@ export const tasks = pgTable("tasks", {
   status: text("status").default("pending"),
   assignedTo: integer("assigned_to"),
   companyId: integer("company_id").notNull(),
+  tenantId: integer("tenant_id").notNull().references(() => tenants.id),
 });
 
 export const insertTaskSchema = createInsertSchema(tasks).pick({
@@ -289,11 +323,15 @@ export const insertTaskSchema = createInsertSchema(tasks).pick({
   status: true,
   assignedTo: true,
   companyId: true,
+  tenantId: true,
 });
 
 // Export types for use in application
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
+
+export type Tenant = typeof tenants.$inferSelect;
+export type InsertTenant = z.infer<typeof insertTenantSchema>;
 
 export type Company = typeof companies.$inferSelect;
 export type InsertCompany = z.infer<typeof insertCompanySchema>;
