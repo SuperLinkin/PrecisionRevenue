@@ -1480,16 +1480,122 @@ export default function Home() {
               
               {/* Content */}
               <div className="p-6">
-                <motion.p 
-                  className="text-base text-blue-50 leading-relaxed mb-6"
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.4, duration: 0.5 }}
-                >
-                  PRA's financial systems continuously adapt to new data, regulatory changes, and user feedback to enhance recognition accuracy and forecasting precision.
-                </motion.p>
-                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <motion.div
+                    className="rounded-lg bg-white/5 backdrop-blur-sm border border-white/10 p-4"
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.3, duration: 0.5 }}
+                  >
+                    <div className="flex justify-between items-center mb-2">
+                      <div className="flex items-center">
+                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mr-3 shadow-md">
+                          <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none">
+                            <path d="M8 10V20M8 10L4 9.99998V20L8 20M8 10L12 12L16 10M16 10L20 10.0001V20L16 20M16 10V20M16 20L12 18L8 20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            <path d="M12 12L12 18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </div>
+                        <h4 className="text-base font-semibold text-white">Recognition Model Accuracy</h4>
+                      </div>
+                      <div className="bg-emerald-500/20 text-emerald-300 text-xs font-bold py-1 px-2 rounded flex items-center">
+                        <svg className="w-3 h-3 mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M18 15L12 9L6 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        +3.2%
+                      </div>
+                    </div>
+                    
+                    <div className="relative h-20">
+                      {/* Bar Chart */}
+                      <div className="absolute inset-0 flex items-end">
+                        <div className="flex-1 mx-0.5 h-[65%] bg-gradient-to-t from-blue-400/40 to-blue-400/80 rounded-sm"></div>
+                        <div className="flex-1 mx-0.5 h-[75%] bg-gradient-to-t from-blue-400/40 to-blue-400/80 rounded-sm"></div>
+                        <div className="flex-1 mx-0.5 h-[85%] bg-gradient-to-t from-blue-400/40 to-blue-400/80 rounded-sm"></div>
+                        <div className="flex-1 mx-0.5 h-[80%] bg-gradient-to-t from-blue-400/40 to-blue-400/80 rounded-sm"></div>
+                        <div className="flex-1 mx-0.5 h-[90%] bg-gradient-to-t from-blue-400/40 to-blue-500/80 rounded-sm"></div>
+                        <div className="flex-1 mx-0.5 h-full bg-gradient-to-t from-blue-400/60 to-blue-500 rounded-sm"></div>
+                      </div>
+                      
+                      {/* Overlay Line */}
+                      <div className="absolute inset-0 flex items-end pointer-events-none">
+                        <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                          <path d="M0,40 L16.66,30 L33.33,15 L50,20 L66.66,25 L83.33,10 L100,0" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-6 mt-1">
+                      <div className="text-[10px] text-blue-200/70 text-center">Q1</div>
+                      <div className="text-[10px] text-blue-200/70 text-center">Q2</div>
+                      <div className="text-[10px] text-blue-200/70 text-center">Q3</div>
+                      <div className="text-[10px] text-blue-200/70 text-center">Q4</div>
+                      <div className="text-[10px] text-blue-200/70 text-center">Q1</div>
+                      <div className="text-[10px] text-blue-200/70 text-center">Q2</div>
+                    </div>
+                    
+                    <div className="mt-4 flex items-center justify-between">
+                      <div className="text-xl font-bold text-white">97.8%</div>
+                      <div className="text-xs text-blue-200/70">Model confidence</div>
+                    </div>
+                  </motion.div>
+
+                  <motion.div
+                    className="rounded-lg bg-white/5 backdrop-blur-sm border border-white/10 p-4"
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.4, duration: 0.5 }}
+                  >
+                    <div className="flex justify-between items-center mb-3">
+                      <div className="flex items-center">
+                        <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg flex items-center justify-center mr-3 shadow-md">
+                          <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none">
+                            <path d="M21 7.35304L12 2L3 7.35304L12 12.7061L21 7.35304Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            <path d="M3 16.6479L12 22.0009L21 16.6479" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            <path d="M3 12L12 17.353L21 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </div>
+                        <h4 className="text-base font-semibold text-white">Processing Volume</h4>
+                      </div>
+                    </div>
+                    
+                    <div className="flex space-x-1 mb-2">
+                      <div className="bg-indigo-400/20 text-xs text-indigo-300 rounded-full px-2 py-0.5">Contracts</div>
+                      <div className="bg-teal-400/20 text-xs text-teal-300 rounded-full px-2 py-0.5">Amendments</div>
+                      <div className="bg-purple-400/20 text-xs text-purple-300 rounded-full px-2 py-0.5">SOWs</div>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2 mb-4">
+                      <div className="text-3xl font-bold text-white">1,428</div>
+                      <div className="text-sm text-blue-200/70">documents processed monthly</div>
+                    </div>
+                    
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="px-2 py-1.5 bg-white/10 rounded border border-white/5 flex flex-col items-center justify-center">
+                        <div className="text-xs text-blue-200/70 mb-1">Process Time</div>
+                        <div className="text-lg font-semibold text-white flex items-center">
+                          <svg className="w-3 h-3 mr-1 text-green-400" fill="none" viewBox="0 0 24 24">
+                            <path d="M12 8V12L15 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                            <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2"/>
+                          </svg>
+                          3.2<span className="text-xs ml-0.5">min</span>
+                        </div>
+                      </div>
+                      
+                      <div className="px-2 py-1.5 bg-white/10 rounded border border-white/5 flex flex-col items-center justify-center">
+                        <div className="text-xs text-blue-200/70 mb-1">Accuracy</div>
+                        <div className="text-lg font-semibold text-white">99.4%</div>
+                      </div>
+                      
+                      <div className="px-2 py-1.5 bg-white/10 rounded border border-white/5 flex flex-col items-center justify-center">
+                        <div className="text-xs text-blue-200/70 mb-1">Cost Savings</div>
+                        <div className="text-lg font-semibold text-white">68%</div>
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <motion.div 
                     className="rounded-lg bg-white/10 backdrop-blur-sm border border-white/10 p-4 transition-all duration-300"
@@ -1499,15 +1605,31 @@ export default function Home() {
                     transition={{ delay: 0.5, duration: 0.4 }}
                     whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.15)", y: -4 }}
                   >
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mb-3 shadow-md">
-                      <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none">
-                        <path d="M9 19L14 14L9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M14 19L19 14L14 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M5 19L5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
+                    <div className="flex justify-between items-center">
+                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mb-3 shadow-md">
+                        <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none">
+                          <path d="M9 19L14 14L9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M14 19L19 14L14 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M5 19L5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </div>
+                      <div className="bg-blue-400/20 text-xs text-blue-200 font-medium px-2 py-0.5 rounded-full">
+                        42 models
+                      </div>
                     </div>
-                    <h4 className="text-base font-semibold text-white mb-2">Adaptive Learning</h4>
-                    <p className="text-sm text-blue-100/90">Refines recognition models based on contract patterns and outcomes</p>
+                    
+                    <h4 className="text-base font-semibold text-white mb-1">Adaptive Learning</h4>
+                    <p className="text-xs text-blue-100/90 mb-3">Refines recognition models based on contract patterns and outcomes</p>
+                    
+                    <div className="bg-white/5 rounded p-2 border border-white/5 text-xs">
+                      <div className="flex justify-between text-blue-100 mb-1">
+                        <span>Learning Rate</span>
+                        <span className="text-emerald-300">0.025</span>
+                      </div>
+                      <div className="w-full bg-blue-900/30 rounded-full h-1.5">
+                        <div className="bg-gradient-to-r from-blue-400 to-emerald-400 h-1.5 rounded-full" style={{ width: '80%' }}></div>
+                      </div>
+                    </div>
                   </motion.div>
                   
                   <motion.div 
@@ -1518,15 +1640,32 @@ export default function Home() {
                     transition={{ delay: 0.6, duration: 0.4 }}
                     whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.15)", y: -4 }}
                   >
-                    <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg flex items-center justify-center mb-3 shadow-md">
-                      <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none">
-                        <path d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M12 12L16 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M12 8V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
+                    <div className="flex justify-between items-center">
+                      <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg flex items-center justify-center mb-3 shadow-md">
+                        <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none">
+                          <path d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M12 12L16 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M12 8V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </div>
+                      <div className="bg-indigo-400/20 text-xs text-indigo-200 font-medium px-2 py-0.5 rounded-full">
+                        Last: 2 days ago
+                      </div>
                     </div>
-                    <h4 className="text-base font-semibold text-white mb-2">Real-time Updates</h4>
-                    <p className="text-sm text-blue-100/90">Incorporates regulatory changes and accounting standard updates</p>
+                    
+                    <h4 className="text-base font-semibold text-white mb-1">Real-time Updates</h4>
+                    <p className="text-xs text-blue-100/90 mb-3">Incorporates regulatory changes and accounting standard updates</p>
+                    
+                    <div className="space-y-1.5">
+                      <div className="bg-white/5 border border-white/5 rounded px-2 py-1.5 text-xs flex justify-between items-center">
+                        <span className="text-blue-100">ASC 606 Amendment</span>
+                        <span className="text-green-300">Applied</span>
+                      </div>
+                      <div className="bg-white/5 border border-white/5 rounded px-2 py-1.5 text-xs flex justify-between items-center">
+                        <span className="text-blue-100">IFRS 15 Update 24.2</span>
+                        <span className="text-green-300">Applied</span>
+                      </div>
+                    </div>
                   </motion.div>
                   
                   <motion.div 
@@ -1537,13 +1676,36 @@ export default function Home() {
                     transition={{ delay: 0.7, duration: 0.4 }}
                     whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.15)", y: -4 }}
                   >
-                    <div className="w-10 h-10 bg-gradient-to-br from-teal-500 to-teal-600 rounded-lg flex items-center justify-center mb-3 shadow-md">
-                      <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none">
-                        <path d="M20.25 6.375C20.25 8.65317 16.5563 10.5 12 10.5C7.44365 10.5 3.75 8.65317 3.75 6.375M20.25 6.375C20.25 4.09683 16.5563 2.25 12 2.25C7.44365 2.25 3.75 4.09683 3.75 6.375M20.25 6.375V17.625C20.25 19.9032 16.5563 21.75 12 21.75C7.44365 21.75 3.75 19.9032 3.75 17.625V6.375M20.25 6.375V10.125M3.75 6.375V10.125" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
+                    <div className="flex justify-between items-center">
+                      <div className="w-10 h-10 bg-gradient-to-br from-teal-500 to-teal-600 rounded-lg flex items-center justify-center mb-3 shadow-md">
+                        <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none">
+                          <path d="M20.25 6.375C20.25 8.65317 16.5563 10.5 12 10.5C7.44365 10.5 3.75 8.65317 3.75 6.375M20.25 6.375C20.25 4.09683 16.5563 2.25 12 2.25C7.44365 2.25 3.75 4.09683 3.75 6.375M20.25 6.375V17.625C20.25 19.9032 16.5563 21.75 12 21.75C7.44365 21.75 3.75 19.9032 3.75 17.625V6.375M20.25 6.375V10.125M3.75 6.375V10.125" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </div>
+                      <div className="bg-teal-400/20 text-xs text-teal-200 font-medium px-2 py-0.5 rounded-full">
+                        100% Compliant
+                      </div>
                     </div>
-                    <h4 className="text-base font-semibold text-white mb-2">Audit-Ready</h4>
-                    <p className="text-sm text-blue-100/90">Ensures full IFRS 15/ASC 606 compliance with documentation</p>
+                    
+                    <h4 className="text-base font-semibold text-white mb-1">Audit-Ready</h4>
+                    <p className="text-xs text-blue-100/90 mb-3">Ensures full IFRS 15/ASC 606 compliance with documentation</p>
+                    
+                    <div className="w-full bg-white/5 rounded p-2 border border-white/5">
+                      <div className="flex justify-between text-xs text-blue-100">
+                        <div className="flex items-center">
+                          <svg className="w-3 h-3 mr-1 text-green-400" fill="none" viewBox="0 0 24 24">
+                            <path d="M5 12L10 17L20 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                          <span>Documentation</span>
+                        </div>
+                        <div className="flex items-center">
+                          <svg className="w-3 h-3 mr-1 text-green-400" fill="none" viewBox="0 0 24 24">
+                            <path d="M5 12L10 17L20 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                          <span>Validation</span>
+                        </div>
+                      </div>
+                    </div>
                   </motion.div>
                 </div>
               </div>
