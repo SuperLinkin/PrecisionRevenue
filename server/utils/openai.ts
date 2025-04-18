@@ -10,26 +10,41 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
  */
 export async function extractContractData(text: string) {
   try {
+    console.log("DEBUG OPENAI - Starting extractContractData with OpenAI");
+    console.log("DEBUG OPENAI - API Key status:", process.env.OPENAI_API_KEY ? "Key exists" : "Key missing");
+    
     const prompt = `
-      Analyze the following contract and extract key information in JSON format.
-      Include the following fields:
-      - name: The title or name of the contract
-      - contractNumber: Any contract ID or reference number (format as CT-XXX-YYYY if not present)
-      - clientName: The client or second party name
-      - startDate: The effective or start date (return in ISO format)
-      - endDate: The termination or end date (return in ISO format, or null if not found)
-      - value: The total contract value as a number (without currency symbols)
-      - keyTerms: Array of important contract clauses or terms (limit to 5 most important)
-
+      You are a specialized contract analysis AI for Precision Revenue Automation.
+      Analyze the provided contract text and extract the following information in JSON format.
+      
+      Required fields (all fields MUST be included in the response):
+      - name: The title or name of the contract (string)
+      - contractNumber: Any contract ID or reference number (format as CT-XXX-YYYY if not present) (string)
+      - clientName: The client or second party name (string)
+      - startDate: The effective or start date (ISO format YYYY-MM-DD) (string)
+      - endDate: The termination or end date (ISO format YYYY-MM-DD, or null if not found) (string or null)
+      - value: The total contract value as a number without currency symbols (number)
+      - keyTerms: Array of most important contract clauses or terms, focusing on payment, delivery, and termination (array of strings, 5 items max)
+      - performanceObligations: Array of performance obligations identified in the contract (array of strings, can be empty)
+      
+      You MUST extract accurate information directly from the contract text. If you cannot find a specific piece of information, use reasonable defaults based on industry standards.
+      
       Contract text:
       ${text}
-
-      Return only the JSON without any other text.
+      
+      Return ONLY the JSON without any explanations or additional text.
     `;
 
+    console.log("DEBUG OPENAI - Sending extraction request to OpenAI API...");
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
-      messages: [{ role: "user", content: prompt }],
+      messages: [
+        {
+          role: "system",
+          content: "You are a specialized contract analysis AI that extracts precise and accurate information from legal documents."
+        },
+        { role: "user", content: prompt }
+      ],
       response_format: { type: "json_object" },
       temperature: 0.1,
     });
@@ -72,27 +87,28 @@ export async function answerContractQuestion(contractText: string, question: str
     console.log("DEBUG OPENAI - Starting answerContractQuestion with OpenAI");
     console.log("DEBUG OPENAI - API Key:", process.env.OPENAI_API_KEY ? "Key exists" : "Key missing");
     
-    // Format the question to be more IFRS 15/ASC 606 focused if it's general
-    let enhancedQuestion = question;
-    if (question.toLowerCase().includes('revenue recognition') || 
-        question.toLowerCase().includes('recognize') ||
-        question.toLowerCase().includes('revenue schedule')) {
-      enhancedQuestion = `${question} Following IFRS 15/ASC 606 guidelines`;
-    }
+    // Always enhance the question to be IFRS 15/ASC 606 focused
+    const enhancedQuestion = `${question} - Please analyze according to IFRS 15/ASC 606 standards`;
     
     const prompt = `
       You are REMY, a specialized AI assistant for Revenue Management at Precision Revenue Automation.
       
-      Your expertise:
-      - Contract analysis and interpretation
-      - Revenue recognition guidance under IFRS 15/ASC 606
-      - Financial reporting requirements
-      - Performance obligation identification
-      - Revenue allocation methodologies
+      Your PRIMARY expertise is in IFRS 15/ASC 606 revenue recognition standards. You MUST:
+      1. Focus on the 5-step IFRS 15/ASC 606 model in all responses:
+         - Identify the contract with a customer
+         - Identify performance obligations in the contract
+         - Determine the transaction price
+         - Allocate the transaction price to the performance obligations
+         - Recognize revenue when (or as) performance obligations are satisfied
       
-      Analyze the following contract text and answer the user's question.
-      Your answers should be comprehensive, professional, and refer to specific sections of the contract.
-      Always relate your answers to IFRS 15/ASC 606 principles when discussing revenue recognition.
+      2. Cite specific sections from IFRS 15/ASC 606 in all responses
+      3. Provide concrete, actionable guidance based on the contract text
+      4. Identify performance obligations, transaction price, allocation methods, and timing considerations
+      5. Explain how specific contract clauses impact revenue recognition
+      6. Provide exact calculations when discussing revenue allocation or recognition
+      
+      Analyze the following contract text and answer the user's question using ONLY the provided contract.
+      Your answers must be specific, detailed, technically precise, and ALWAYS conform to IFRS 15/ASC 606 standards.
       
       Contract text:
       ${contractText}
@@ -103,9 +119,15 @@ export async function answerContractQuestion(contractText: string, question: str
     console.log("DEBUG OPENAI - Sending request to OpenAI API...");
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.2,
-      max_tokens: 1500,
+      messages: [
+        { 
+          role: "system", 
+          content: "You are REMY, a highly specialized revenue recognition AI assistant fully trained on IFRS 15/ASC 606 standards. Always structure your answers with specific references to IFRS 15/ASC 606 sections and provide detailed technical analysis." 
+        },
+        { role: "user", content: prompt }
+      ],
+      temperature: 0.1, // Lower temperature for more deterministic, precise answers
+      max_tokens: 3000, // Increase token limit for more detailed responses
     });
     
     console.log("DEBUG OPENAI - Received response from OpenAI API");

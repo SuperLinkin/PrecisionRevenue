@@ -27,7 +27,10 @@ let demoContract = {
 // Extract contract data endpoint
 router.post('/extract', async (req, res) => {
   try {
-    const { fileName } = req.body;
+    const { fileName, text } = req.body;
+    
+    console.log("DEBUG API - Extracting contract data from:", fileName);
+    console.log("DEBUG API - OpenAI API Key exists:", !!process.env.OPENAI_API_KEY);
     
     // Generate specific contract details based on file name
     if (fileName) {
@@ -35,25 +38,47 @@ router.post('/extract', async (req, res) => {
       const contractType = parts[0]?.trim() || 'SaaS';
       const clientName = parts[1]?.trim() || 'TechCorp';
       
-      // Create contract text from template
-      demoContract.text = getContractTemplate(contractType, clientName);
+      // Create contract text from template - use uploaded text if available, otherwise use template
+      const contractText = text || getContractTemplate(contractType, clientName);
+      demoContract.text = contractText;
       
-      // Update contract data
-      demoContract.data = {
-        name: `${contractType} Agreement`,
-        contractNumber: `CT-${Math.floor(Math.random() * 1000)}-${new Date().getFullYear()}`,
-        clientName,
-        startDate: new Date(),
-        endDate: new Date(new Date().setMonth(new Date().getMonth() + 12)),
-        value: 50000,
-        keyTerms: [
-          "Net 30 payment terms",
-          "Auto-renewal clause",
-          "Termination with 60 days notice",
-          "Confidentiality agreement",
-          "Service level agreement of 99.9% uptime"
-        ]
-      };
+      try {
+        // Import dynamically to avoid errors if OpenAI API key is not set
+        const { extractContractData } = await import('./utils/openai');
+        
+        console.log("DEBUG API - Using AI to extract contract data");
+        const extractedData = await extractContractData(contractText);
+        
+        // Update the demo contract with the extracted data
+        demoContract.data = {
+          ...extractedData,
+          // Ensure date formatting
+          startDate: extractedData.startDate instanceof Date ? extractedData.startDate : new Date(extractedData.startDate),
+          endDate: extractedData.endDate ? (extractedData.endDate instanceof Date ? extractedData.endDate : new Date(extractedData.endDate)) : null
+        };
+        
+        console.log("DEBUG API - Successfully extracted data using AI");
+        console.log("DEBUG API - Contract name:", demoContract.data.name);
+      } catch (aiError) {
+        console.error("DEBUG API - Error using AI to extract data:", aiError);
+        
+        // Fallback to template-based data if AI extraction fails
+        demoContract.data = {
+          name: `${contractType} Agreement`,
+          contractNumber: `CT-${Math.floor(Math.random() * 1000)}-${new Date().getFullYear()}`,
+          clientName,
+          startDate: new Date(),
+          endDate: new Date(new Date().setMonth(new Date().getMonth() + 12)),
+          value: 50000,
+          keyTerms: [
+            "Net 30 payment terms",
+            "Auto-renewal clause",
+            "Termination with 60 days notice",
+            "Confidentiality agreement",
+            "Service level agreement of 99.9% uptime"
+          ]
+        };
+      }
     }
     
     // Return extracted data
