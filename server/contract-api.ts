@@ -73,14 +73,25 @@ router.post('/ask', async (req, res) => {
       return res.status(400).json({ message: "Question is required" });
     }
     
+    console.log("DEBUG - Starting contract Q&A with question:", question);
+    console.log("DEBUG - OpenAI API Key exists:", !!process.env.OPENAI_API_KEY);
+    
     // Use the stored demo contract text
     const contractText = demoContract.text;
+    console.log("DEBUG - Contract text length:", contractText.length);
     
-    // Use actual AI to answer the question with our template contract
-    const answer = await answerContractQuestion(contractText, question);
-    
-    // Return the AI response
-    res.json({ answer });
+    try {
+      // Use actual AI to answer the question with our template contract
+      console.log("DEBUG - Calling answerContractQuestion...");
+      const answer = await answerContractQuestion(contractText, question);
+      console.log("DEBUG - Got answer from OpenAI, length:", answer?.length || 0);
+      
+      // Return the AI response
+      res.json({ answer });
+    } catch (aiError) {
+      console.error("DEBUG - OpenAI API error:", aiError);
+      throw aiError;
+    }
   } catch (error) {
     console.error("Contract Q&A error:", error);
     res.status(500).json({ 

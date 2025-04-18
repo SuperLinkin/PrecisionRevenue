@@ -69,6 +69,9 @@ export async function extractContractData(text: string) {
  */
 export async function answerContractQuestion(contractText: string, question: string) {
   try {
+    console.log("DEBUG OPENAI - Starting answerContractQuestion with OpenAI");
+    console.log("DEBUG OPENAI - API Key:", process.env.OPENAI_API_KEY ? "Key exists" : "Key missing");
+    
     // Format the question to be more IFRS 15/ASC 606 focused if it's general
     let enhancedQuestion = question;
     if (question.toLowerCase().includes('revenue recognition') || 
@@ -97,16 +100,23 @@ export async function answerContractQuestion(contractText: string, question: str
       User's question: ${enhancedQuestion}
     `;
 
+    console.log("DEBUG OPENAI - Sending request to OpenAI API...");
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [{ role: "user", content: prompt }],
       temperature: 0.2,
       max_tokens: 1500,
     });
-
-    return response.choices[0].message.content;
+    
+    console.log("DEBUG OPENAI - Received response from OpenAI API");
+    console.log("DEBUG OPENAI - Response status:", response.id ? "Success" : "Failed");
+    
+    const content = response.choices[0].message.content;
+    console.log("DEBUG OPENAI - Content length:", content?.length || 0);
+    
+    return content;
   } catch (error) {
-    console.error("Error answering contract question:", error);
+    console.error("DEBUG OPENAI - Error in OpenAI API call:", error);
     return "I'm sorry, I encountered an error while analyzing this contract. Please try again or rephrase your question.";
   }
 }
