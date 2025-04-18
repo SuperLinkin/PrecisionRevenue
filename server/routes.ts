@@ -390,7 +390,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/contracts', contractApiRouter);
   
   // Advanced contract analysis routes (NLP-based)
-  app.use('/api/contract-analysis', contractAnalysisRouter);
+  app.use('/api/contract-analysis', authenticate, contractAnalysisRouter);
   
   // Register IFRS 15/ASC 606 Revenue Recognition Routes
   registerRevenueRecognitionRoutes(app);

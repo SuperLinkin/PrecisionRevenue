@@ -15,6 +15,22 @@ import {
 const router = Router();
 
 /**
+ * Check the availability of OpenAI API
+ */
+router.get('/status', async (req: Request, res: Response) => {
+  try {
+    const status = await checkOpenAIAvailability();
+    res.json(status);
+  } catch (error: any) {
+    console.error('Error checking OpenAI API status:', error);
+    res.status(500).json({
+      error: 'Failed to check OpenAI API status',
+      message: error.message || 'Unknown error'
+    });
+  }
+});
+
+/**
  * Perform a comprehensive analysis of a contract
  */
 router.post('/comprehensive', async (req: Request, res: Response) => {
