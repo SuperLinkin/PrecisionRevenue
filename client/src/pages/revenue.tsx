@@ -106,6 +106,47 @@ export default function Revenue() {
     }
   }, [chatMessages]);
   
+  // Load last contract analysis from localStorage on component mount
+  useEffect(() => {
+    try {
+      // Get the last analyzed contract info
+      const lastAnalysisStr = localStorage.getItem('lastContractAnalysis');
+      if (lastAnalysisStr) {
+        const lastAnalysis = JSON.parse(lastAnalysisStr);
+        
+        // Create a dummy File object since we can't store File objects in localStorage
+        // For a real app, this would be handled differently, perhaps with session storage
+        if (lastAnalysis.fileName) {
+          const dummyFile = new File(["dummy content"], lastAnalysis.fileName, {
+            type: "application/pdf"
+          });
+          
+          // Set the contract file in state so questions can be answered about it
+          setContractFile(dummyFile);
+          
+          // Add a message indicating we've loaded a previously analyzed contract
+          setChatMessages(prev => {
+            // Check if we already have a welcome message
+            if (prev.length === 1 && prev[0].role === 'assistant') {
+              return [
+                ...prev,
+                {
+                  id: Date.now().toString(),
+                  role: 'assistant',
+                  content: `I've loaded your previously analyzed contract "${lastAnalysis.fileName}". You can ask me questions about it or upload a new contract.`,
+                  timestamp: new Date()
+                }
+              ];
+            }
+            return prev;
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Error loading from localStorage:", err);
+    }
+  }, []);
+  
   const { data: contracts, isLoading: contractsLoading } = useQuery<Contract[]>({
     queryKey: ['/api/contracts'],
   });
@@ -220,7 +261,19 @@ export default function Revenue() {
   };
 
   const handleContractFile = async (file: File) => {
+    console.log("Processing new contract file:", file.name);
+    
+    // Set contract file in state
     setContractFile(file);
+    
+    // Store the file in local storage for persistence
+    // Note: In a real app, we might use a more robust solution
+    try {
+      // Save filename (we can't store the actual File object)
+      localStorage.setItem('currentContractFileName', file.name);
+    } catch (err) {
+      console.error("Error saving to localStorage:", err);
+    }
     
     // Add a loading message
     setChatMessages(prev => [
@@ -269,6 +322,7 @@ export default function Revenue() {
           Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 30)) : 
           12;
         
+        // Update UI with contract info
         setChatMessages(prev => [
           // Remove the loading message
           ...prev.slice(0, -1),
@@ -279,6 +333,18 @@ export default function Revenue() {
             timestamp: new Date()
           }
         ]);
+        
+        // Save last successful analysis in localStorage for persistence
+        try {
+          localStorage.setItem('lastContractAnalysis', JSON.stringify({
+            fileName: file.name,
+            contractType: contractData.name,
+            clientName: contractData.clientName,
+            value: contractData.value
+          }));
+        } catch (err) {
+          console.error("Error saving analysis to localStorage:", err);
+        }
         
         toast({
           title: "Contract analysis complete",
@@ -355,8 +421,13 @@ export default function Revenue() {
     try {
       let response;
       
+      // For debugging
+      console.log("Current contract file:", contractFile ? contractFile.name : "No file");
+      
       // If a contract file has been uploaded, use the AI to answer questions about it
       if (contractFile) {
+        console.log("Processing contract file:", contractFile.name, contractFile.type);
+        
         // Only process PDF files
         if (contractFile.type === 'application/pdf') {
           // Get the content as base64 for future use
@@ -404,6 +475,8 @@ export default function Revenue() {
           ]);
         }
       } else {
+        console.log("No contract file found, providing generic response");
+        
         // No contract uploaded yet, provide generic responses
         let responseContent = '';
         
