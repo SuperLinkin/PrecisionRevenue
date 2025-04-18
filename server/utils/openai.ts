@@ -13,54 +13,71 @@ export async function extractContractData(text: string) {
     console.log("DEBUG OPENAI - Starting extractContractData with OpenAI");
     console.log("DEBUG OPENAI - API Key status:", process.env.OPENAI_API_KEY ? "Key exists" : "Key missing");
     
-    const prompt = `
-      You are a specialized contract analysis AI for Precision Revenue Automation.
-      Analyze the provided contract text and extract the following information in JSON format.
-      
-      Required fields (all fields MUST be included in the response):
-      - name: The title or name of the contract (string)
-      - contractNumber: Any contract ID or reference number (format as CT-XXX-YYYY if not present) (string)
-      - clientName: The client or second party name (string)
-      - startDate: The effective or start date (ISO format YYYY-MM-DD) (string)
-      - endDate: The termination or end date (ISO format YYYY-MM-DD, or null if not found) (string or null)
-      - value: The total contract value as a number without currency symbols (number)
-      - keyTerms: Array of most important contract clauses or terms, focusing on payment, delivery, and termination (array of strings, 5 items max)
-      - performanceObligations: Array of performance obligations identified in the contract (array of strings, can be empty)
-      
-      You MUST extract accurate information directly from the contract text. If you cannot find a specific piece of information, use reasonable defaults based on industry standards.
-      
-      Contract text:
-      ${text}
-      
-      Return ONLY the JSON without any explanations or additional text.
-    `;
+    const systemPrompt = `You are REMY, a revenue recognition AI trained on IFRS 15 and ASC 606. You work for a finance automation platform (PRA).
+
+Extract the following information directly from the uploaded SaaS contract and respond ONLY with structured JSON. No greetings, no assistant-style answers.
+
+Fields:
+
+contractName
+
+contractValue
+
+contractTermMonths
+
+performanceObligations: array of { name, isDistinct, deliveryTiming ("point" or "over-time"), suggestedSSP }
+
+revenueRecognitionSchedule: array of { month: YYYY-MM, amount }
+
+terminationClauseImpact: { refundObligation: true/false, terminationRisk: string }
+
+financingComponent: true/false
+
+auditSummary: string
+
+Only return valid JSON. Do not include any natural language response.`;
+
+    const userPrompt = `Analyze the following SaaS contract and extract the required information according to IFRS 15/ASC 606 standards:
+
+${text}`;
 
     console.log("DEBUG OPENAI - Sending extraction request to OpenAI API...");
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4o", // Using the newest OpenAI model
       messages: [
         {
           role: "system",
-          content: "You are a specialized contract analysis AI that extracts precise and accurate information from legal documents."
+          content: systemPrompt
         },
-        { role: "user", content: prompt }
+        { role: "user", content: userPrompt }
       ],
       response_format: { type: "json_object" },
       temperature: 0.1,
     });
 
-    const result = JSON.parse(response.choices[0].message.content || '{}');
-    
-    // Ensure all fields are present with defaults if missing
-    return {
-      name: result.name || "Untitled Contract",
-      contractNumber: result.contractNumber || `CT-${Math.floor(Math.random() * 1000)}-${new Date().getFullYear()}`,
-      clientName: result.clientName || "Unnamed Client",
-      startDate: result.startDate ? new Date(result.startDate) : new Date(),
-      endDate: result.endDate ? new Date(result.endDate) : null,
-      value: result.value || 0,
-      keyTerms: result.keyTerms || [],
-    };
+    try {
+      const result = JSON.parse(response.choices[0].message.content || '{}');
+      
+      // Ensure all required fields are present with defaults if missing
+      return {
+        name: result.contractName || "Untitled Contract",
+        contractNumber: `CT-${Math.floor(Math.random() * 1000)}-${new Date().getFullYear()}`,
+        clientName: "Client from Contract",
+        startDate: new Date(),
+        endDate: result.contractTermMonths ? new Date(new Date().setMonth(new Date().getMonth() + result.contractTermMonths)) : null,
+        value: result.contractValue || 0,
+        keyTerms: [],
+        // New fields from the updated REMY format
+        performanceObligations: result.performanceObligations || [],
+        revenueRecognitionSchedule: result.revenueRecognitionSchedule || [],
+        terminationClauseImpact: result.terminationClauseImpact || { refundObligation: false, terminationRisk: "Unknown" },
+        financingComponent: result.financingComponent || false,
+        auditSummary: result.auditSummary || "No audit notes available"
+      };
+    } catch (parseError) {
+      console.error("Error parsing JSON from OpenAI response:", parseError);
+      throw new Error("Failed to parse valid JSON from REMY's response");
+    }
   } catch (error) {
     console.error("Error extracting contract data:", error);
     // Return default values if extraction fails
@@ -72,6 +89,11 @@ export async function extractContractData(text: string) {
       endDate: null,
       value: 0,
       keyTerms: [],
+      performanceObligations: [],
+      revenueRecognitionSchedule: [],
+      terminationClauseImpact: { refundObligation: false, terminationRisk: "Error analyzing termination clauses" },
+      financingComponent: false,
+      auditSummary: "Error analyzing contract. Please try again."
     };
   }
 }
