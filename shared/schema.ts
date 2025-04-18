@@ -56,7 +56,7 @@ export const insertTenantSchema = createInsertSchema(tenants).pick({
 // Companies table - now connected to tenants
 export const companies = pgTable("companies", {
   id: serial("id").primaryKey(),
-  tenantId: integer("tenant_id").notNull().references(() => tenants.id),
+  tenantId: integer("tenant_id").references(() => tenants.id),
   name: text("name").notNull(),
   industry: text("industry"),
   size: text("size"),
@@ -86,7 +86,7 @@ export const contracts = pgTable("contracts", {
   value: integer("value").notNull(),
   status: text("status").default("draft").notNull(),
   companyId: integer("company_id").notNull(),
-  tenantId: integer("tenant_id").notNull().references(() => tenants.id),
+  tenantId: integer("tenant_id").references(() => tenants.id),
   createdBy: integer("created_by").notNull(),
   fileUrl: text("file_url"),
   // IFRS 15/ASC 606 specific fields
@@ -312,7 +312,7 @@ export const tasks = pgTable("tasks", {
   status: text("status").default("pending"),
   assignedTo: integer("assigned_to"),
   companyId: integer("company_id").notNull(),
-  tenantId: integer("tenant_id").notNull().references(() => tenants.id),
+  tenantId: integer("tenant_id").references(() => tenants.id),
 });
 
 export const insertTaskSchema = createInsertSchema(tasks).pick({

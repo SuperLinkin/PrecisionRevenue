@@ -13,21 +13,32 @@ import { DatabaseStorage } from './db-storage';
 
 // Interface for all storage operations
 export interface IStorage {
+  // Tenants
+  getTenant(id: number): Promise<Tenant | undefined>;
+  getTenantBySubdomain(subdomain: string): Promise<Tenant | undefined>;
+  getTenants(): Promise<Tenant[]>;
+  createTenant(tenant: InsertTenant): Promise<Tenant>;
+  updateTenant(id: number, tenant: Partial<InsertTenant>): Promise<Tenant | undefined>;
+  
   // Users
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
+  getUsersByTenant(tenantId: number): Promise<User[]>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(id: number, user: Partial<InsertUser>): Promise<User | undefined>;
   
   // Companies
   getCompany(id: number): Promise<Company | undefined>;
   getCompanies(): Promise<Company[]>;
+  getCompaniesByTenant(tenantId: number): Promise<Company[]>;
   createCompany(company: InsertCompany): Promise<Company>;
   updateCompany(id: number, company: Partial<InsertCompany>): Promise<Company | undefined>;
   
   // Contracts
   getContract(id: number): Promise<Contract | undefined>;
   getContractsByCompany(companyId: number): Promise<Contract[]>;
+  getContractsByTenant(tenantId: number): Promise<Contract[]>;
   createContract(contract: InsertContract): Promise<Contract>;
   updateContract(id: number, contract: Partial<InsertContract>): Promise<Contract | undefined>;
   
@@ -41,6 +52,7 @@ export interface IStorage {
   getTask(id: number): Promise<Task | undefined>;
   getTasksByCompany(companyId: number): Promise<Task[]>;
   getTasksByAssignee(assignedTo: number): Promise<Task[]>;
+  getTasksByTenant(tenantId: number): Promise<Task[]>;
   createTask(task: InsertTask): Promise<Task>;
   updateTask(id: number, task: Partial<InsertTask>): Promise<Task | undefined>;
 }
