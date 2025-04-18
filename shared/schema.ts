@@ -304,5 +304,11 @@ export type InsertContract = z.infer<typeof insertContractSchema>;
 export type RevenueRecord = typeof revenueRecords.$inferSelect;
 export type InsertRevenueRecord = z.infer<typeof insertRevenueRecordSchema>;
 
+export type PerformanceObligation = typeof performanceObligations.$inferSelect;
+export type InsertPerformanceObligation = z.infer<typeof insertPerformanceObligationSchema>;
+
+export type TransactionPriceAdjustment = typeof transactionPriceAdjustments.$inferSelect;
+export type InsertTransactionPriceAdjustment = z.infer<typeof insertTransactionPriceAdjustmentSchema>;
+
 export type Task = typeof tasks.$inferSelect;
 export type InsertTask = z.infer<typeof insertTaskSchema>;

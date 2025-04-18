@@ -16,6 +16,9 @@ import MemoryStore from "memorystore";
 // Emergency fix for contract API
 import contractApiRouter from './contract-api';
 
+// Import Revenue Recognition Routes
+import { registerRevenueRecognitionRoutes } from './routes/revenue-recognition';
+
 const SessionStore = MemoryStore(session);
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -379,6 +382,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // AI Contract Analysis Routes - Use emergency fix for MVP demo
   app.use('/api/contracts', contractApiRouter);
+  
+  // Register IFRS 15/ASC 606 Revenue Recognition Routes
+  registerRevenueRecognitionRoutes(app);
   
   // Original implementation (disabled for demo)
   /*
