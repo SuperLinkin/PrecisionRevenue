@@ -143,39 +143,62 @@ export default function Contracts() {
     }
   };
   
-  const handleContractFile = (file: File) => {
+  const handleContractFile = async (file: File) => {
     setUploadedFile(file);
     setFileUploadStatus('uploading');
     
-    // Simulate file analysis and data extraction
-    setTimeout(() => {
-      setFileUploadStatus('success');
+    try {
+      // Read the file content
+      const fileText = await readFileAsText(file);
       
-      // Mock extracted data - in a real application, this would come from an API
-      const mockExtractedData = {
-        name: file.name.replace(/\.\w+$/, ''),
-        clientName: 'Extracted Client Corp',
-        contractNumber: `CT-${Math.floor(Math.random() * 1000)}-${new Date().getFullYear()}`,
-        startDate: new Date(),
-        endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
-        value: 100000,
-      };
+      // Extract contract data using OpenAI
+      const response = await fetch('/api/contracts/extract', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: fileText }),
+      });
       
-      setExtractedData(mockExtractedData);
+      if (!response.ok) {
+        throw new Error('Failed to extract contract data');
+      }
+      
+      const extractedData = await response.json();
+      setExtractedData(extractedData);
       
       // Update form with extracted data
-      form.setValue('name', mockExtractedData.name);
-      form.setValue('clientName', mockExtractedData.clientName);
-      form.setValue('contractNumber', mockExtractedData.contractNumber);
-      form.setValue('startDate', mockExtractedData.startDate);
-      form.setValue('endDate', mockExtractedData.endDate);
-      form.setValue('value', mockExtractedData.value);
+      form.setValue('name', extractedData.name);
+      form.setValue('clientName', extractedData.clientName);
+      form.setValue('contractNumber', extractedData.contractNumber);
+      form.setValue('startDate', extractedData.startDate);
+      form.setValue('endDate', extractedData.endDate);
+      form.setValue('value', extractedData.value);
       
+      setFileUploadStatus('success');
       toast({
-        title: "Contract analyzed",
+        title: "Contract analyzed with AI",
         description: "Contract details have been extracted and populated in the form.",
       });
-    }, 2000);
+    } catch (error) {
+      console.error('Error extracting contract data:', error);
+      setFileUploadStatus('error');
+      toast({
+        title: "Extraction failed",
+        description: "Failed to extract contract data. Please enter details manually.",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  // Helper function to read a file as text
+  const readFileAsText = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsText(file);
+    });
   };
   
   const createContractMutation = useMutation({

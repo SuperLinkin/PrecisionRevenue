@@ -373,6 +373,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Contract Analysis Routes
+  app.post("/api/contracts/extract", authenticate, async (req, res) => {
+    try {
+      const { text } = req.body;
+      
+      if (!text) {
+        return res.status(400).json({ message: "Contract text is required" });
+      }
+      
+      // Import dynamically to avoid errors if OpenAI API key is not set
+      const { extractContractData } = await import('./utils/openai');
+      const extractedData = await extractContractData(text);
+      
+      res.json(extractedData);
+    } catch (error) {
+      console.error("Contract extraction error:", error);
+      res.status(500).json({ message: "Failed to extract contract data" });
+    }
+  });
+  
+  app.post("/api/contracts/ask", authenticate, async (req, res) => {
+    try {
+      const { contractText, question } = req.body;
+      
+      if (!contractText || !question) {
+        return res.status(400).json({ message: "Contract text and question are required" });
+      }
+      
+      // Import dynamically to avoid errors if OpenAI API key is not set
+      const { answerContractQuestion } = await import('./utils/openai');
+      const answer = await answerContractQuestion(contractText, question);
+      
+      res.json({ answer });
+    } catch (error) {
+      console.error("Contract Q&A error:", error);
+      res.status(500).json({ message: "Failed to answer question" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
