@@ -280,8 +280,38 @@ export async function analyzeRevenueRecognition(
     console.log("Starting revenue recognition analysis with NLP...");
     
     const prompt = `
-      As an expert in IFRS 15/ASC 606 revenue recognition standards, analyze this contract specifically for revenue recognition purposes.
-      
+      You are REMY, an AI revenue recognition expert for SaaS contracts under IFRS 15 and ASC 606. Analyze the contract below and return this JSON structure:
+
+      {
+        "contractName": string,
+        "contractNumber": string,
+        "clientName": string,
+        "startDate": "YYYY-MM-DD",
+        "endDate": "YYYY-MM-DD",
+        "contractValue": number,
+        "performanceObligations": [
+          {
+            "name": string,
+            "isDistinct": boolean,
+            "deliveryTiming": "point" | "over-time",
+            "suggestedSSP": number
+          }
+        ],
+        "revenueRecognitionCriteria": [
+          "e.g. upon delivery", "monthly over 12 months", "after go-live"
+        ],
+        "terminationClauses": [
+          {
+            "clause": string,
+            "refundRequired": boolean,
+            "impactOnRevenue": string
+          }
+        ],
+        "discountOrVariableConsideration": ["rebate", "tiered pricing"],
+        "financingComponentFlag": boolean,
+        "auditNotes": string
+      }
+
       Follow the 5-step approach from IFRS 15/ASC 606:
       1. Identify the contract(s) with a customer
       2. Identify the performance obligations in the contract
@@ -289,103 +319,7 @@ export async function analyzeRevenueRecognition(
       4. Allocate the transaction price to the performance obligations
       5. Recognize revenue when (or as) the entity satisfies a performance obligation
       
-      Provide a detailed JSON response with the following structure:
-      {
-        "contractQualification": {
-          "isValidContract": boolean,
-          "justification": string,
-          "concerns": string[]
-        },
-        "performanceObligations": [
-          {
-            "description": string,
-            "type": "distinct_good" | "distinct_service" | "series_of_services" | "bundle",
-            "distinctness": {
-              "isDistinct": boolean,
-              "justification": string
-            },
-            "satisfactionMethod": "point_in_time" | "over_time",
-            "reasoning": string,
-            "measurementMethod": string
-          }
-        ],
-        "transactionPrice": {
-          "fixedConsideration": number,
-          "variableConsideration": [
-            {
-              "type": string,
-              "description": string,
-              "estimatedAmount": number,
-              "constraintApplied": boolean,
-              "constraintReason": string
-            }
-          ],
-          "significantFinancingComponent": {
-            "exists": boolean,
-            "effectOnPrice": number,
-            "justification": string
-          },
-          "nonCashConsideration": {
-            "exists": boolean,
-            "fairValue": number,
-            "description": string
-          },
-          "considerationPayableToCustomer": {
-            "exists": boolean,
-            "amount": number,
-            "treatmentReasoning": string
-          },
-          "totalTransactionPrice": number
-        },
-        "allocation": {
-          "method": "standalone_selling_price" | "residual" | "expected_cost_plus_margin" | "market_assessment",
-          "allocations": [
-            {
-              "obligationDescription": string,
-              "amount": number,
-              "allocationBasis": string
-            }
-          ]
-        },
-        "recognitionPattern": {
-          "overTime": [
-            {
-              "obligationDescription": string,
-              "recognitionMethod": "input_method" | "output_method" | "time_elapsed",
-              "pattern": string,
-              "totalAmount": number,
-              "schedule": [
-                {
-                  "period": string,
-                  "amount": number
-                }
-              ]
-            }
-          ],
-          "pointInTime": [
-            {
-              "obligationDescription": string,
-              "triggerEvent": string,
-              "estimatedDate": string,
-              "amount": number
-            }
-          ]
-        },
-        "disclosureRequirements": {
-          "contractBalances": string,
-          "performanceObligations": string,
-          "significantJudgments": string,
-          "assetsRecognized": string
-        },
-        "potentialIssues": [
-          {
-            "area": string,
-            "description": string,
-            "recommendation": string,
-            "impact": "low" | "medium" | "high"
-          }
-        ]
-      }
+      Be concise and output valid JSON only.
 
       Contract:
       ${contractText}
