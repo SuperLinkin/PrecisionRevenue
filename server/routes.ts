@@ -19,6 +19,9 @@ import contractApiRouter from './contract-api';
 // Import Revenue Recognition Routes
 import { registerRevenueRecognitionRoutes } from './routes/revenue-recognition';
 
+// Import Contract Analysis Routes
+import contractAnalysisRouter from './routes/contract-analysis';
+
 // Supabase connection health check
 import { checkSupabaseConnection } from './supabase';
 
@@ -385,6 +388,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // AI Contract Analysis Routes - Use emergency fix for MVP demo
   app.use('/api/contracts', contractApiRouter);
+  
+  // Advanced contract analysis routes (NLP-based)
+  app.use('/api/contract-analysis', contractAnalysisRouter);
   
   // Register IFRS 15/ASC 606 Revenue Recognition Routes
   registerRevenueRecognitionRoutes(app);
