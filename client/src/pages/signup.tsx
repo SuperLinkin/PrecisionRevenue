@@ -9,14 +9,17 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-// import { useAuth } from '@/lib/auth';
+import { useAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const signupSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters'),
   email: z.string().email('Please enter a valid email address'),
   fullName: z.string().min(2, 'Full name must be at least 2 characters'),
+  companyName: z.string().min(2, 'Company name must be at least 2 characters'),
+  role: z.string().min(1, 'Please select your role'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   confirmPassword: z.string()
 }).refine(data => data.password === data.confirmPassword, {
@@ -39,6 +42,8 @@ export default function Signup() {
       username: '',
       email: '',
       fullName: '',
+      companyName: '',
+      role: '',
       password: '',
       confirmPassword: '',
     },
