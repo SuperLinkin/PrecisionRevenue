@@ -9,35 +9,257 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { AnimatedCard } from '@/components/ui/animated-card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { FileText } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { FileText, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { apiRequest } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
+
+// Type definitions for contract analysis
+interface ContractRisk {
+  category: string;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  description: string;
+  clause: string;
+  mitigation?: string;
+}
+
+interface ContractOpportunity {
+  category: string;
+  impact: 'low' | 'medium' | 'high';
+  description: string;
+  clause?: string;
+  recommendation?: string;
+}
+
+interface ContractTermsAnalysis {
+  unusualTerms: Array<{
+    clause: string;
+    description: string;
+    impact: string;
+  }>;
+  favorableTerms: Array<{
+    clause: string;
+    description: string;
+    benefit: string;
+  }>;
+  nonCompetitiveTerms: Array<{
+    clause: string;
+    description: string;
+    industryStandard: string;
+  }>;
+}
+
+interface ContractComplianceAnalysis {
+  ifrs15Compliance: {
+    score: number; // 0-100
+    issues: Array<{
+      area: string;
+      description: string;
+      recommendation: string;
+    }>;
+    strengths: string[];
+  };
+  regulatoryIssues: Array<{
+    regulation: string;
+    issue: string;
+    severity: 'low' | 'medium' | 'high';
+    recommendation: string;
+  }>;
+}
+
+interface ContractSummary {
+  contractType: string;
+  parties: string[];
+  effectiveDate: string;
+  terminationDate: string;
+  contractValue: number;
+  keyProvisions: string[];
+  paymentTerms: string;
+  noticeRequirements: string;
+  terminationConditions: string[];
+  governingLaw: string;
+}
+
+interface ContractAnalysis {
+  summary: ContractSummary;
+  risks: ContractRisk[];
+  opportunities: ContractOpportunity[];
+  termsAnalysis: ContractTermsAnalysis;
+  complianceAnalysis: ContractComplianceAnalysis;
+  revenueSummary: {
+    totalValue: number;
+    recognitionPattern: string;
+    specialConsiderations: string[];
+    variableComponents: Array<{
+      description: string;
+      estimatedValue: number;
+      contingencies: string;
+    }>;
+  };
+}
+
+interface AnalysisResponse {
+  contractId: number;
+  contractName: string;
+  analysis: ContractAnalysis;
+}
 
 export default function ClausPage() {
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('generate');
-  const [uploadedContract, setUploadedContract] = useState<string | null>(null);
-  const [analysisResults, setAnalysisResults] = useState<any | null>(null);
+  const [uploadedContract, setUploadedContract] = useState<File | null>(null);
+  const [contractText, setContractText] = useState<string>('');
+  const [contractBase64, setContractBase64] = useState<string | null>(null);
+  const [analysisResults, setAnalysisResults] = useState<ContractAnalysis | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isApiAvailable, setIsApiAvailable] = useState<boolean | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Mock contract analysis functionality
-  const analyzeContract = () => {
-    setIsAnalyzing(true);
-    setTimeout(() => {
-      setAnalysisResults({
-        riskScore: 72,
-        issues: [
-          { id: 1, severity: 'high', description: 'Ambiguous revenue recognition terms in Section 4.2' },
-          { id: 2, severity: 'medium', description: 'Potential conflict between general terms and SOW exhibit' },
-          { id: 3, severity: 'low', description: 'Insufficient detail in acceptance criteria' }
-        ],
-        recommendations: [
-          'Clearly define revenue recognition criteria with specific milestones',
-          'Align terms across all contract documents to eliminate conflicts',
-          'Expand acceptance criteria with measurable metrics'
-        ]
+  // Check OpenAI API status on component mount
+  useEffect(() => {
+    const checkApiStatus = async () => {
+      try {
+        const response = await fetch('/api/contract-analysis/status');
+        const data = await response.json();
+        setIsApiAvailable(!!data.available);
+        
+        if (!data.available) {
+          toast({
+            title: "AI Analysis Unavailable",
+            description: data.message || "The contract analysis API is currently unavailable.",
+            variant: "destructive"
+          });
+        }
+      } catch (error) {
+        console.error("Failed to check API status:", error);
+        setIsApiAvailable(false);
+        toast({
+          title: "AI Analysis Unavailable",
+          description: "Failed to connect to the contract analysis service.",
+          variant: "destructive"
+        });
+      }
+    };
+    
+    checkApiStatus();
+  }, [toast]);
+
+  // Handle file upload
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files || event.target.files.length === 0) {
+      return;
+    }
+    
+    const file = event.target.files[0];
+    
+    // Validate file type (PDF, DOCX, or TXT)
+    const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+    if (!validTypes.includes(file.type)) {
+      toast({
+        title: "Invalid File Type",
+        description: "Please upload a PDF, DOCX, or TXT file.",
+        variant: "destructive"
       });
+      return;
+    }
+    
+    // Validate file size (max 10MB)
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    if (file.size > maxSize) {
+      toast({
+        title: "File Too Large",
+        description: "Please upload a file smaller than 10MB.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setUploadedContract(file);
+    
+    // Read file as text or base64 depending on file type
+    const reader = new FileReader();
+    
+    if (file.type === 'text/plain') {
+      reader.onload = () => {
+        setContractText(reader.result as string);
+      };
+      reader.readAsText(file);
+    } else {
+      reader.onload = () => {
+        const base64 = (reader.result as string).split(',')[1];
+        setContractBase64(base64);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Reset file upload
+  const resetFileUpload = () => {
+    setUploadedContract(null);
+    setContractText('');
+    setContractBase64(null);
+    setAnalysisResults(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  // API-based contract analysis functionality
+  const analyzeContract = async () => {
+    if (!uploadedContract) {
+      toast({
+        title: "No Contract Selected",
+        description: "Please upload a contract document first.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (isApiAvailable === false) {
+      toast({
+        title: "AI Analysis Unavailable",
+        description: "The contract analysis API is currently unavailable.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsAnalyzing(true);
+    
+    try {
+      // For demonstration purposes, use a sample contract ID
+      // In a real application, you would first upload the contract to get a contract ID
+      const contractId = 1;
+      
+      const response = await apiRequest('POST', '/api/contract-analysis/comprehensive', {
+        contractId,
+        contractText,
+        base64Data: contractBase64
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to analyze contract');
+      }
+      
+      const data: AnalysisResponse = await response.json();
+      setAnalysisResults(data.analysis);
+      
+      toast({
+        title: "Analysis Complete",
+        description: "Contract analysis completed successfully.",
+      });
+    } catch (error) {
+      console.error('Contract analysis error:', error);
+      toast({
+        title: "Analysis Failed",
+        description: error instanceof Error ? error.message : "An unknown error occurred during analysis.",
+        variant: "destructive"
+      });
+    } finally {
       setIsAnalyzing(false);
-    }, 3000);
+    }
   };
 
   // Mock contract template data
@@ -203,6 +425,29 @@ export default function ClausPage() {
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
+                      {/* API status indicator */}
+                      {isApiAvailable !== null && (
+                        <div className="mb-4">
+                          <Alert variant={isApiAvailable ? "default" : "destructive"}>
+                            <div className="flex items-center">
+                              {isApiAvailable ? (
+                                <CheckCircle2 className="h-4 w-4 mr-2" />
+                              ) : (
+                                <AlertCircle className="h-4 w-4 mr-2" />
+                              )}
+                              <AlertTitle>
+                                {isApiAvailable ? "AI Analysis Available" : "AI Analysis Unavailable"}
+                              </AlertTitle>
+                            </div>
+                            <AlertDescription>
+                              {isApiAvailable 
+                                ? "The contract analysis service is connected and ready." 
+                                : "Unable to connect to the contract analysis service. Please try again later."}
+                            </AlertDescription>
+                          </Alert>
+                        </div>
+                      )}
+                
                       {!uploadedContract && (
                         <div className="flex items-center justify-center w-full">
                           <label htmlFor="contract-upload" className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer bg-background hover:bg-neutral-50 dark:hover:bg-slate-800">
@@ -215,7 +460,14 @@ export default function ClausPage() {
                                 PDF, DOCX, or TXT (MAX. 10MB)
                               </p>
                             </div>
-                            <input id="contract-upload" type="file" className="hidden" onChange={() => setUploadedContract('Sample Contract.pdf')} />
+                            <input 
+                              id="contract-upload" 
+                              type="file" 
+                              ref={fileInputRef}
+                              className="hidden" 
+                              accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
+                              onChange={handleFileUpload} 
+                            />
                           </label>
                         </div>
                       )}
@@ -225,9 +477,9 @@ export default function ClausPage() {
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-2">
                               <FileText className="h-5 w-5 text-muted-foreground" />
-                              <span className="text-sm">{uploadedContract}</span>
+                              <span className="text-sm">{uploadedContract.name}</span>
                             </div>
-                            <Button variant="ghost" size="sm" onClick={() => setUploadedContract(null)}>
+                            <Button variant="ghost" size="sm" onClick={resetFileUpload}>
                               Remove
                             </Button>
                           </div>
@@ -252,51 +504,192 @@ export default function ClausPage() {
                         <motion.div 
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
-                          className="space-y-6"
+                          className="space-y-8"
                         >
-                          <div className="flex justify-between items-center">
-                            <h3 className="text-base text-primary">Analysis Results</h3>
-                            <Badge variant={analysisResults.riskScore > 80 ? "destructive" : analysisResults.riskScore > 60 ? "default" : "outline"}>
-                              Risk Score: {analysisResults.riskScore}/100
-                            </Badge>
+                          {/* Contract Summary Section */}
+                          <div>
+                            <h3 className="text-base font-medium text-primary mb-4">Contract Summary</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <div className="flex justify-between">
+                                  <span className="text-sm text-muted-foreground">Contract Type:</span>
+                                  <span className="text-sm font-medium">{analysisResults.summary.contractType}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-sm text-muted-foreground">Contract Value:</span>
+                                  <span className="text-sm font-medium">${analysisResults.summary.contractValue.toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-sm text-muted-foreground">Effective Date:</span>
+                                  <span className="text-sm font-medium">{new Date(analysisResults.summary.effectiveDate).toLocaleDateString()}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-sm text-muted-foreground">Termination Date:</span>
+                                  <span className="text-sm font-medium">{new Date(analysisResults.summary.terminationDate).toLocaleDateString()}</span>
+                                </div>
+                              </div>
+                              <div className="space-y-2">
+                                <div className="flex justify-between">
+                                  <span className="text-sm text-muted-foreground">Parties:</span>
+                                  <span className="text-sm font-medium">{analysisResults.summary.parties.join(", ")}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-sm text-muted-foreground">Payment Terms:</span>
+                                  <span className="text-sm font-medium">{analysisResults.summary.paymentTerms}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-sm text-muted-foreground">Governing Law:</span>
+                                  <span className="text-sm font-medium">{analysisResults.summary.governingLaw}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-sm text-muted-foreground">Notice Period:</span>
+                                  <span className="text-sm font-medium">{analysisResults.summary.noticeRequirements}</span>
+                                </div>
+                              </div>
+                            </div>
                           </div>
                           
+                          {/* IFRS 15 Compliance Section */}
                           <div>
-                            <h4 className="text-sm text-primary mb-2">Identified Issues</h4>
-                            <div className="space-y-2">
-                              {analysisResults.issues.map((issue: any) => (
-                                <Alert key={issue.id} className={
-                                  issue.severity === 'high' 
-                                    ? "border-red-600 text-red-600" 
-                                    : issue.severity === 'medium' 
-                                      ? "border-amber-600 text-amber-600" 
-                                      : "border-blue-600 text-blue-600"
+                            <div className="flex justify-between items-center mb-4">
+                              <h3 className="text-base font-medium text-primary">IFRS 15/ASC 606 Compliance</h3>
+                              <Badge variant={
+                                analysisResults.complianceAnalysis.ifrs15Compliance.score > 80 
+                                  ? "outline" 
+                                  : analysisResults.complianceAnalysis.ifrs15Compliance.score > 60 
+                                    ? "default" 
+                                    : "destructive"
+                              }>
+                                Compliance Score: {analysisResults.complianceAnalysis.ifrs15Compliance.score}/100
+                              </Badge>
+                            </div>
+                            
+                            {/* Compliance Issues */}
+                            {analysisResults.complianceAnalysis.ifrs15Compliance.issues.length > 0 && (
+                              <div className="mb-4">
+                                <h4 className="text-sm text-primary mb-2">Compliance Issues</h4>
+                                <div className="space-y-2">
+                                  {analysisResults.complianceAnalysis.ifrs15Compliance.issues.map((issue, index) => (
+                                    <Alert key={index} variant="destructive">
+                                      <AlertTitle>{issue.area}</AlertTitle>
+                                      <AlertDescription className="flex flex-col gap-1">
+                                        <span>{issue.description}</span>
+                                        <span className="text-xs font-medium text-primary-foreground">Recommendation: {issue.recommendation}</span>
+                                      </AlertDescription>
+                                    </Alert>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            
+                            {/* Compliance Strengths */}
+                            {analysisResults.complianceAnalysis.ifrs15Compliance.strengths.length > 0 && (
+                              <div>
+                                <h4 className="text-sm text-primary mb-2">Compliance Strengths</h4>
+                                <ul className="space-y-1 list-disc pl-5">
+                                  {analysisResults.complianceAnalysis.ifrs15Compliance.strengths.map((strength, index) => (
+                                    <li key={index} className="text-sm text-neutral">{strength}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Risk Analysis Section */}
+                          <div>
+                            <h3 className="text-base font-medium text-primary mb-4">Risk Analysis</h3>
+                            <div className="space-y-3">
+                              {analysisResults.risks.map((risk, index) => (
+                                <Alert key={index} variant={
+                                  risk.severity === 'critical' ? "destructive" :
+                                  risk.severity === 'high' ? "destructive" :
+                                  risk.severity === 'medium' ? "default" : "outline"
                                 }>
-                                  <AlertTitle>
-                                    {issue.severity === 'high' ? 'High Risk' : issue.severity === 'medium' ? 'Medium Risk' : 'Low Risk'}
-                                  </AlertTitle>
-                                  <AlertDescription>
-                                    {issue.description}
+                                  <AlertTitle>{risk.category} Risk - {risk.severity.charAt(0).toUpperCase() + risk.severity.slice(1)}</AlertTitle>
+                                  <AlertDescription className="flex flex-col gap-1">
+                                    <span>{risk.description}</span>
+                                    <span className="text-xs italic mt-1">Clause: {risk.clause}</span>
+                                    {risk.mitigation && (
+                                      <span className="text-xs font-medium mt-1">Mitigation: {risk.mitigation}</span>
+                                    )}
                                   </AlertDescription>
                                 </Alert>
                               ))}
                             </div>
                           </div>
                           
+                          {/* Revenue Recognition Summary */}
                           <div>
-                            <h4 className="text-sm text-primary mb-2">Recommendations</h4>
-                            <ul className="space-y-2 list-disc pl-5">
-                              {analysisResults.recommendations.map((rec: string, index: number) => (
-                                <li key={index} className="text-sm text-neutral">{rec}</li>
-                              ))}
-                            </ul>
+                            <h3 className="text-base font-medium text-primary mb-4">Revenue Recognition</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                              <div className="space-y-2">
+                                <div className="flex justify-between">
+                                  <span className="text-sm text-muted-foreground">Total Value:</span>
+                                  <span className="text-sm font-medium">${analysisResults.revenueSummary.totalValue.toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-sm text-muted-foreground">Recognition Pattern:</span>
+                                  <span className="text-sm font-medium">{analysisResults.revenueSummary.recognitionPattern}</span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {/* Special Considerations */}
+                            {analysisResults.revenueSummary.specialConsiderations.length > 0 && (
+                              <div className="mb-3">
+                                <h4 className="text-sm text-primary mb-2">Special Considerations</h4>
+                                <ul className="space-y-1 list-disc pl-5">
+                                  {analysisResults.revenueSummary.specialConsiderations.map((consideration, index) => (
+                                    <li key={index} className="text-sm text-neutral">{consideration}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            
+                            {/* Variable Components */}
+                            {analysisResults.revenueSummary.variableComponents.length > 0 && (
+                              <div>
+                                <h4 className="text-sm text-primary mb-2">Variable Components</h4>
+                                <div className="space-y-2">
+                                  {analysisResults.revenueSummary.variableComponents.map((component, index) => (
+                                    <div key={index} className="bg-secondary/20 p-3 rounded-md">
+                                      <div className="flex justify-between mb-1">
+                                        <span className="text-sm font-medium">{component.description}</span>
+                                        <span className="text-sm">${component.estimatedValue.toLocaleString()}</span>
+                                      </div>
+                                      <p className="text-xs text-muted-foreground">{component.contingencies}</p>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
                           </div>
                           
+                          {/* Opportunities Section */}
+                          {analysisResults.opportunities.length > 0 && (
+                            <div>
+                              <h3 className="text-base font-medium text-primary mb-4">Opportunities</h3>
+                              <div className="space-y-3">
+                                {analysisResults.opportunities.map((opportunity, index) => (
+                                  <Alert key={index} variant="default" className="border-green-500">
+                                    <AlertTitle>{opportunity.category} - {opportunity.impact.charAt(0).toUpperCase() + opportunity.impact.slice(1)} Impact</AlertTitle>
+                                    <AlertDescription className="flex flex-col gap-1">
+                                      <span>{opportunity.description}</span>
+                                      {opportunity.clause && (
+                                        <span className="text-xs italic mt-1">Clause: {opportunity.clause}</span>
+                                      )}
+                                      {opportunity.recommendation && (
+                                        <span className="text-xs font-medium mt-1">Recommendation: {opportunity.recommendation}</span>
+                                      )}
+                                    </AlertDescription>
+                                  </Alert>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
                           <div className="flex justify-end space-x-2">
-                            <Button variant="outline" onClick={() => {
-                              setUploadedContract(null);
-                              setAnalysisResults(null);
-                            }}>
+                            <Button variant="outline" onClick={resetFileUpload}>
                               New Analysis
                             </Button>
                             <Button>
