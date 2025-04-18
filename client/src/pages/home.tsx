@@ -381,15 +381,15 @@ export default function Home() {
 
         <div className="relative z-10 max-w-7xl mx-auto py-24 px-4 sm:px-6 lg:py-36 lg:px-8">
           <div className="max-w-3xl mx-auto text-center mb-20">
-            <span className="inline-flex items-center rounded-full bg-secondary/10 px-3 py-1 text-sm font-medium text-secondary ring-1 ring-inset ring-secondary/20 mb-3">
-              <svg className="mr-1 h-1.5 w-1.5 fill-secondary animate-pulse" viewBox="0 0 6 6" aria-hidden="true"><circle cx="3" cy="3" r="3" /></svg>
-              Advanced AI Technology
+            <span className="inline-flex items-center rounded-full bg-white/5 px-3 py-1 text-sm font-medium text-blue-300 ring-1 ring-inset ring-blue-300/20 mb-3">
+              <svg className="mr-1 h-1.5 w-1.5 fill-blue-300 animate-pulse" viewBox="0 0 6 6" aria-hidden="true"><circle cx="3" cy="3" r="3" /></svg>
+              Precision Technology
             </span>
             <h2 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent pb-2">
-              Powered by Cutting-Edge Intelligence
+              Powered by Advanced Financial Intelligence
             </h2>
             <p className="mt-4 text-lg text-neutral font-light max-w-2xl mx-auto">
-              Our proprietary AI models blend deep learning, machine learning, and financial expertise to deliver unprecedented automation and insights.
+              Our proprietary systems combine sophisticated algorithms with financial expertise to deliver unprecedented automation and insights for revenue operations.
             </p>
           </div>
           
@@ -399,9 +399,9 @@ export default function Home() {
                 key={index}
                 className="relative group overflow-hidden"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-secondary/20 to-accent/20 opacity-0 group-hover:opacity-100 transform translate-y-full group-hover:translate-y-0 transition-all duration-500 rounded-2xl"></div>
-                <div className="relative z-10 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-8 h-full transform transition-transform duration-300 group-hover:-translate-y-2 group-hover:shadow-2xl">
-                  <div className="w-16 h-16 flex items-center justify-center rounded-xl bg-gradient-to-br from-secondary/20 to-accent/20 text-4xl mb-6">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 opacity-0 group-hover:opacity-100 transform translate-y-full group-hover:translate-y-0 transition-all duration-500 rounded-2xl"></div>
+                <div className="relative z-10 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-8 h-full transform transition-transform duration-300 group-hover:-translate-y-2 group-hover:shadow-2xl">
+                  <div className="w-16 h-16 flex items-center justify-center rounded-xl bg-white/10 text-4xl mb-6">
                     {capability.icon}
                   </div>
                   
@@ -428,15 +428,15 @@ export default function Home() {
           </div>
           
           <div className="mt-20 pt-10 border-t border-white/10 text-center">
-            <div className="inline-flex items-center justify-center rounded-full px-4 py-1 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 text-indigo-300 mb-4">
+            <div className="inline-flex items-center justify-center rounded-full px-4 py-1 bg-white/5 text-blue-200 mb-4">
               <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M9.31 17.25L14.53 12.03L9.31 6.81001" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-              <span className="text-sm font-semibold">Continuous Learning</span>
+              <span className="text-sm font-semibold">Continuous Improvement</span>
             </div>
-            <h3 className="text-3xl font-semibold text-white mb-3">Our AI Gets Smarter Every Day</h3>
+            <h3 className="text-3xl font-semibold text-white mb-3">Advanced Analytics That Evolve</h3>
             <p className="max-w-2xl mx-auto text-neutral/80">
-              PRA's intelligent systems continuously learn from new financial data, regulatory changes, and user interactions to improve recognition accuracy and forecasting precision.
+              PRA's financial systems continuously adapt to new data, regulatory changes, and user feedback to enhance recognition accuracy and forecasting precision.
             </p>
           </div>
         </div>
@@ -547,7 +547,7 @@ export default function Home() {
                         </div>
                       </div>
                       <div className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm">
-                        <div className="text-xs font-medium text-gray-500 mb-1">AI-Assisted Accuracy</div>
+                        <div className="text-xs font-medium text-gray-500 mb-1">Recognition Accuracy</div>
                         <div className="text-xl font-bold text-gray-800">99.2%</div>
                         <div className="flex items-center mt-1">
                           <div className="text-xs font-medium text-emerald-600 flex items-center">
@@ -643,7 +643,7 @@ export default function Home() {
                       
                       <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
                         <div className="flex justify-between items-center mb-3">
-                          <div className="text-sm font-semibold text-gray-800">AI-Powered Forecast</div>
+                          <div className="text-sm font-semibold text-gray-800">Revenue Forecast</div>
                           <div className="bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded">
                             Updated Today
                           </div>
