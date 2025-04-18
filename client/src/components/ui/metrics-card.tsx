@@ -26,22 +26,22 @@ export function MetricsCard({ title, value, change, icon, iconColor }: MetricsCa
                 {title}
               </dt>
               <dd>
-                <div className="text-3xl font-bold text-primary mt-1 tracking-tight">
+                <div className="text-2xl font-bold text-primary mt-1 tracking-tight truncate">
                   {value}
                 </div>
                 {change && (
                   <div className="flex items-center text-sm font-medium mt-1">
                     {change.isPositive ? (
                       <>
-                        <ArrowUpIcon className="w-4 h-4 mr-1 text-emerald-500" />
-                        <span className="text-emerald-600 font-semibold">{change.value}</span>
+                        <ArrowUpIcon className="w-4 h-4 mr-1 flex-shrink-0 text-emerald-500" />
+                        <span className="text-emerald-600 font-medium truncate">{change.value}</span>
                       </>
                     ) : (
                       <>
-                        <svg className="w-4 h-4 mr-1 rotate-180 text-rose-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <svg className="w-4 h-4 mr-1 rotate-180 flex-shrink-0 text-rose-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                           <path fillRule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
-                        <span className="text-rose-600 font-semibold">{change.value}</span>
+                        <span className="text-rose-600 font-medium truncate">{change.value}</span>
                       </>
                     )}
                   </div>

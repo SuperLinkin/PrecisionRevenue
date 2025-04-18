@@ -17,7 +17,7 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { getInitials } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { motion } from 'framer-motion';
+
 
 interface MenuItem {
   path: string;
@@ -113,17 +113,14 @@ export function Sidebar() {
     <div className="w-64 bg-gradient-to-b from-primary-900 to-primary-800 text-white h-screen flex flex-col shadow-xl">
       <div className="px-5 py-6 border-b border-primary-700/50">
         <Link href="/dashboard">
-          <motion.div 
-            className="flex items-center cursor-pointer"
-            whileHover={{ scale: 1.02 }}
-          >
+          <div className="flex items-center cursor-pointer hover:opacity-90 transition-opacity">
             <div className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-indigo-300 bg-clip-text text-transparent">
               PRA
             </div>
             <span className="ml-2 text-xs text-indigo-200 tracking-widest uppercase">
               Precision Revenue
             </span>
-          </motion.div>
+          </div>
         </Link>
       </div>
       
