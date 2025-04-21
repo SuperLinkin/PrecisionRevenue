@@ -1,3 +1,4 @@
+import React, { useEffect, useState, useRef } from 'react';
 import { Sidebar } from '@/components/ui/sidebar';
 import { DashboardHeader } from '@/components/ui/dashboard-header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,10 +10,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { AnimatedCard } from '@/components/ui/animated-card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { FileText, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { useEffect, useState, useRef } from 'react';
+import { FileText, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 
 // Type definitions for contract analysis
@@ -105,6 +104,18 @@ interface AnalysisResponse {
   analysis: ContractAnalysis;
 }
 
+// API response types
+interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
+interface ApiStatusResponse {
+  available: boolean;
+  message?: string;
+}
+
 export default function ClausPage() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('generate');
@@ -114,6 +125,8 @@ export default function ClausPage() {
   const [analysisResults, setAnalysisResults] = useState<ContractAnalysis | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isApiAvailable, setIsApiAvailable] = useState<boolean | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Check OpenAI API status on component mount
@@ -121,10 +134,11 @@ export default function ClausPage() {
     const checkApiStatus = async () => {
       try {
         const response = await fetch('/api/contract-analysis/status');
-        const data = await response.json();
+        const data: ApiStatusResponse = await response.json();
         setIsApiAvailable(!!data.available);
         
         if (!data.available) {
+          setError(data.message || "The contract analysis API is currently unavailable.");
           toast({
             title: "AI Analysis Unavailable",
             description: data.message || "The contract analysis API is currently unavailable.",
@@ -134,6 +148,7 @@ export default function ClausPage() {
       } catch (error) {
         console.error("Failed to check API status:", error);
         setIsApiAvailable(false);
+        setError("Failed to connect to the contract analysis service.");
         toast({
           title: "AI Analysis Unavailable",
           description: "Failed to connect to the contract analysis service.",
@@ -145,28 +160,73 @@ export default function ClausPage() {
     checkApiStatus();
   }, [toast]);
 
-  // Handle file upload
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (!event.target.files || event.target.files.length === 0) {
-      return;
-    }
-    
-    const file = event.target.files[0];
-    
-    // Validate file type (PDF, DOCX, or TXT)
-    const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
-    if (!validTypes.includes(file.type)) {
+  // Handle contract analysis
+  const handleAnalyzeContract = async () => {
+    if (!isApiAvailable) {
       toast({
-        title: "Invalid File Type",
-        description: "Please upload a PDF, DOCX, or TXT file.",
+        title: "AI Analysis Unavailable",
+        description: "Please ensure the AI service is available before analyzing contracts.",
         variant: "destructive"
       });
       return;
     }
-    
-    // Validate file size (max 10MB)
-    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
-    if (file.size > maxSize) {
+
+    if (!contractText && !contractBase64) {
+      toast({
+        title: "No Contract Data",
+        description: "Please upload a contract or enter contract text before analysis.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsAnalyzing(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/contract-analysis/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contractText,
+          base64Data: contractBase64
+        }),
+      });
+
+      const data: ApiResponse<ContractAnalysis> = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to analyze contract');
+      }
+
+      setAnalysisResults(data.data || null);
+      toast({
+        title: "Analysis Complete",
+        description: "Contract has been successfully analyzed.",
+        variant: "default"
+      });
+    } catch (error) {
+      console.error('Contract analysis error:', error);
+      setError(error instanceof Error ? error.message : 'An error occurred during analysis');
+      toast({
+        title: "Analysis Failed",
+        description: error instanceof Error ? error.message : 'An error occurred during analysis',
+        variant: "destructive"
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  // Handle file upload
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file size (10MB limit)
+    if (file.size > 10 * 1024 * 1024) {
       toast({
         title: "File Too Large",
         description: "Please upload a file smaller than 10MB.",
@@ -174,23 +234,53 @@ export default function ClausPage() {
       });
       return;
     }
-    
+
+    // Validate file type
+    const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: "Invalid File Type",
+        description: "Please upload a PDF, DOCX, or TXT file.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsLoading(true);
     setUploadedContract(file);
-    
-    // Read file as text or base64 depending on file type
-    const reader = new FileReader();
-    
-    if (file.type === 'text/plain') {
-      reader.onload = () => {
-        setContractText(reader.result as string);
-      };
-      reader.readAsText(file);
-    } else {
-      reader.onload = () => {
-        const base64 = (reader.result as string).split(',')[1];
-        setContractBase64(base64);
-      };
-      reader.readAsDataURL(file);
+    setError(null);
+
+    try {
+      // Convert file to base64
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target?.result as string);
+        reader.onerror = (e) => reject(e);
+        reader.readAsDataURL(file);
+      });
+
+      setContractBase64(base64.split(',')[1]); // Remove data URL prefix
+
+      // Read text content
+      const text = await file.text();
+      setContractText(text);
+
+      toast({
+        title: "File Uploaded",
+        description: "Contract file has been successfully uploaded.",
+        variant: "default"
+      });
+    } catch (error) {
+      console.error('File upload error:', error);
+      setError('Failed to process the uploaded file');
+      toast({
+        title: "Upload Failed",
+        description: "Failed to process the uploaded file. Please try again.",
+        variant: "destructive"
+      });
+      resetFileUpload();
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -202,63 +292,6 @@ export default function ClausPage() {
     setAnalysisResults(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
-    }
-  };
-
-  // API-based contract analysis functionality
-  const analyzeContract = async () => {
-    if (!uploadedContract) {
-      toast({
-        title: "No Contract Selected",
-        description: "Please upload a contract document first.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    if (isApiAvailable === false) {
-      toast({
-        title: "AI Analysis Unavailable",
-        description: "The contract analysis API is currently unavailable.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    setIsAnalyzing(true);
-    
-    try {
-      // For demonstration purposes, use a sample contract ID
-      // In a real application, you would first upload the contract to get a contract ID
-      const contractId = 1;
-      
-      const response = await apiRequest('POST', '/api/contract-analysis/comprehensive', {
-        contractId,
-        contractText,
-        base64Data: contractBase64
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to analyze contract');
-      }
-      
-      const data: AnalysisResponse = await response.json();
-      setAnalysisResults(data.analysis);
-      
-      toast({
-        title: "Analysis Complete",
-        description: "Contract analysis completed successfully.",
-      });
-    } catch (error) {
-      console.error('Contract analysis error:', error);
-      toast({
-        title: "Analysis Failed",
-        description: error instanceof Error ? error.message : "An unknown error occurred during analysis.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsAnalyzing(false);
     }
   };
 
@@ -450,9 +483,18 @@ export default function ClausPage() {
                 
                       {!uploadedContract && (
                         <div className="flex items-center justify-center w-full">
-                          <label htmlFor="contract-upload" className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer bg-background hover:bg-neutral-50 dark:hover:bg-slate-800">
+                          <label 
+                            htmlFor="contract-upload" 
+                            className={`flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer bg-background hover:bg-neutral-50 dark:hover:bg-slate-800 ${
+                              isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                            }`}
+                          >
                             <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                              <FileText className="w-10 h-10 mb-3 text-secondary" />
+                              {isLoading ? (
+                                <Loader2 className="w-10 h-10 mb-3 text-secondary animate-spin" />
+                              ) : (
+                                <FileText className="w-10 h-10 mb-3 text-secondary" />
+                              )}
                               <p className="mb-2 text-sm text-neutral">
                                 <span className="font-semibold">Click to upload</span> or drag and drop
                               </p>
@@ -466,7 +508,8 @@ export default function ClausPage() {
                               ref={fileInputRef}
                               className="hidden" 
                               accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
-                              onChange={handleFileUpload} 
+                              onChange={handleFileUpload}
+                              disabled={isLoading || isAnalyzing} 
                             />
                           </label>
                         </div>
@@ -478,26 +521,45 @@ export default function ClausPage() {
                             <div className="flex items-center space-x-2">
                               <FileText className="h-5 w-5 text-muted-foreground" />
                               <span className="text-sm">{uploadedContract.name}</span>
+                              {isLoading && (
+                                <Badge variant="outline" className="ml-2">
+                                  <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                                  Processing
+                                </Badge>
+                              )}
                             </div>
-                            <Button variant="ghost" size="sm" onClick={resetFileUpload}>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={resetFileUpload}
+                              disabled={isLoading || isAnalyzing}
+                            >
                               Remove
                             </Button>
                           </div>
                           
                           <div className="flex justify-end">
                             <Button 
-                              onClick={analyzeContract} 
-                              disabled={isAnalyzing}
+                              onClick={handleAnalyzeContract} 
+                              disabled={isLoading || isAnalyzing}
                             >
                               {isAnalyzing ? (
                                 <>
-                                  <span className="animate-spin mr-2">⏳</span>
+                                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                                   Analyzing...
                                 </>
                               ) : 'Analyze Contract'}
                             </Button>
                           </div>
                         </div>
+                      )}
+                      
+                      {error && (
+                        <Alert variant="destructive" className="mt-4">
+                          <AlertCircle className="h-4 w-4" />
+                          <AlertTitle>Error</AlertTitle>
+                          <AlertDescription>{error}</AlertDescription>
+                        </Alert>
                       )}
                       
                       {analysisResults && (
@@ -509,193 +571,58 @@ export default function ClausPage() {
                           {/* Contract Summary Section */}
                           <div>
                             <h3 className="text-base font-medium text-primary mb-4">Contract Summary</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <div className="space-y-2">
-                                <div className="flex justify-between">
-                                  <span className="text-sm text-muted-foreground">Contract Type:</span>
-                                  <span className="text-sm font-medium">{analysisResults.summary.contractType}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-sm text-muted-foreground">Contract Value:</span>
-                                  <span className="text-sm font-medium">${analysisResults.summary.contractValue.toLocaleString()}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-sm text-muted-foreground">Effective Date:</span>
-                                  <span className="text-sm font-medium">{new Date(analysisResults.summary.effectiveDate).toLocaleDateString()}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-sm text-muted-foreground">Termination Date:</span>
-                                  <span className="text-sm font-medium">{new Date(analysisResults.summary.terminationDate).toLocaleDateString()}</span>
-                                </div>
-                              </div>
-                              <div className="space-y-2">
-                                <div className="flex justify-between">
-                                  <span className="text-sm text-muted-foreground">Parties:</span>
-                                  <span className="text-sm font-medium">{analysisResults.summary.parties.join(", ")}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-sm text-muted-foreground">Payment Terms:</span>
-                                  <span className="text-sm font-medium">{analysisResults.summary.paymentTerms}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-sm text-muted-foreground">Governing Law:</span>
-                                  <span className="text-sm font-medium">{analysisResults.summary.governingLaw}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-sm text-muted-foreground">Notice Period:</span>
-                                  <span className="text-sm font-medium">{analysisResults.summary.noticeRequirements}</span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          
-                          {/* IFRS 15 Compliance Section */}
-                          <div>
-                            <div className="flex justify-between items-center mb-4">
-                              <h3 className="text-base font-medium text-primary">IFRS 15/ASC 606 Compliance</h3>
-                              <Badge variant={
-                                analysisResults.complianceAnalysis.ifrs15Compliance.score > 80 
-                                  ? "outline" 
-                                  : analysisResults.complianceAnalysis.ifrs15Compliance.score > 60 
-                                    ? "default" 
-                                    : "destructive"
-                              }>
-                                Compliance Score: {analysisResults.complianceAnalysis.ifrs15Compliance.score}/100
-                              </Badge>
-                            </div>
-                            
-                            {/* Compliance Issues */}
-                            {analysisResults.complianceAnalysis.ifrs15Compliance.issues.length > 0 && (
-                              <div className="mb-4">
-                                <h4 className="text-sm text-primary mb-2">Compliance Issues</h4>
-                                <div className="space-y-2">
-                                  {analysisResults.complianceAnalysis.ifrs15Compliance.issues.map((issue, index) => (
-                                    <Alert key={index} variant="destructive">
-                                      <AlertTitle>{issue.area}</AlertTitle>
-                                      <AlertDescription className="flex flex-col gap-1">
-                                        <span>{issue.description}</span>
-                                        <span className="text-xs font-medium text-primary-foreground">Recommendation: {issue.recommendation}</span>
-                                      </AlertDescription>
-                                    </Alert>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                            
-                            {/* Compliance Strengths */}
-                            {analysisResults.complianceAnalysis.ifrs15Compliance.strengths.length > 0 && (
+                            <div className="grid gap-4 md:grid-cols-2">
                               <div>
-                                <h4 className="text-sm text-primary mb-2">Compliance Strengths</h4>
-                                <ul className="space-y-1 list-disc pl-5">
-                                  {analysisResults.complianceAnalysis.ifrs15Compliance.strengths.map((strength, index) => (
-                                    <li key={index} className="text-sm text-neutral">{strength}</li>
-                                  ))}
-                                </ul>
+                                <Label>Contract Type</Label>
+                                <p className="text-sm">{analysisResults.summary.contractType}</p>
                               </div>
-                            )}
+                              <div>
+                                <Label>Contract Value</Label>
+                                <p className="text-sm">${analysisResults.summary.contractValue.toLocaleString()}</p>
+                              </div>
+                              <div>
+                                <Label>Effective Date</Label>
+                                <p className="text-sm">{new Date(analysisResults.summary.effectiveDate).toLocaleDateString()}</p>
+                              </div>
+                              <div>
+                                <Label>Termination Date</Label>
+                                <p className="text-sm">{new Date(analysisResults.summary.terminationDate).toLocaleDateString()}</p>
+                              </div>
+                            </div>
                           </div>
                           
                           {/* Risk Analysis Section */}
                           <div>
                             <h3 className="text-base font-medium text-primary mb-4">Risk Analysis</h3>
-                            <div className="space-y-3">
+                            <div className="space-y-4">
                               {analysisResults.risks.map((risk, index) => (
-                                <Alert key={index} variant={
-                                  risk.severity === 'critical' ? "destructive" :
-                                  risk.severity === 'high' ? "destructive" :
-                                  risk.severity === 'medium' ? "default" : "outline"
-                                }>
-                                  <AlertTitle>{risk.category} Risk - {risk.severity.charAt(0).toUpperCase() + risk.severity.slice(1)}</AlertTitle>
-                                  <AlertDescription className="flex flex-col gap-1">
-                                    <span>{risk.description}</span>
-                                    <span className="text-xs italic mt-1">Clause: {risk.clause}</span>
-                                    {risk.mitigation && (
-                                      <span className="text-xs font-medium mt-1">Mitigation: {risk.mitigation}</span>
-                                    )}
-                                  </AlertDescription>
-                                </Alert>
+                                <div key={index} className="p-4 rounded-lg border">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <span className="font-medium">{risk.category}</span>
+                                    <Badge 
+                                      variant={
+                                        risk.severity === 'critical' ? 'destructive' :
+                                        risk.severity === 'high' ? 'destructive' :
+                                        risk.severity === 'medium' ? 'secondary' :
+                                        'default'
+                                      }
+                                    >
+                                      {risk.severity}
+                                    </Badge>
+                                  </div>
+                                  <p className="text-sm text-muted-foreground">{risk.description}</p>
+                                  {risk.mitigation && (
+                                    <p className="text-sm mt-2">
+                                      <span className="font-medium">Mitigation: </span>
+                                      {risk.mitigation}
+                                    </p>
+                                  )}
+                                </div>
                               ))}
                             </div>
                           </div>
                           
-                          {/* Revenue Recognition Summary */}
-                          <div>
-                            <h3 className="text-base font-medium text-primary mb-4">Revenue Recognition</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-                              <div className="space-y-2">
-                                <div className="flex justify-between">
-                                  <span className="text-sm text-muted-foreground">Total Value:</span>
-                                  <span className="text-sm font-medium">${analysisResults.revenueSummary.totalValue.toLocaleString()}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-sm text-muted-foreground">Recognition Pattern:</span>
-                                  <span className="text-sm font-medium">{analysisResults.revenueSummary.recognitionPattern}</span>
-                                </div>
-                              </div>
-                            </div>
-                            
-                            {/* Special Considerations */}
-                            {analysisResults.revenueSummary.specialConsiderations.length > 0 && (
-                              <div className="mb-3">
-                                <h4 className="text-sm text-primary mb-2">Special Considerations</h4>
-                                <ul className="space-y-1 list-disc pl-5">
-                                  {analysisResults.revenueSummary.specialConsiderations.map((consideration, index) => (
-                                    <li key={index} className="text-sm text-neutral">{consideration}</li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-                            
-                            {/* Variable Components */}
-                            {analysisResults.revenueSummary.variableComponents.length > 0 && (
-                              <div>
-                                <h4 className="text-sm text-primary mb-2">Variable Components</h4>
-                                <div className="space-y-2">
-                                  {analysisResults.revenueSummary.variableComponents.map((component, index) => (
-                                    <div key={index} className="bg-secondary/20 p-3 rounded-md">
-                                      <div className="flex justify-between mb-1">
-                                        <span className="text-sm font-medium">{component.description}</span>
-                                        <span className="text-sm">${component.estimatedValue.toLocaleString()}</span>
-                                      </div>
-                                      <p className="text-xs text-muted-foreground">{component.contingencies}</p>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                          
-                          {/* Opportunities Section */}
-                          {analysisResults.opportunities.length > 0 && (
-                            <div>
-                              <h3 className="text-base font-medium text-primary mb-4">Opportunities</h3>
-                              <div className="space-y-3">
-                                {analysisResults.opportunities.map((opportunity, index) => (
-                                  <Alert key={index} variant="default" className="border-green-500">
-                                    <AlertTitle>{opportunity.category} - {opportunity.impact.charAt(0).toUpperCase() + opportunity.impact.slice(1)} Impact</AlertTitle>
-                                    <AlertDescription className="flex flex-col gap-1">
-                                      <span>{opportunity.description}</span>
-                                      {opportunity.clause && (
-                                        <span className="text-xs italic mt-1">Clause: {opportunity.clause}</span>
-                                      )}
-                                      {opportunity.recommendation && (
-                                        <span className="text-xs font-medium mt-1">Recommendation: {opportunity.recommendation}</span>
-                                      )}
-                                    </AlertDescription>
-                                  </Alert>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          
-                          <div className="flex justify-end space-x-2">
-                            <Button variant="outline" onClick={resetFileUpload}>
-                              New Analysis
-                            </Button>
-                            <Button>
-                              Export Report
-                            </Button>
-                          </div>
+                          {/* Add more analysis sections as needed */}
                         </motion.div>
                       )}
                     </CardContent>

@@ -1,7 +1,34 @@
 import OpenAI from 'openai';
+import { config } from 'dotenv';
+import type { ClientOptions } from 'openai';
+
+// Load environment variables
+config();
+
+// Initialize OpenAI client with proper typing
+const openaiConfig: Partial<ClientOptions> = {
+  apiKey: process.env.OPENAI_API_KEY,
+  maxRetries: 3,
+  timeout: 30000 // 30 second timeout
+};
+
+const openai = new OpenAI(openaiConfig);
+
+// Add a function to validate OpenAI configuration
+export function validateOpenAIConfig() {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OpenAI API key is not configured. Please set OPENAI_API_KEY environment variable.');
+  }
+  if (!process.env.OPENAI_API_KEY.startsWith('sk-')) {
+    throw new Error('Invalid OpenAI API key format. API key should start with "sk-"');
+  }
+}
+
+// Export the OpenAI instance
+export { openai };
 
 // The newest OpenAI model is "gpt-4o" which was released May 13, 2024
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const AI_MODEL = "gpt-4"; // Changed from gpt-4o to gpt-4
 
 /**
  * Extracts relevant contract information using GPT-4o
@@ -10,8 +37,8 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
  */
 export async function extractContractData(text: string) {
   try {
+    validateOpenAIConfig();
     console.log("DEBUG OPENAI - Starting extractContractData with OpenAI");
-    console.log("DEBUG OPENAI - API Key status:", process.env.OPENAI_API_KEY ? "Key exists" : "Key missing");
     
     const systemPrompt = `You are REMY, a revenue recognition AI trained on IFRS 15 and ASC 606. You work for a finance automation platform (PRA).
 
@@ -43,7 +70,7 @@ ${text}`;
 
     console.log("DEBUG OPENAI - Sending extraction request to OpenAI API...");
     const response = await openai.chat.completions.create({
-      model: "gpt-4o", // Using the newest OpenAI model
+      model: AI_MODEL,
       messages: [
         {
           role: "system",
@@ -58,6 +85,11 @@ ${text}`;
     try {
       const result = JSON.parse(response.choices[0].message.content || '{}');
       
+      // Validate the response structure
+      if (!result.contractName || !result.contractValue) {
+        throw new Error("AI response missing required fields");
+      }
+      
       // Ensure all required fields are present with defaults if missing
       return {
         name: result.contractName || "Untitled Contract",
@@ -67,7 +99,6 @@ ${text}`;
         endDate: result.contractTermMonths ? new Date(new Date().setMonth(new Date().getMonth() + result.contractTermMonths)) : null,
         value: result.contractValue || 0,
         keyTerms: [],
-        // New fields from the updated REMY format
         performanceObligations: result.performanceObligations || [],
         revenueRecognitionSchedule: result.revenueRecognitionSchedule || [],
         terminationClauseImpact: result.terminationClauseImpact || { refundObligation: false, terminationRisk: "Unknown" },
@@ -76,10 +107,18 @@ ${text}`;
       };
     } catch (parseError) {
       console.error("Error parsing JSON from OpenAI response:", parseError);
-      throw new Error("Failed to parse valid JSON from REMY's response");
+      throw new Error("Failed to parse valid JSON from REMY's response. Please try again.");
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error extracting contract data:", error);
+    if (error instanceof Error) {
+      if (error.message.includes('API key')) {
+        throw new Error("OpenAI API configuration error. Please check your API key.");
+      }
+      if (error.message.includes('timeout')) {
+        throw new Error("Request timed out. Please try again.");
+      }
+    }
     // Return default values if extraction fails
     return {
       name: "Untitled Contract",
@@ -202,7 +241,7 @@ For the structuredData, only include fields that you can confidently extract fro
 
     console.log("DEBUG OPENAI - Sending request to OpenAI API...");
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: AI_MODEL,
       messages: [
         { 
           role: "system", 
@@ -263,7 +302,7 @@ For the structuredData, only include fields that you can confidently extract fro
       answer: content,
       structuredData: null
     };
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("DEBUG OPENAI - Error in OpenAI API call:", error);
     return {
       answer: "I'm sorry, I encountered an error while analyzing this contract. Please try again or rephrase your question.",

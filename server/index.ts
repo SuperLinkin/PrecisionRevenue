@@ -1,13 +1,23 @@
+import './config';
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { initDB } from "./init-db";
 import { runMigrations } from "./migrations";
+import { config } from './config';
 
 const app = express();
 // Increase payload size limit for contract uploads (50mb)
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Add CORS headers
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  next();
+});
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -40,40 +50,55 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Initialize database
-  await initDB();
-  
-  // Run any necessary migrations
-  await runMigrations();
-  
-  const server = await registerRoutes(app);
+  try {
+    console.log('Starting server initialization...');
+    
+    // Initialize database
+    console.log('Initializing database...');
+    await initDB();
+    console.log('Database initialized successfully');
+    
+    // Run any necessary migrations
+    console.log('Running migrations...');
+    await runMigrations();
+    console.log('Migrations completed successfully');
+    
+    console.log('Registering routes...');
+    const server = await registerRoutes(app);
+    console.log('Routes registered successfully');
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
+    app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+      console.error('Error:', err);
+      const status = err.status || err.statusCode || 500;
+      const message = err.message || "Internal Server Error";
 
-    res.status(status).json({ message });
-    throw err;
-  });
+      res.status(status).json({ message });
+      throw err;
+    });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
-    await setupVite(app, server);
-  } else {
-    serveStatic(app);
+    // importantly only setup vite in development and after
+    // setting up all the other routes so the catch-all route
+    // doesn't interfere with the other routes
+    if (app.get("env") === "development") {
+      console.log('Setting up Vite...');
+      await setupVite(app, server);
+      console.log('Vite setup completed');
+    } else {
+      console.log('Setting up static file serving...');
+      serveStatic(app);
+      console.log('Static file serving setup completed');
+    }
+
+    // Use port from config
+    const port = config.port;
+    console.log(`Starting server on port ${port}...`);
+    
+    server.listen(port, () => {
+      console.log(`Server is running at http://localhost:${port}`);
+      console.log('Press Ctrl+C to stop the server');
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
   }
-
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = 5000;
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
-  });
 })();

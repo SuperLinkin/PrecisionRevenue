@@ -4,8 +4,8 @@ import { createClient } from '@supabase/supabase-js';
 // For demonstration purposes, we'll use mock credentials that will be replaced
 // with environment variables in a real deployment
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://example.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key';
+const supabaseUrl = 'https://zxwaobyahgwaqyzgleli.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4d2FvYnlhaGd3YXF5emdsZWxpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5Nzc0NzksImV4cCI6MjA2MDU1MzQ3OX0.fYdZw3XEDVJu1P0jICRAnm85THpYoT1t6_u4IbPmG_k';
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 

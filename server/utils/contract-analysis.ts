@@ -1,8 +1,14 @@
 import OpenAI from 'openai';
 import { Contract } from '@shared/schema';
 
-// The newest OpenAI model is "gpt-4o" which was released May 13, 2024
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// Use the latest stable model
+const AI_MODEL = "gpt-4";
+
+const openai = new OpenAI({ 
+  apiKey: process.env.OPENAI_API_KEY,
+  maxRetries: 3,
+  timeout: 30000 // 30 second timeout
+});
 
 // Function to check if OpenAI API is available
 export async function checkOpenAIAvailability(): Promise<{
@@ -19,7 +25,7 @@ export async function checkOpenAIAvailability(): Promise<{
   try {
     // Make a lightweight API call to verify the key works
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: AI_MODEL,
       messages: [{ role: "user", content: "Test connection" }],
       max_tokens: 5
     });
@@ -28,11 +34,12 @@ export async function checkOpenAIAvailability(): Promise<{
       available: true,
       message: 'OpenAI API is available'
     };
-  } catch (error: any) {
-    console.error('OpenAI API check failed:', error.message);
+  } catch (error) {
+    const err = error as Error;
+    console.error('OpenAI API check failed:', err.message);
     return {
       available: false,
-      message: error.message || 'Unknown error accessing OpenAI API'
+      message: err.message || 'Unknown error accessing OpenAI API'
     };
   }
 }
@@ -145,102 +152,14 @@ export async function analyzeContract(
       5. Compliance analysis (IFRS 15/ASC 606 compliance, regulatory issues)
       6. Revenue recognition summary (pattern, special considerations, variable components)
       
-      Respond with a JSON object structured exactly as follows:
-      {
-        "summary": {
-          "contractType": string,
-          "parties": string[],
-          "effectiveDate": string (ISO date format),
-          "terminationDate": string (ISO date format),
-          "contractValue": number,
-          "keyProvisions": string[],
-          "paymentTerms": string,
-          "noticeRequirements": string,
-          "terminationConditions": string[],
-          "governingLaw": string
-        },
-        "risks": [
-          {
-            "category": string,
-            "severity": "low" | "medium" | "high" | "critical",
-            "description": string,
-            "clause": string,
-            "mitigation": string
-          }
-        ],
-        "opportunities": [
-          {
-            "category": string,
-            "impact": "low" | "medium" | "high",
-            "description": string,
-            "clause": string,
-            "recommendation": string
-          }
-        ],
-        "termsAnalysis": {
-          "unusualTerms": [
-            {
-              "clause": string,
-              "description": string,
-              "impact": string
-            }
-          ],
-          "favorableTerms": [
-            {
-              "clause": string,
-              "description": string,
-              "benefit": string
-            }
-          ],
-          "nonCompetitiveTerms": [
-            {
-              "clause": string,
-              "description": string,
-              "industryStandard": string
-            }
-          ]
-        },
-        "complianceAnalysis": {
-          "ifrs15Compliance": {
-            "score": number (0-100),
-            "issues": [
-              {
-                "area": string,
-                "description": string,
-                "recommendation": string
-              }
-            ],
-            "strengths": string[]
-          },
-          "regulatoryIssues": [
-            {
-              "regulation": string,
-              "issue": string,
-              "severity": "low" | "medium" | "high",
-              "recommendation": string
-            }
-          ]
-        },
-        "revenueSummary": {
-          "totalValue": number,
-          "recognitionPattern": string,
-          "specialConsiderations": string[],
-          "variableComponents": [
-            {
-              "description": string,
-              "estimatedValue": number,
-              "contingencies": string
-            }
-          ]
-        }
-      }
+      ${contractData ? `Additional context: ${JSON.stringify(contractData)}` : ''}
       
       Contract:
       ${contractText}
     `;
     
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: AI_MODEL,
       messages: [
         {
           role: "system",
@@ -249,19 +168,15 @@ export async function analyzeContract(
         { role: "user", content: prompt }
       ],
       response_format: { type: "json_object" },
-      temperature: 0.1,  // Lower temperature for more consistent, precise analysis
+      temperature: 0.1
     });
-    
-    try {
-      const analysis = JSON.parse(response.choices[0].message.content || '{}');
-      return analysis;
-    } catch (parseError) {
-      console.error("Error parsing contract analysis:", parseError);
-      throw new Error("Failed to parse AI response into contract analysis");
-    }
+
+    const analysis = JSON.parse(response.choices[0].message.content || '{}') as ContractAnalysis;
+    return analysis;
   } catch (error) {
-    console.error("Error in contract analysis:", error);
-    throw error;
+    const err = error as Error;
+    console.error("Contract analysis error:", err);
+    throw new Error(`Failed to analyze contract: ${err.message}`);
   }
 }
 
@@ -326,7 +241,7 @@ export async function analyzeRevenueRecognition(
     `;
     
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: AI_MODEL,
       messages: [
         {
           role: "system",
@@ -448,7 +363,7 @@ export async function extractContractEntities(contractText: string): Promise<any
     `;
     
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: AI_MODEL,
       messages: [
         {
           role: "system",
@@ -548,7 +463,7 @@ export async function analyzeContractObligations(contractText: string): Promise<
     `;
     
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: AI_MODEL,
       messages: [
         {
           role: "system",
@@ -639,7 +554,7 @@ export async function compareToStandardContract(contractText: string, templateTy
     `;
     
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: AI_MODEL,
       messages: [
         {
           role: "system",

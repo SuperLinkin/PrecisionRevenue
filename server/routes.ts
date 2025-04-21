@@ -49,11 +49,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     req.user = {
       id: 1,
       username: 'mvpranav',
-      email: 'admin@precisonrevenue.com',
-      fullName: 'Pranav Kumar',
       role: 'admin',
       companyId: 1,
-      password: 'mock-password-hash'
+      tenantId: 1
     };
     next();
     
@@ -152,8 +150,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/auth/me", authenticate, (req, res) => {
-    const { password, ...userWithoutPassword } = req.user;
-    res.json(userWithoutPassword);
+    res.json(req.user);
+  });
+
+  // Add auth check endpoint
+  app.get("/api/auth/check", (req, res) => {
+    // For demo purposes, always return authenticated
+    res.json({ authenticated: true });
   });
 
   // Company routes
@@ -216,9 +219,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const contracts = await storage.getContractsByCompany(companyId);
         return res.json(contracts);
       }
-      
       // If not filtered by company, return all contracts from user's company
-      const contracts = await storage.getContractsByCompany(req.user.companyId);
+      const contracts = await storage.getContractsByCompany(req.user!.companyId);
       res.json(contracts);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch contracts" });
@@ -242,8 +244,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Format dates properly before validation
       const formattedBody = {
         ...req.body,
-        companyId: req.user.companyId,
-        createdBy: req.user.id,
+        companyId: req.user!.companyId,
+        createdBy: req.user!.id,
         // Ensure dates are in ISO format for proper parsing
         startDate: req.body.startDate ? new Date(req.body.startDate) : undefined,
         endDate: req.body.endDate ? new Date(req.body.endDate) : undefined

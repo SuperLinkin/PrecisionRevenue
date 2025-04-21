@@ -12,7 +12,9 @@ import {
   Clipboard as ClipboardIcon,
   Briefcase as BriefcaseIcon,
   Building as BuildingIcon,
-  ChevronRight as ChevronRightIcon
+  ChevronRight as ChevronRightIcon,
+  Search as SearchIcon,
+  Upload as UploadIcon
 } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { getInitials } from '@/lib/utils';
@@ -79,6 +81,11 @@ export function Sidebar() {
       path: '/settings', 
       label: 'Settings', 
       icon: <SettingsIcon className="h-5 w-5" />
+    },
+    { 
+      path: '/bulk-upload', 
+      label: 'Bulk Upload', 
+      icon: <UploadIcon className="h-5 w-5" />
     },
   ];
 

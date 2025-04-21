@@ -16,6 +16,7 @@ import AnalyticsPage from "@/pages/analytics";
 import DealDeskPage from "@/pages/deal-desk";
 import CompanyPage from "@/pages/company";
 import SystemStatusPage from "@/pages/system-status";
+import BulkUpload from "@/pages/bulk-upload";
 import { useAuth } from "@/lib/auth";
 import { Suspense } from "react";
 
@@ -76,6 +77,9 @@ function App() {
         </Route>
         <Route path="/system-status">
           {() => <ProtectedRoute component={SystemStatusPage} />}
+        </Route>
+        <Route path="/bulk-upload">
+          {() => <ProtectedRoute component={BulkUpload} />}
         </Route>
         
         {/* Fallback to 404 */}
