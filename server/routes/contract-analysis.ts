@@ -14,11 +14,13 @@ import {
   extractContractEntities,
   analyzeContractObligations,
   compareToStandardContract,
-  checkOpenAIAvailability,
-  type ContractAnalysis
+  checkOpenAIAvailability
 } from '../utils/contract-analysis';
+import { processPDFContract } from '../utils/pdf-processor';
+import { processContractWithEmbeddings, searchSimilarClauses } from '../utils/contract-embeddings';
 import { eq } from 'drizzle-orm';
 import type { InsertContract } from '@shared/schema';
+import { analyzeRevenueClausesAndTriggers, type RevenueAnalysis } from '../utils/revenue-clauses';
 
 // Define types for request bodies
 interface ContractAnalysisRequest {
@@ -89,81 +91,300 @@ interface Contract {
   hasMultiplePerformanceObligations: boolean;
 }
 
+interface EnhancedContractSummary extends ContractSummary {
+  contractNumber?: string;
+  clientName?: string;
+}
+
+interface EnhancedRevenueSummary extends RevenueAnalysis {
+  hasFinancingComponent?: boolean;
+  multipleObligations?: boolean;
+}
+
+interface EnhancedContractAnalysis extends Omit<ContractAnalysis, 'summary' | 'revenueSummary'> {
+  summary: EnhancedContractSummary;
+  revenueSummary: EnhancedRevenueSummary;
+}
+
+interface PDFSection {
+  title: string;
+  content: string;
+  pageNumber: number;
+  importance: number;
+  type: 'revenue' | 'performance' | 'payment' | 'termination' | 'general';
+  subSections: PDFSection[];
+  analysis: {
+    keyTerms: string[];
+    riskLevel: 'low' | 'medium' | 'high';
+    complianceImpact: string[];
+    crossReferences: string[];
+  };
+}
+
+function isRevenueClause(section: PDFSection): boolean {
+  const revenueKeywords = ['revenue', 'payment', 'price', 'fee', 'compensation', 'consideration'];
+  return revenueKeywords.some(keyword => 
+    section.content.toLowerCase().includes(keyword) || 
+    section.title.toLowerCase().includes(keyword)
+  );
+}
+
+function isPerformanceClause(section: PDFSection): boolean {
+  const performanceKeywords = ['performance', 'obligation', 'delivery', 'service', 'milestone'];
+  return performanceKeywords.some(keyword => 
+    section.content.toLowerCase().includes(keyword) || 
+    section.title.toLowerCase().includes(keyword)
+  );
+}
+
+function isPaymentClause(section: PDFSection): boolean {
+  const paymentKeywords = ['payment', 'invoice', 'billing', 'fee', 'price'];
+  return paymentKeywords.some(keyword => 
+    section.content.toLowerCase().includes(keyword) || 
+    section.title.toLowerCase().includes(keyword)
+  );
+}
+
+function isTerminationClause(section: PDFSection): boolean {
+  const terminationKeywords = ['termination', 'cancellation', 'expiration', 'end'];
+  return terminationKeywords.some(keyword => 
+    section.content.toLowerCase().includes(keyword) || 
+    section.title.toLowerCase().includes(keyword)
+  );
+}
+
+function extractSections(text: string): PDFSection[] {
+  const sections: PDFSection[] = [];
+  const sectionRegex = /(?:ARTICLE|Section)\s+\d+[.:]\s*(.*?)(?=(?:ARTICLE|Section)\s+\d+|$)/g;
+  
+  let match;
+  while ((match = sectionRegex.exec(text)) !== null) {
+    const content = match[0];
+    const title = match[1]?.trim() || '';
+    
+    const section: PDFSection = {
+      title,
+      content,
+      pageNumber: Math.ceil(match.index / 3000), // Rough estimate
+      importance: calculateImportance(content),
+      type: determineType(content),
+      subSections: [],
+      analysis: {
+        keyTerms: extractKeyTerms(content),
+        riskLevel: determineRiskLevel(content),
+        complianceImpact: [],
+        crossReferences: []
+      }
+    };
+    
+    sections.push(section);
+  }
+  
+  return sections;
+}
+
+function calculateImportance(content: string): number {
+  // Simple importance calculation based on length and keyword presence
+  const keywordWeight = content.split(/\b(shall|must|required|essential)\b/i).length - 1;
+  const lengthWeight = Math.min(content.length / 1000, 1);
+  return Math.min((keywordWeight * 0.6 + lengthWeight * 0.4) * 10, 10);
+}
+
+function determineType(content: string): PDFSection['type'] {
+  if (isRevenueClause({ content, title: '', pageNumber: 0, importance: 0, type: 'general', subSections: [], analysis: { keyTerms: [], riskLevel: 'low', complianceImpact: [], crossReferences: [] } })) {
+    return 'revenue';
+  }
+  if (isPerformanceClause({ content, title: '', pageNumber: 0, importance: 0, type: 'general', subSections: [], analysis: { keyTerms: [], riskLevel: 'low', complianceImpact: [], crossReferences: [] } })) {
+    return 'performance';
+  }
+  if (isPaymentClause({ content, title: '', pageNumber: 0, importance: 0, type: 'general', subSections: [], analysis: { keyTerms: [], riskLevel: 'low', complianceImpact: [], crossReferences: [] } })) {
+    return 'payment';
+  }
+  if (isTerminationClause({ content, title: '', pageNumber: 0, importance: 0, type: 'general', subSections: [], analysis: { keyTerms: [], riskLevel: 'low', complianceImpact: [], crossReferences: [] } })) {
+    return 'termination';
+  }
+  return 'general';
+}
+
+function extractKeyTerms(content: string): string[] {
+  const terms = new Set<string>();
+  const keywordRegex = /\b(shall|must|required|essential|material|substantial)\b|\b[A-Z][A-Z\s]{2,}\b/g;
+  let match;
+  while ((match = keywordRegex.exec(content)) !== null) {
+    terms.add(match[0]);
+  }
+  return Array.from(terms);
+}
+
+function determineRiskLevel(content: string): 'low' | 'medium' | 'high' {
+  const riskKeywords = {
+    high: ['terminate', 'penalty', 'liability', 'breach', 'damages'],
+    medium: ['may', 'should', 'recommend', 'consider'],
+    low: ['shall', 'will', 'must', 'agree']
+  };
+  
+  const contentLower = content.toLowerCase();
+  if (riskKeywords.high.some(word => contentLower.includes(word))) {
+    return 'high';
+  }
+  if (riskKeywords.medium.some(word => contentLower.includes(word))) {
+    return 'medium';
+  }
+  return 'low';
+}
+
 const router = Router();
+
+// Apply authentication middleware to all routes
+router.use(authenticate);
 
 /**
  * Check the availability of OpenAI API
  */
 router.get('/status', async (req: Request, res: Response) => {
   try {
-    // First validate the OpenAI configuration
-    try {
-      validateOpenAIConfig();
-    } catch (error) {
-      const configError = error as Error;
-      return res.status(400).json({
-        available: false,
-        message: configError.message
-      });
-    }
-
-    // Then check API availability
     const status = await checkOpenAIAvailability();
-    res.json(status);
-  } catch (error: any) {
-    console.error('Error checking OpenAI API status:', error);
-    res.status(500).json({
-      available: false,
-      message: error.message || 'Failed to check OpenAI API status'
-    });
+    res.json({ status });
+  } catch (error) {
+    console.error('Error checking OpenAI status:', error);
+    res.status(500).json({ error: 'Failed to check OpenAI availability' });
   }
 });
 
 /**
- * Analyze a contract
+ * Analyze a contract with enhanced revenue recognition focus
  */
-router.post('/analyze', authenticate, async (req: Request, res: Response) => {
+router.post('/analyze', upload.single('file'), async (req: Request<{}, {}, ContractAnalysisRequest>, res: Response) => {
   try {
-    const { contractText, base64Data } = req.body as ContractAnalysisRequest;
+    let contractText = req.body.contractText;
+    const base64Data = req.body.base64Data;
+    const file = req.file;
 
-    if (!contractText && !base64Data) {
-      return res.status(400).json({
-        success: false,
-        error: 'Either contractText or base64Data must be provided'
+    // Validate input
+    if (!contractText && !base64Data && !file) {
+      return res.status(400).json({ error: 'No contract text or file provided' });
+    }
+
+    // Process PDF if provided
+    if (file) {
+      try {
+        // Process contract with embeddings
+        const processedContract = await processContractWithEmbeddings(
+          file.buffer,
+          req.body.contractId || 0
+        );
+        
+        contractText = processedContract.fullText;
+
+        // Analyze contract
+        const analysis = await analyzeContract(contractText);
+        const revenueAnalysis = await analyzeRevenueClausesAndTriggers(contractText);
+
+        // Combine analyses
+        const response = {
+          ...analysis,
+          revenueDetails: revenueAnalysis,
+          processedContent: {
+            sections: processedContract.clauses.map(clause => ({
+              title: clause.sectionTitle,
+              content: clause.content,
+              importance: clause.metadata.importance
+            })),
+            relevantClauses: {
+              revenue: processedContract.clauses
+                .filter(c => c.type === 'revenue')
+                .map(c => c.content),
+              performance: processedContract.clauses
+                .filter(c => c.type === 'performance')
+                .map(c => c.content),
+              payment: processedContract.clauses
+                .filter(c => c.type === 'payment')
+                .map(c => c.content),
+              termination: processedContract.clauses
+                .filter(c => c.type === 'termination')
+                .map(c => c.content)
+            }
+          }
+        };
+
+        return res.json(response);
+      } catch (error) {
+        console.error('PDF processing error:', error);
+        // Fall back to basic text extraction if PDF processing fails
+        contractText = await extractTextFromPDF(file.buffer);
+      }
+    }
+
+    // Process base64 data if provided
+    if (base64Data && !contractText) {
+      const buffer = Buffer.from(base64Data, 'base64');
+      try {
+        const processedContract = await processContractWithEmbeddings(
+          buffer,
+          req.body.contractId || 0
+        );
+        
+        contractText = processedContract.fullText;
+        
+        // Analyze contract
+        const analysis = await analyzeContract(contractText);
+        const revenueAnalysis = await analyzeRevenueClausesAndTriggers(contractText);
+
+        // Combine analyses
+        const response = {
+          ...analysis,
+          revenueDetails: revenueAnalysis,
+          processedContent: {
+            sections: processedContract.clauses.map(clause => ({
+              title: clause.sectionTitle,
+              content: clause.content,
+              importance: clause.metadata.importance
+            })),
+            relevantClauses: {
+              revenue: processedContract.clauses
+                .filter(c => c.type === 'revenue')
+                .map(c => c.content),
+              performance: processedContract.clauses
+                .filter(c => c.type === 'performance')
+                .map(c => c.content),
+              payment: processedContract.clauses
+                .filter(c => c.type === 'payment')
+                .map(c => c.content),
+              termination: processedContract.clauses
+                .filter(c => c.type === 'termination')
+                .map(c => c.content)
+            }
+          }
+        };
+
+        return res.json(response);
+      } catch (error) {
+        console.error('PDF processing error:', error);
+        contractText = await extractTextFromPDF(buffer);
+      }
+    }
+
+    // Fallback to basic contract analysis if PDF processing failed
+    if (contractText) {
+      const analysis = await analyzeContract(contractText);
+      const revenueAnalysis = await analyzeRevenueClausesAndTriggers(contractText);
+      return res.json({
+        ...analysis,
+        revenueDetails: revenueAnalysis
       });
     }
 
-    // Validate OpenAI configuration first
-    try {
-      validateOpenAIConfig();
-    } catch (error) {
-      const configError = error as Error;
-      return res.status(400).json({
-        error: 'Configuration error',
-        message: configError.message
-      });
-    }
-
-    const analysis = await analyzeContract(contractText || '');
-
-    // Return the analysis result
-    res.json({
-      success: true,
-      analysis: analysis
-    });
-  } catch (error: unknown) {
+    res.status(400).json({ error: 'Failed to process contract text' });
+  } catch (error) {
     console.error('Contract analysis error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to analyze contract'
-    });
+    res.status(500).json({ error: 'Failed to analyze contract' });
   }
 });
 
 /**
  * Get revenue recognition analysis for a contract
  */
-router.get('/revenue-recognition/:contractId', authenticate, async (req: Request, res: Response) => {
+router.get('/revenue-recognition/:contractId', async (req: Request, res: Response) => {
   try {
     const contractId = parseInt(req.params.contractId);
     if (isNaN(contractId)) {
@@ -199,7 +420,7 @@ router.get('/revenue-recognition/:contractId', authenticate, async (req: Request
 /**
  * Extract entities from a contract
  */
-router.post('/extract-entities', authenticate, async (req: Request, res: Response) => {
+router.post('/extract-entities', async (req: Request, res: Response) => {
   try {
     const { contractText, base64Data } = req.body as ContractAnalysisRequest;
 
@@ -224,7 +445,7 @@ router.post('/extract-entities', authenticate, async (req: Request, res: Respons
 /**
  * Analyze performance obligations
  */
-router.post('/analyze-obligations', authenticate, async (req: Request, res: Response) => {
+router.post('/analyze-obligations', async (req: Request, res: Response) => {
   try {
     const { contractText, base64Data } = req.body as ContractAnalysisRequest;
 
@@ -249,7 +470,7 @@ router.post('/analyze-obligations', authenticate, async (req: Request, res: Resp
 /**
  * Compare contract to standard templates
  */
-router.post('/compare-templates', authenticate, async (req: Request, res: Response) => {
+router.post('/compare-templates', async (req: Request, res: Response) => {
   try {
     const { contractText, base64Data } = req.body as ContractAnalysisRequest;
 
@@ -271,123 +492,167 @@ router.post('/compare-templates', authenticate, async (req: Request, res: Respon
   }
 });
 
-// Validate a single contract
-router.post('/validate', async (req: Request, res: Response) => {
+// Define base interfaces from contract-analysis module
+interface ContractSummary {
+  contractType: string;
+  parties: string[];
+  effectiveDate: string;
+  terminationDate: string;
+  contractValue: number;
+  keyProvisions: string[];
+  paymentTerms: string;
+  noticeRequirements: string;
+  terminationConditions: string[];
+  governingLaw: string;
+}
+
+interface ContractAnalysis {
+  summary: ContractSummary;
+  risks: Array<{
+    category: string;
+    severity: 'low' | 'medium' | 'high' | 'critical';
+    description: string;
+    clause: string;
+    mitigation?: string;
+  }>;
+  opportunities: Array<{
+    category: string;
+    impact: 'low' | 'medium' | 'high';
+    description: string;
+    clause?: string;
+    recommendation?: string;
+  }>;
+  termsAnalysis: {
+    unusualTerms: Array<{
+      clause: string;
+      description: string;
+      impact: string;
+    }>;
+    favorableTerms: Array<{
+      clause: string;
+      description: string;
+      benefit: string;
+    }>;
+    nonCompetitiveTerms: Array<{
+      clause: string;
+      description: string;
+      industryStandard: string;
+    }>;
+  };
+  complianceAnalysis: {
+    ifrs15Compliance: {
+      score: number;
+      issues: Array<{
+        area: string;
+        description: string;
+        recommendation: string;
+      }>;
+      strengths: string[];
+    };
+    regulatoryIssues: Array<{
+      regulation: string;
+      issue: string;
+      severity: 'low' | 'medium' | 'high';
+      recommendation: string;
+    }>;
+  };
+  revenueSummary: {
+    totalValue: number;
+    recognitionPattern: string;
+    specialConsiderations: string[];
+    variableComponents: Array<{
+      description: string;
+      estimatedValue: number;
+      contingencies: string;
+    }>;
+  };
+}
+
+interface ValidationResponse extends ContractValidation {
+  analysis: {
+    clauses: Array<{
+      type: string;
+      title: string;
+      content: string;
+      importance: number;
+      riskLevel: string;
+    }>;
+    metadata: {
+      totalPages: number;
+      processedAt: string;
+      hasEmbeddings: boolean;
+    };
+  };
+}
+
+// Update the validate route
+router.post('/validate', upload.single('file'), async (req: Request, res: Response) => {
   try {
-    const { text } = req.body;
-    if (!text) {
-      return res.status(400).json({ error: 'Contract text is required' });
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    // First analyze the contract
-    const analysis = await analyzeContract(text);
-    
-    // Then validate the analyzed content
-    const validation = await validateContractContent(analysis);
-    
-    return res.json(validation);
+    // Process contract with embeddings
+    let processedContract;
+    try {
+      processedContract = await processContractWithEmbeddings(
+        req.file.buffer,
+        0 // Temporary contract ID since we haven't created it yet
+      );
+    } catch (error) {
+      console.error('Contract processing error:', error);
+      return res.status(400).json({ 
+        error: 'Failed to process contract',
+        details: error instanceof Error ? error.message : 'Unknown processing error'
+      });
+    }
+
+    // Analyze contract
+    let analysis: ContractAnalysis;
+    try {
+      analysis = await analyzeContract(processedContract.fullText);
+    } catch (error) {
+      console.error('Contract analysis error:', error);
+      return res.status(500).json({ error: 'Failed to analyze contract content' });
+    }
+
+    // Validate contract
+    try {
+      const validation = await validateContractContent(analysis);
+      
+      // Enhance validation response with processed contract data
+      const response: ValidationResponse = {
+        ...validation,
+        analysis: {
+          clauses: processedContract.clauses.map(clause => ({
+            type: clause.type,
+            title: clause.sectionTitle,
+            content: clause.content,
+            importance: clause.metadata.importance,
+            riskLevel: clause.metadata.riskLevel
+          })),
+          metadata: processedContract.metadata
+        }
+      };
+
+      res.json(response);
+    } catch (error) {
+      console.error('Contract validation error:', error);
+      return res.status(400).json({ 
+        error: 'Contract validation failed',
+        details: error instanceof Error ? error.message : 'Unknown validation error'
+      });
+    }
   } catch (error) {
-    console.error('Error validating contract:', error);
-    return res.status(500).json({ error: 'Failed to validate contract' });
+    console.error('Contract validation error:', error);
+    res.status(500).json({ 
+      error: 'An unexpected error occurred',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 });
 
-// Bulk upload route
-router.post('/bulk-upload', authenticate, upload.array('files', 10), async (req: Request, res: Response) => {
-  try {
-    if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
-      return res.status(400).json({ error: 'No files uploaded' });
-    }
-
-    if (!req.user?.companyId || !req.user?.tenantId) {
-      return res.status(400).json({ error: 'User must be associated with a company and tenant' });
-    }
-
-    const results: Array<{
-      fileName: string;
-      status: 'success' | 'error';
-      contractId?: number;
-      error?: string;
-    }> = [];
-
-    for (const file of req.files) {
-      try {
-        // Validate file type
-        if (!file.mimetype.includes('pdf') && !file.mimetype.includes('word')) {
-          throw new Error('Invalid file type. Only PDF and Word documents are allowed.');
-        }
-
-        // Extract text from file
-        const text = await extractTextFromPDF(Buffer.from(file.buffer));
-        // First analyze the contract
-        const analysis = await analyzeContract(text);
-
-        // Then validate the analyzed content
-        const validation = await validateContractContent(analysis);
-        if (!validation.isValid) {
-          throw new Error(`Invalid contract: ${validation.errors?.join(', ')}`);
-        }
-
-        // Upload file to storage
-        const fileUrl = await uploadToStorage(file);
-
-        // Update contract with analysis results
-        const contractData = {
-          name: file.originalname,
-          contractNumber: validation.contractNumber || generateContractNumber(),
-          clientName: validation.clientName || 'Unknown',
-          startDate: new Date(validation.startDate || new Date()),
-          endDate: validation.endDate ? new Date(validation.endDate) : null,
-          value: Number(validation.value || 0),
-          status: 'active',
-          companyId: req.user.companyId,
-          tenantId: req.user.tenantId,
-          createdBy: req.user.id,
-          fileUrl: fileUrl || '',
-          ifrsCompliant: validation.ifrsCompliant ?? true,
-          revenueRecognitionMethod: validation.revenueRecognitionMethod || 'over_time',
-          contractType: validation.contractType || 'fixed_price',
-          completionPercentage: validation.completionPercentage ? Number(validation.completionPercentage).toFixed(2) : null,
-          totalTransactionPrice: validation.totalTransactionPrice ? Number(validation.totalTransactionPrice).toFixed(2) : null,
-          discountAmount: validation.discountAmount ? Number(validation.discountAmount).toFixed(2) : null,
-          containsVariableConsideration: validation.containsVariableConsideration || false,
-          containsSignificantFinancingComponent: validation.containsSignificantFinancingComponent || false,
-          hasMultiplePerformanceObligations: validation.hasMultiplePerformanceObligations || false
-        } satisfies Omit<InsertContract, 'id'>;
-
-        const [updatedContract] = await db.insert(contracts)
-          .values(contractData)
-          .returning();
-
-        results.push({
-          fileName: file.originalname,
-          status: 'success',
-          contractId: updatedContract.id
-        });
-
-        // Return the validation result with contract data
-        res.json({
-          success: true,
-          contract: updatedContract,
-          validation: validation
-        });
-      } catch (error) {
-        results.push({
-          fileName: file.originalname,
-          status: 'error',
-          error: error instanceof Error ? error.message : 'Unknown error'
-        });
-      }
-    }
-
-    return res.json({ results });
-  } catch (error) {
-    console.error('Bulk upload error:', error);
-    return res.status(500).json({ error: 'Failed to process bulk upload' });
-  }
-});
-
-// Helper function to validate contract content
+// Update the validation function
 async function validateContractContent(analysis: ContractAnalysis): Promise<ContractValidation> {
   const { summary, revenueSummary } = analysis;
   
@@ -404,17 +669,30 @@ async function validateContractContent(analysis: ContractAnalysis): Promise<Cont
   const validation: ContractValidation = {
     isValid: true,
     name: summary.contractType || 'Unknown Contract Type',
-    contractNumber: '', // This should be extracted from the contract text
+    contractNumber: generateContractNumber(), // Generate new contract number
     clientName: summary.parties?.[0] || 'Unknown Client',
     startDate: summary.effectiveDate,
     endDate: summary.terminationDate || undefined,
-    value: revenueSummary.totalValue,
+    value: summary.contractValue || 0,
     contractType,
     revenueRecognitionMethod: recognitionMethod,
-    containsVariableConsideration: revenueSummary.variableComponents.length > 0,
-    hasMultiplePerformanceObligations: false, // This should be determined by analyzing obligations
-    status: 'draft'
+    containsVariableConsideration: revenueSummary.variableComponents?.length > 0 || false,
+    containsSignificantFinancingComponent: false, // This will be determined by detailed analysis
+    hasMultiplePerformanceObligations: false, // This will be determined by detailed analysis
+    status: 'draft',
+    errors: []
   };
+
+  // Validate required fields
+  const errors: string[] = [];
+  if (!validation.name) errors.push('Contract name is required');
+  if (!validation.contractNumber) errors.push('Contract number is required');
+  if (!validation.clientName) errors.push('Client name is required');
+  if (!validation.startDate) errors.push('Start date is required');
+  if (!validation.value || validation.value <= 0) errors.push('Valid contract value is required');
+
+  validation.isValid = errors.length === 0;
+  validation.errors = errors;
 
   return validation;
 }
@@ -453,9 +731,69 @@ async function uploadToStorage(file: Express.Multer.File): Promise<string> {
 
 // Helper function to extract text from PDF
 async function extractTextFromPDF(buffer: Buffer): Promise<string> {
-  // TODO: Implement PDF text extraction
-  // For now, return a placeholder
-  return "Contract text will be extracted here";
+  try {
+    const pdfParse = (await import('pdf-parse')).default;
+    const data = await pdfParse(buffer);
+    return data.text;
+  } catch (error) {
+    console.error('Error extracting text from PDF:', error);
+    throw new Error('Failed to extract text from PDF');
+  }
 }
+
+// Add new route for specific revenue clause analysis
+router.post('/analyze-revenue-clauses', async (req: Request, res: Response) => {
+  try {
+    const { contractText, focusAreas } = req.body;
+
+    if (!contractText) {
+      return res.status(400).json({
+        success: false,
+        error: 'Contract text is required'
+      });
+    }
+
+    const analysis = await analyzeRevenueClausesAndTriggers(contractText, {
+      specialFocus: focusAreas
+    });
+
+    res.json({
+      success: true,
+      analysis
+    });
+  } catch (error) {
+    console.error('Revenue clause analysis error:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to analyze revenue clauses'
+    });
+  }
+});
+
+// Add new route for searching similar clauses
+router.post('/search-clauses', async (req: Request, res: Response) => {
+  try {
+    const { query, contractId, type } = req.body;
+
+    if (!query) {
+      return res.status(400).json({
+        success: false,
+        error: 'Search query is required'
+      });
+    }
+
+    const matches = await searchSimilarClauses(query, contractId, type);
+    res.json({
+      success: true,
+      matches
+    });
+  } catch (error) {
+    console.error('Clause search error:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to search clauses'
+    });
+  }
+});
 
 export default router;

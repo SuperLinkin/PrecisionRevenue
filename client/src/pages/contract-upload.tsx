@@ -124,70 +124,6 @@ export default function ContractUploadPage() {
     setUploadedFiles(prev => [...prev, ...newFiles]);
   };
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const dropZone = e.currentTarget;
-    dropZone.classList.add('border-primary');
-  };
-
-  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const dropZone = e.currentTarget;
-    dropZone.classList.remove('border-primary');
-  };
-
-  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const dropZone = e.currentTarget;
-    dropZone.classList.remove('border-primary');
-    
-    const droppedFiles = Array.from(e.dataTransfer.files);
-    
-    // Validate number of files
-    if (droppedFiles.length > 20) {
-      toast({
-        title: "Too many files",
-        description: "Maximum 20 files can be uploaded at once",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Validate total size (100MB limit)
-    const totalSize = droppedFiles.reduce((sum, file) => sum + file.size, 0);
-    if (totalSize > 100 * 1024 * 1024) {
-      toast({
-        title: "Files too large",
-        description: "Total file size exceeds 100MB limit",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Validate file types
-    const invalidFiles = droppedFiles.filter(file => !file.type.includes('pdf'));
-    if (invalidFiles.length > 0) {
-      toast({
-        title: "Invalid file type",
-        description: "Only PDF files are allowed",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Add files to state
-    const newFiles: UploadedFile[] = droppedFiles.map(file => ({
-      file,
-      status: 'pending',
-      selected: true
-    }));
-
-    setUploadedFiles(prev => [...prev, ...newFiles]);
-  };
-
   const validateFiles = async () => {
     setIsUploading(true);
     setUploadProgress(0);
@@ -361,36 +297,29 @@ export default function ContractUploadPage() {
               <CardContent>
                 {uploadedFiles.length === 0 ? (
                   <div className="flex items-center justify-center w-full">
-                    <div 
-                      onDragOver={handleDragOver}
-                      onDragLeave={handleDragLeave}
-                      onDrop={handleDrop}
-                      className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer bg-background hover:bg-neutral-50 dark:hover:bg-slate-800 transition-colors duration-200"
+                    <label 
+                      htmlFor="contract-upload" 
+                      className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer bg-background hover:bg-neutral-50 dark:hover:bg-slate-800"
                     >
-                      <label 
-                        htmlFor="contract-upload" 
-                        className="flex flex-col items-center justify-center w-full h-full"
-                      >
-                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                          <FileText className="w-10 h-10 mb-3 text-secondary" />
-                          <p className="mb-2 text-sm text-neutral">
-                            <span className="font-semibold">Click to upload</span> or drag and drop
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            PDF files only (MAX. 20 files, 100MB total)
-                          </p>
-                        </div>
-                        <input 
-                          id="contract-upload" 
-                          type="file" 
-                          ref={fileInputRef}
-                          className="hidden" 
-                          accept=".pdf,application/pdf"
-                          multiple
-                          onChange={handleFileSelect}
-                        />
-                      </label>
-                    </div>
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <FileText className="w-10 h-10 mb-3 text-secondary" />
+                        <p className="mb-2 text-sm text-neutral">
+                          <span className="font-semibold">Click to upload</span> or drag and drop
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          PDF files only (MAX. 20 files, 100MB total)
+                        </p>
+                      </div>
+                      <input 
+                        id="contract-upload" 
+                        type="file" 
+                        ref={fileInputRef}
+                        className="hidden" 
+                        accept=".pdf,application/pdf"
+                        multiple
+                        onChange={handleFileSelect}
+                      />
+                    </label>
                   </div>
                 ) : (
                   <div className="space-y-6">

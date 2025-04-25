@@ -48,6 +48,11 @@ export function Sidebar() {
       icon: <DollarSignIcon className="h-5 w-5" />
     },
     { 
+      path: '/contract-upload', 
+      label: 'Contract Upload', 
+      icon: <UploadIcon className="h-5 w-5" />
+    },
+    { 
       path: '/claus', 
       label: 'CLAUS', 
       icon: <ScaleIcon className="h-5 w-5" />
@@ -82,17 +87,12 @@ export function Sidebar() {
       label: 'Settings', 
       icon: <SettingsIcon className="h-5 w-5" />
     },
-    { 
-      path: '/bulk-upload', 
-      label: 'Bulk Upload', 
-      icon: <UploadIcon className="h-5 w-5" />
-    },
   ];
 
   // Group items into categories
-  const mainItems = menuItems.slice(0, 3); // Dashboard, Contracts, Revenue
-  const toolItems = menuItems.slice(3, 8); // CLAUS, MOCA, Disclosure, Analytics, Deal Desk
-  const settingsItems = menuItems.slice(8); // Company Settings, Settings
+  const mainItems = menuItems.slice(0, 4); // Dashboard, Contracts, Revenue, Contract Upload
+  const toolItems = menuItems.slice(4, 9); // CLAUS, MOCA, Disclosure, Analytics, Deal Desk
+  const settingsItems = menuItems.slice(9); // Company Settings, Settings
   
   const renderNavItem = (item: { path: string; label: string; icon: JSX.Element }) => (
     <Link key={item.path} href={item.path}>

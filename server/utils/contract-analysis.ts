@@ -1,4 +1,4 @@
-import OpenAI from 'openai';
+import { OpenAI } from 'openai';
 import { Contract } from '@shared/schema';
 
 // Use the latest stable model
@@ -141,6 +141,15 @@ export async function analyzeContract(
   try {
     console.log("Starting comprehensive contract analysis with NLP...");
     
+    // Validate input
+    if (!contractText || contractText.trim().length === 0) {
+      console.error("Empty contract text provided");
+      throw new Error("Contract text is required");
+    }
+
+    // Log contract text length for debugging
+    console.log(`Analyzing contract with length: ${contractText.length} characters`);
+    
     const prompt = `
       You are REMY, a specialized AI for contract analysis with expertise in IFRS 15/ASC 606 revenue recognition.
       Perform a comprehensive analysis of the following contract, focusing on:
@@ -156,26 +165,80 @@ export async function analyzeContract(
       
       Contract:
       ${contractText}
+      
+      IMPORTANT: Your response MUST be valid JSON and include ALL required fields:
+      - summary.effectiveDate
+      - summary.contractType
+      - summary.parties
+      - summary.contractValue
+      - revenueSummary.totalValue
+      - revenueSummary.recognitionPattern
     `;
     
+    // Check OpenAI API key
+    if (!process.env.OPENAI_API_KEY) {
+      console.error("OpenAI API key is missing");
+      throw new Error("OpenAI API key is not configured");
+    }
+
+    console.log("Making OpenAI API request...");
     const response = await openai.chat.completions.create({
       model: AI_MODEL,
       messages: [
         {
           role: "system",
-          content: "You are REMY, an advanced contract analysis AI with expertise in IFRS 15/ASC 606 revenue recognition standards. You provide detailed, accurate, and actionable analysis of contracts."
+          content: "You are REMY, an advanced contract analysis AI with expertise in IFRS 15/ASC 606 revenue recognition standards. You provide detailed, accurate, and actionable analysis of contracts. Your responses should be in JSON format."
         },
         { role: "user", content: prompt }
       ],
-      response_format: { type: "json_object" },
       temperature: 0.1
     });
 
-    const analysis = JSON.parse(response.choices[0].message.content || '{}') as ContractAnalysis;
-    return analysis;
+    console.log("Received OpenAI response");
+
+    if (!response.choices[0]?.message?.content) {
+      console.error("Empty response from OpenAI");
+      throw new Error("No response content from OpenAI");
+    }
+
+    try {
+      console.log("Parsing OpenAI response as JSON");
+      const analysis = JSON.parse(response.choices[0].message.content) as ContractAnalysis;
+      
+      // Validate required fields
+      if (!analysis.summary?.effectiveDate) {
+        throw new Error("Missing required field: summary.effectiveDate");
+      }
+      if (!analysis.summary?.contractType) {
+        throw new Error("Missing required field: summary.contractType");
+      }
+      if (!analysis.summary?.parties || analysis.summary.parties.length === 0) {
+        throw new Error("Missing required field: summary.parties");
+      }
+      if (!analysis.summary?.contractValue) {
+        throw new Error("Missing required field: summary.contractValue");
+      }
+      if (!analysis.revenueSummary?.totalValue) {
+        throw new Error("Missing required field: revenueSummary.totalValue");
+      }
+      if (!analysis.revenueSummary?.recognitionPattern) {
+        throw new Error("Missing required field: revenueSummary.recognitionPattern");
+      }
+
+      console.log("Successfully parsed and validated contract analysis");
+      return analysis;
+    } catch (error) {
+      console.error("Error parsing OpenAI response:", error);
+      console.error("Raw response:", response.choices[0]?.message?.content);
+      throw new Error(`Failed to parse contract analysis response: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   } catch (error) {
     const err = error as Error;
-    console.error("Contract analysis error:", err);
+    console.error("Contract analysis error:", {
+      message: err.message,
+      stack: err.stack,
+      name: err.name
+    });
     throw new Error(`Failed to analyze contract: ${err.message}`);
   }
 }
@@ -245,16 +308,19 @@ export async function analyzeRevenueRecognition(
       messages: [
         {
           role: "system",
-          content: "You are REMY, an advanced contract analysis AI with deep expertise in IFRS 15/ASC 606 revenue recognition standards. You provide detailed, accurate, and IFRS 15-compliant analysis of revenue recognition patterns."
+          content: "You are REMY, an advanced contract analysis AI with deep expertise in IFRS 15/ASC 606 revenue recognition standards. You provide detailed, accurate, and IFRS 15-compliant analysis of revenue recognition patterns. Your responses must be in valid JSON format."
         },
         { role: "user", content: prompt }
       ],
-      response_format: { type: "json_object" },
-      temperature: 0.1,
+      temperature: 0.1
     });
     
+    if (!response.choices[0]?.message?.content) {
+      throw new Error("No response content from OpenAI");
+    }
+
     try {
-      const analysis = JSON.parse(response.choices[0].message.content || '{}');
+      const analysis = JSON.parse(response.choices[0].message.content);
       return analysis;
     } catch (parseError) {
       console.error("Error parsing revenue recognition analysis:", parseError);
@@ -328,7 +394,7 @@ export async function extractContractEntities(contractText: string): Promise<any
         ],
         "dates": [
           {
-            "date": string (ISO format),
+            "date": string,
             "description": string,
             "significance": string
           }
@@ -367,16 +433,19 @@ export async function extractContractEntities(contractText: string): Promise<any
       messages: [
         {
           role: "system",
-          content: "You are REMY, an advanced contract analysis AI that specializes in named entity recognition and information extraction from legal documents."
+          content: "You are REMY, an advanced contract analysis AI that specializes in named entity recognition and information extraction from legal documents. Your responses must be in valid JSON format."
         },
         { role: "user", content: prompt }
       ],
-      response_format: { type: "json_object" },
-      temperature: 0.1,
+      temperature: 0.1
     });
     
+    if (!response.choices[0]?.message?.content) {
+      throw new Error("No response content from OpenAI");
+    }
+
     try {
-      const entities = JSON.parse(response.choices[0].message.content || '{}');
+      const entities = JSON.parse(response.choices[0].message.content);
       return entities;
     } catch (parseError) {
       console.error("Error parsing contract entities:", parseError);
@@ -467,12 +536,11 @@ export async function analyzeContractObligations(contractText: string): Promise<
       messages: [
         {
           role: "system",
-          content: "You are REMY, an advanced contract analysis AI specializing in identifying obligations, responsibilities, and requirements in legal documents."
+          content: "You are REMY, an advanced contract analysis AI specializing in identifying obligations, responsibilities, and requirements in legal documents. Your responses must be in valid JSON format."
         },
         { role: "user", content: prompt }
       ],
-      response_format: { type: "json_object" },
-      temperature: 0.1,
+      temperature: 0.1
     });
     
     try {
@@ -558,12 +626,11 @@ export async function compareToStandardContract(contractText: string, templateTy
       messages: [
         {
           role: "system",
-          content: `You are REMY, an advanced contract analysis AI with extensive knowledge of ${templateType} industry standards and best practices.`
+          content: `You are REMY, an advanced contract analysis AI with extensive knowledge of ${templateType} industry standards and best practices. Your responses must be in valid JSON format.`
         },
         { role: "user", content: prompt }
       ],
-      response_format: { type: "json_object" },
-      temperature: 0.2,
+      temperature: 0.2
     });
     
     try {

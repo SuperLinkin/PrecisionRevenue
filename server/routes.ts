@@ -22,6 +22,9 @@ import { registerRevenueRecognitionRoutes } from './routes/revenue-recognition';
 // Import Contract Analysis Routes
 import contractAnalysisRouter from './routes/contract-analysis';
 
+// Import Contract Upload Routes
+import contractUploadRouter from './routes/contract-upload';
+
 // Supabase connection health check
 import { checkSupabaseConnection } from './supabase';
 
@@ -275,8 +278,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         endDate: req.body.endDate ? new Date(req.body.endDate) : undefined
       };
 
-      const validatedData = insertContractSchema.transform((data) => data).partial().parse(formattedBody);
-      const contract = await storage.updateContract(parseInt(req.params.id), validatedData);
+      const validatedData = insertContractSchema.safeParse(formattedBody);
+      if (!validatedData.success) {
+        return res.status(400).json({ message: validatedData.error.errors });
+      }
+
+      const contract = await storage.updateContract(parseInt(req.params.id), validatedData.data);
       
       if (!contract) {
         return res.status(404).json({ message: "Contract not found" });
@@ -323,8 +330,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/revenue-records/:id", authenticate, async (req, res) => {
     try {
-      const validatedData = insertRevenueRecordSchema.partial().parse(req.body);
-      const record = await storage.updateRevenueRecord(parseInt(req.params.id), validatedData);
+      const validatedData = insertRevenueRecordSchema.safeParse(req.body);
+      if (!validatedData.success) {
+        return res.status(400).json({ message: validatedData.error.errors });
+      }
+      const record = await storage.updateRevenueRecord(parseInt(req.params.id), validatedData.data);
       if (!record) {
         return res.status(404).json({ message: "Revenue record not found" });
       }
@@ -348,6 +358,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // If not filtered by assignee, return all tasks for user's company
+      if (!req.user?.companyId) {
+        return res.status(400).json({ message: "Company ID is required" });
+      }
       const tasks = await storage.getTasksByCompany(req.user.companyId);
       res.json(tasks);
     } catch (error) {
@@ -357,6 +370,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/tasks", authenticate, async (req, res) => {
     try {
+      if (!req.user?.companyId) {
+        return res.status(400).json({ message: "Company ID is required" });
+      }
+
       const validatedData = insertTaskSchema.parse({
         ...req.body,
         companyId: req.user.companyId
@@ -396,6 +413,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register IFRS 15/ASC 606 Revenue Recognition Routes
   registerRevenueRecognitionRoutes(app);
+  
+  // Register contract upload routes
+  app.use('/api/contract-upload', contractUploadRouter);
   
   // Original implementation (disabled for demo)
   /*
@@ -612,11 +632,10 @@ Date: ${new Date().toISOString().split('T')[0]}
       res.status(500).json({ 
         status: "error",
         message: "Health check failed",
-        error: error.message
+        error: error instanceof Error ? error.message : String(error)
       });
     }
   });
-  
   const httpServer = createServer(app);
   return httpServer;
 }

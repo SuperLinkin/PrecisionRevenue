@@ -28,5 +28,14 @@ export const config = {
     apiKey: process.env.OPENAI_API_KEY
   },
   nodeEnv: process.env.NODE_ENV || 'development',
-  port: process.env.PORT ? parseInt(process.env.PORT) : 8080
+  port: (() => {
+    const port = process.env.PORT ? parseInt(process.env.PORT) : 5000;
+    if (isNaN(port)) {
+      throw new Error('PORT must be a valid number');
+    }
+    if (port < 0 || port > 65535) {
+      throw new Error('PORT must be between 0 and 65535');
+    }
+    return port;
+  })()
 } as const; 
