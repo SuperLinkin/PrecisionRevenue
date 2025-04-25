@@ -1,32 +1,20 @@
 {
-  "include": ["client/src/**/*", "shared/**/*", "server/**/*"],
-  "exclude": ["node_modules", "build", "dist", "**/*.test.ts"],
   "compilerOptions": {
-    "incremental": true,
-    "tsBuildInfoFile": "./node_modules/typescript/tsbuildinfo",
-    "noEmit": true,
-    "module": "ESNext",
+    "target": "es2018",
+    "module": "commonjs",
+    "outDir": "./dist",
+    "rootDir": "./src",
     "strict": true,
-    "lib": ["esnext", "dom", "dom.iterable", "es2018", "es2018.regexp"],
-    "jsx": "preserve",
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "allowImportingTsExtensions": true,
-    "moduleResolution": "bundler",
-    "baseUrl": ".",
-    "types": ["node", "vite/client"],
-    "paths": {
-      "@/*": ["./client/src/*"],
-      "@shared/*": ["./shared/*"]
-    },
-    "target": "es2018",
-    "outDir": "dist",
-    "rootDir": ".",
     "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
     "resolveJsonModule": true,
-    "isolatedModules": true,
-    "allowJs": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false
-  }
+    "baseUrl": ".",
+    "paths": {
+      "*": ["node_modules/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }

@@ -2,8 +2,30 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 // import { auth } from './supabase'; // Not using real auth service for MVP demo
 
+// Define proper types
+interface User {
+  id: number;
+  username: string;
+  email: string;
+  fullName?: string;
+  role: string;
+  companyId?: number;
+}
+
+interface RegisterData {
+  username: string;
+  email: string;
+  password: string;
+  fullName?: string;
+}
+
+interface AuthError extends Error {
+  code?: string;
+  details?: string;
+}
+
 // Mock user data for demonstration
-const MOCK_USER = {
+const MOCK_USER: User = {
   id: 1,
   username: 'user1',
   email: 'admin@precisonrevenue.com',
@@ -12,23 +34,14 @@ const MOCK_USER = {
   companyId: 1,
 };
 
-type User = {
-  id: number;
-  username: string;
-  email: string;
-  fullName?: string;
-  role: string;
-  companyId?: number;
-};
-
-type AuthContextType = {
+interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (username: string, password: string) => Promise<User>;
-  register: (userData: any) => Promise<User>;
+  register: (userData: RegisterData) => Promise<User>;
   logout: () => Promise<void>;
-};
+}
 
 // Create Auth Context with default mock values for demo mode
 const AuthContext = createContext<AuthContextType>({
@@ -41,14 +54,17 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(MOCK_USER); // Start with mock user already logged in
+  const [user, setUser] = useState<User | null>(MOCK_USER);
   const [isLoading, setIsLoading] = useState(false);
   const queryClient = useQueryClient();
   
-  // Mock login function
   const login = async (username: string, password: string): Promise<User> => {
     setIsLoading(true);
     try {
+      if (!username || !password) {
+        throw new Error('Username and password are required');
+      }
+      
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 500));
       
@@ -56,15 +72,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(MOCK_USER);
       queryClient.setQueryData(['/api/auth/me'], MOCK_USER);
       return MOCK_USER;
+    } catch (error) {
+      const authError: AuthError = new Error(
+        error instanceof Error ? error.message : 'Login failed'
+      );
+      authError.code = 'AUTH_ERROR';
+      throw authError;
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Mock register function
-  const register = async (userData: any): Promise<User> => {
+  const register = async (userData: RegisterData): Promise<User> => {
     setIsLoading(true);
     try {
+      if (!userData.username || !userData.email || !userData.password) {
+        throw new Error('Username, email, and password are required');
+      }
+      
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 500));
       
@@ -72,12 +97,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(MOCK_USER);
       queryClient.setQueryData(['/api/auth/me'], MOCK_USER);
       return MOCK_USER;
+    } catch (error) {
+      const authError: AuthError = new Error(
+        error instanceof Error ? error.message : 'Registration failed'
+      );
+      authError.code = 'AUTH_ERROR';
+      throw authError;
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Mock logout function
   const logout = async (): Promise<void> => {
     setIsLoading(true);
     try {
@@ -85,6 +115,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await new Promise(resolve => setTimeout(resolve, 300));
       setUser(null);
       queryClient.setQueryData(['/api/auth/me'], null);
+      // Clear any auth-related cache
+      queryClient.clear();
+    } catch (error) {
+      const authError: AuthError = new Error(
+        error instanceof Error ? error.message : 'Logout failed'
+      );
+      authError.code = 'AUTH_ERROR';
+      throw authError;
     } finally {
       setIsLoading(false);
     }
@@ -104,5 +142,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
   return context;
 };

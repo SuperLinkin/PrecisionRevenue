@@ -17,13 +17,17 @@ import DealDeskPage from "@/pages/deal-desk";
 import CompanyPage from "@/pages/company";
 import SystemStatusPage from "@/pages/system-status";
 import ContractUploadPage from '@/pages/bulk-upload';
-import { useAuth } from "@/lib/auth";
 import { Suspense } from "react";
 
-// For demo purposes, all routes are accessible without login
-const ProtectedRoute = ({ component: Component, ...rest }: any) => {
-  // In a real application, this would check authentication
-  // For MVP demo, we'll always allow access
+// Define proper types for route components
+type RouteComponent = React.ComponentType<any>;
+
+interface ProtectedRouteProps {
+  component: RouteComponent;
+  [key: string]: any;
+}
+
+const ProtectedRoute = ({ component: Component, ...rest }: ProtectedRouteProps) => {
   return <Component {...rest} />;
 };
 

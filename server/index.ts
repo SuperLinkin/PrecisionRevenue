@@ -5,13 +5,30 @@ import { setupVite, serveStatic, log } from "./vite";
 import { initDB } from "./init-db";
 import { runMigrations } from "./migrations";
 import { config } from './config';
+import { pipeline } from '@xenova/transformers';
+import { TextAnalysisService } from './services/TextAnalysisService';
+
+// Define error types
+interface AppError extends Error {
+  status?: number;
+  statusCode?: number;
+}
+
+// Define log data interface
+interface LogData {
+  timestamp: string;
+  method: string;
+  path: string;
+  status: number;
+  duration: string;
+  userAgent?: string;
+  ip?: string;
+  response?: any;
+}
 
 const app = express();
-// Increase payload size limit for contract uploads (50mb)
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Add CORS headers
+// Configure CORS headers manually until cors package is installed
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -19,34 +36,108 @@ app.use((req, res, next) => {
   next();
 });
 
+// Increase payload size limit for contract uploads (50mb)
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Simplified request logging middleware
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
-
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
-
-  res.on("finish", () => {
+  const method = req.method;
+  
+  // Store original methods
+  const originalJson = res.json;
+  const originalSend = res.send;
+  
+  // Override json method to capture response
+  res.json = function(body: any) {
+    // Log the response
     const duration = Date.now() - start;
     if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
-
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-
-      log(logLine);
+      const logData: LogData = {
+        timestamp: new Date().toISOString(),
+        method,
+        path,
+        status: res.statusCode,
+        duration: `${duration}ms`,
+        userAgent: req.get('user-agent') || undefined,
+        ip: req.ip || undefined,
+        response: body
+      };
+      
+      log(JSON.stringify(logData));
     }
-  });
+    
+    // Call original method
+    return originalJson.call(this, body);
+  };
+  
+  // Override send method to capture response
+  res.send = function(body: any) {
+    // Log the response if it's JSON
+    const duration = Date.now() - start;
+    if (path.startsWith("/api") && typeof body === 'string') {
+      try {
+        const jsonBody = JSON.parse(body);
+        const logData: LogData = {
+          timestamp: new Date().toISOString(),
+          method,
+          path,
+          status: res.statusCode,
+          duration: `${duration}ms`,
+          userAgent: req.get('user-agent') || undefined,
+          ip: req.ip || undefined,
+          response: jsonBody
+        };
+        
+        log(JSON.stringify(logData));
+      } catch (e) {
+        // Not JSON, just log basic info
+        const logData: LogData = {
+          timestamp: new Date().toISOString(),
+          method,
+          path,
+          status: res.statusCode,
+          duration: `${duration}ms`,
+          userAgent: req.get('user-agent') || undefined,
+          ip: req.ip || undefined
+        };
+        
+        log(JSON.stringify(logData));
+      }
+    }
+    
+    // Call original method
+    return originalSend.call(this, body);
+  };
 
   next();
+});
+
+// Initialize text analysis service
+const textAnalysisService = new TextAnalysisService();
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ status: 'healthy' });
+});
+
+// Contract analysis endpoint
+app.post('/analyze', async (req, res) => {
+  try {
+    const { text } = req.body;
+    
+    if (!text) {
+      return res.status(400).json({ error: 'Text is required' });
+    }
+
+    const analysis = await textAnalysisService.analyzeContract(text);
+    res.json(analysis);
+  } catch (error) {
+    console.error('Error analyzing contract:', error);
+    res.status(500).json({ error: 'Failed to analyze contract' });
+  }
 });
 
 (async () => {
@@ -67,18 +158,34 @@ app.use((req, res, next) => {
     const server = await registerRoutes(app);
     console.log('Routes registered successfully');
 
-    app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-      console.error('Error:', err);
-      const status = err.status || err.statusCode || 500;
-      const message = err.message || "Internal Server Error";
+    // Improved error handling middleware
+    app.use((err: AppError, req: Request, res: Response, _next: NextFunction) => {
+      console.error('Error:', {
+        message: err.message,
+        stack: err.stack,
+        status: err.status || err.statusCode,
+        path: req.path,
+        method: req.method
+      });
 
-      res.status(status).json({ message });
-      throw err;
+      // Don't expose internal error details in production
+      const message = process.env.NODE_ENV === 'production' 
+        ? 'Internal Server Error' 
+        : err.message || 'Internal Server Error';
+
+      const status = err.status || err.statusCode || 500;
+      
+      res.status(status).json({ 
+        error: {
+          message,
+          status,
+          // Only include stack trace in development
+          ...(process.env.NODE_ENV !== 'production' && { stack: err.stack })
+        }
+      });
     });
 
-    // importantly only setup vite in development and after
-    // setting up all the other routes so the catch-all route
-    // doesn't interfere with the other routes
+    // Setup Vite or static serving
     if (app.get("env") === "development") {
       console.log('Setting up Vite...');
       await setupVite(app, server);
@@ -95,6 +202,7 @@ app.use((req, res, next) => {
     
     server.listen(port, () => {
       console.log(`Server is running at http://localhost:${port}`);
+      console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
       console.log('Press Ctrl+C to stop the server');
     });
   } catch (error) {
