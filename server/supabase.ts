@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
 // Get environment variables with validation
-const supabaseUrl = 'https://zxwaobyahgwaqyzgleli.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4d2FvYnlhaGd3YXF5emdsZWxpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5Nzc0NzksImV4cCI6MjA2MDU1MzQ3OX0.fYdZw3XEDVJu1P0jICRAnm85THpYoT1t6_u4IbPmG_k';
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
   throw new Error('SUPABASE_URL and SUPABASE_SERVICE_KEY must be set');

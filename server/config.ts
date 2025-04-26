@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { createClient } from '@supabase/supabase-js';
 
 // Validate required environment variables
 const requiredEnvVars = [
@@ -26,6 +27,18 @@ export const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY |
 // Other Configuration
 export const PORT = process.env.PORT || 3000;
 export const NODE_ENV = process.env.NODE_ENV || 'development';
+
+// Create and export Supabase client
+export const supabase = createClient(
+  SUPABASE_URL,
+  SUPABASE_SERVICE_ROLE_KEY,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
+);
 
 export const config = {
   supabase: {
