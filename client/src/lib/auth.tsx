@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-// import { auth } from './supabase'; // Not using real auth service for MVP demo
 
 // Define proper types
 interface User {
@@ -10,6 +9,7 @@ interface User {
   fullName?: string;
   role: string;
   companyId?: number;
+  tenantId?: number;
 }
 
 interface RegisterData {
@@ -17,22 +17,15 @@ interface RegisterData {
   email: string;
   password: string;
   fullName?: string;
+  role?: string;
+  companyId?: number;
+  tenantId?: number;
 }
 
 interface AuthError extends Error {
   code?: string;
   details?: string;
 }
-
-// Mock user data for demonstration
-const MOCK_USER: User = {
-  id: 1,
-  username: 'user1',
-  email: 'admin@precisonrevenue.com',
-  fullName: 'User 1',
-  role: 'admin',
-  companyId: 1,
-};
 
 interface AuthContextType {
   user: User | null;
@@ -43,20 +36,35 @@ interface AuthContextType {
   logout: () => Promise<void>;
 }
 
-// Create Auth Context with default mock values for demo mode
 const AuthContext = createContext<AuthContextType>({
-  user: MOCK_USER,
+  user: null,
   isLoading: false,
-  isAuthenticated: true,
-  login: async () => MOCK_USER,
-  register: async () => MOCK_USER,
-  logout: async () => {},
+  isAuthenticated: false,
+  login: async () => { throw new Error('Not implemented'); },
+  register: async () => { throw new Error('Not implemented'); },
+  logout: async () => { throw new Error('Not implemented'); },
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(MOCK_USER);
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const queryClient = useQueryClient();
+
+  // Fetch current user on mount
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await fetch('/api/auth/me');
+        if (response.ok) {
+          const userData = await response.json();
+          setUser(userData);
+        }
+      } catch (error) {
+        console.error('Failed to fetch user:', error);
+      }
+    };
+    fetchUser();
+  }, []);
   
   const login = async (username: string, password: string): Promise<User> => {
     setIsLoading(true);
@@ -65,13 +73,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         throw new Error('Username and password are required');
       }
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Always succeed with mock user in demo mode
-      setUser(MOCK_USER);
-      queryClient.setQueryData(['/api/auth/me'], MOCK_USER);
-      return MOCK_USER;
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Login failed');
+      }
+
+      const userData = await response.json();
+      setUser(userData);
+      queryClient.setQueryData(['/api/auth/me'], userData);
+      return userData;
     } catch (error) {
       const authError: AuthError = new Error(
         error instanceof Error ? error.message : 'Login failed'
@@ -90,13 +108,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         throw new Error('Username, email, and password are required');
       }
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Always succeed with mock user in demo mode
-      setUser(MOCK_USER);
-      queryClient.setQueryData(['/api/auth/me'], MOCK_USER);
-      return MOCK_USER;
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Registration failed');
+      }
+
+      const newUser = await response.json();
+      setUser(newUser);
+      queryClient.setQueryData(['/api/auth/me'], newUser);
+      return newUser;
     } catch (error) {
       const authError: AuthError = new Error(
         error instanceof Error ? error.message : 'Registration failed'
@@ -111,11 +139,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async (): Promise<void> => {
     setIsLoading(true);
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 300));
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        throw new Error('Logout failed');
+      }
+
       setUser(null);
       queryClient.setQueryData(['/api/auth/me'], null);
-      // Clear any auth-related cache
       queryClient.clear();
     } catch (error) {
       const authError: AuthError = new Error(

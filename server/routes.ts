@@ -12,6 +12,7 @@ import {
 import bcrypt from "bcryptjs";
 import session from "express-session";
 import MemoryStore from "memorystore";
+import { authenticate } from './utils/auth';
 
 // Emergency fix for contract API
 import contractApiRouter from './contract-api';
@@ -35,7 +36,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Set up session middleware
   app.use(
     session({
-      cookie: { maxAge: 86400000 }, // 24 hours
+      cookie: { 
+        maxAge: 86400000, // 24 hours
+        secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+        httpOnly: true, // Prevent client-side access to cookies
+        sameSite: 'lax' // Protect against CSRF
+      },
       store: new SessionStore({
         checkPeriod: 86400000 // prune expired entries every 24h
       }),
@@ -45,33 +51,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     })
   );
 
-  // Authentication middleware
-  const authenticate = async (req: Request, res: Response, next: Function) => {
-    // DEMO MODE - Skip authentication for MVP demo
-    // Always provide a mock user for the demo
-    req.user = {
-      id: 1,
-      username: 'mvpranav',
-      role: 'admin',
-      companyId: 1,
-      tenantId: 1
-    };
-    next();
-    
-    // Real authentication code (disabled for demo)
-    /*
-    if (!req.session.userId) {
-      return res.status(401).json({ message: "Authentication required" });
-    }
-    const user = await storage.getUser(req.session.userId);
-    if (!user) {
-      req.session.destroy(() => {});
-      return res.status(401).json({ message: "User not found" });
-    }
-    req.user = user;
-    next();
-    */
-  };
+  // Use the imported authenticate middleware
+  app.use(authenticate);
 
   // Admin middleware
   const requireAdmin = async (req: Request, res: Response, next: Function) => {
@@ -605,10 +586,6 @@ Date: ${new Date().toISOString().split('T')[0]}
 
   const httpServer = createServer(app);
 
-  */
-
-  // Add this closing tag for the commented out API section
-  
   // Health check and database status routes
   app.get("/api/health", async (req, res) => {
     try {
@@ -636,6 +613,6 @@ Date: ${new Date().toISOString().split('T')[0]}
       });
     }
   });
-  const httpServer = createServer(app);
+
   return httpServer;
 }

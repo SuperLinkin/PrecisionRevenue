@@ -21,18 +21,6 @@ export interface AuthenticatedRequest extends Request {
 }
 
 export const authenticate = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-  // DEMO MODE - Skip authentication check and use mock user
-  req.user = {
-    id: 1,
-    username: 'mvpranav',
-    role: 'admin',
-    companyId: 1,
-    tenantId: 1
-  };
-  return next();
-
-  // Real authentication code (disabled for demo)
-  /*
   if (!req.session?.userId) {
     return res.status(401).json({ message: 'Unauthorized' });
   }
@@ -60,5 +48,4 @@ export const authenticate = async (req: AuthenticatedRequest, res: Response, nex
     console.error('Authentication error:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
-  */
 }; 

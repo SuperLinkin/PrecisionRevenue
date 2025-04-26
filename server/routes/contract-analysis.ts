@@ -21,6 +21,9 @@ import { processContractWithEmbeddings, searchSimilarClauses } from '../utils/co
 import { eq } from 'drizzle-orm';
 import type { InsertContract } from '@shared/schema';
 import { analyzeRevenueClausesAndTriggers, type RevenueAnalysis } from '../utils/revenue-clauses';
+import { ContractAnalysisService } from '../services/ContractAnalysisService';
+import { OpenAI } from '@langchain/openai';
+import { log } from '../utils/logger';
 
 // Define types for request bodies
 interface ContractAnalysisRequest {
@@ -234,6 +237,10 @@ function determineRiskLevel(content: string): 'low' | 'medium' | 'high' {
 }
 
 const router = Router();
+const contractAnalysisService = new ContractAnalysisService();
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 // Apply authentication middleware to all routes
 router.use(authenticate);
@@ -793,6 +800,85 @@ router.post('/search-clauses', async (req: Request, res: Response) => {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to search clauses'
     });
+  }
+});
+
+// Analyze contract
+router.post('/analyze', async (req, res) => {
+  try {
+    if (!req.files || !req.files.contract) {
+      return res.status(400).json({ error: 'No contract file provided' });
+    }
+
+    const contractFile = req.files.contract;
+    const analysis = await contractAnalysisService.analyzeContract(contractFile.data);
+
+    res.json(analysis);
+  } catch (error) {
+    log.error('Error analyzing contract:', error);
+    res.status(500).json({ error: 'Failed to analyze contract' });
+  }
+});
+
+// Ask question about contract
+router.post('/ask-question', async (req, res) => {
+  try {
+    const { question, contractId } = req.body;
+
+    if (!question || !contractId) {
+      return res.status(400).json({ error: 'Question and contractId are required' });
+    }
+
+    // Create embedding for the question
+    const questionEmbedding = await openai.embeddings.create({
+      model: 'text-embedding-ada-002',
+      input: question,
+    });
+
+    // Find relevant clauses using the match_contract_clauses function
+    const { data: relevantClauses, error } = await supabase.rpc('match_contract_clauses', {
+      query_embedding: questionEmbedding.data[0].embedding,
+      match_threshold: 0.7,
+      match_count: 5
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    // Prepare context for GPT
+    const context = relevantClauses
+      .map(clause => `Section: ${clause.section_heading}\nContent: ${clause.clause_text}`)
+      .join('\n\n');
+
+    // Generate answer using GPT
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4-turbo-preview',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a contract analysis assistant. Answer questions based on the provided contract clauses. Be precise and cite specific sections when relevant.'
+        },
+        {
+          role: 'user',
+          content: `Context:\n${context}\n\nQuestion: ${question}`
+        }
+      ],
+      temperature: 0.3,
+      max_tokens: 500
+    });
+
+    res.json({
+      answer: completion.choices[0].message.content,
+      relevantClauses: relevantClauses.map(clause => ({
+        section: clause.section_heading,
+        content: clause.clause_text,
+        similarity: clause.similarity
+      }))
+    });
+  } catch (error) {
+    log.error('Error processing question:', error);
+    res.status(500).json({ error: 'Failed to process question' });
   }
 });
 

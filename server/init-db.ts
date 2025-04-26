@@ -1,6 +1,6 @@
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import { db, migrationClient } from './db';
-import * as schema from '@shared/schema';
+import * as schema from './shared/schema';
 
 // Initialize the database tables
 export async function initDB() {

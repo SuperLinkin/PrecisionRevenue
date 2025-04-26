@@ -5,13 +5,15 @@ import { setupVite, serveStatic, log } from "./vite";
 import { initDB } from "./init-db";
 import { runMigrations } from "./migrations";
 import { config } from './config';
-import { pipeline } from '@xenova/transformers';
+// Remove @xenova/transformers import since it's not found
 import { TextAnalysisService } from './services/TextAnalysisService';
 
 // Define error types
 interface AppError extends Error {
   status?: number;
   statusCode?: number;
+  path?: string;
+  method?: string;
 }
 
 // Define log data interface
@@ -29,7 +31,7 @@ interface LogData {
 const app = express();
 
 // Configure CORS headers manually until cors package is installed
-app.use((req, res, next) => {
+app.use((_req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
@@ -119,14 +121,14 @@ app.use((req, res, next) => {
 const textAnalysisService = new TextAnalysisService();
 
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.json({ status: 'healthy' });
 });
 
 // Contract analysis endpoint
-app.post('/analyze', async (req, res) => {
+app.post('/analyze', async (_req, res) => {
   try {
-    const { text } = req.body;
+    const { text } = _req.body;
     
     if (!text) {
       return res.status(400).json({ error: 'Text is required' });
@@ -159,13 +161,13 @@ app.post('/analyze', async (req, res) => {
     console.log('Routes registered successfully');
 
     // Improved error handling middleware
-    app.use((err: AppError, req: Request, res: Response, _next: NextFunction) => {
+    app.use((err: AppError, _req: Request, res: Response, _next: NextFunction) => {
       console.error('Error:', {
         message: err.message,
         stack: err.stack,
         status: err.status || err.statusCode,
-        path: req.path,
-        method: req.method
+        path: err.path || 'unknown',
+        method: err.method || 'unknown'
       });
 
       // Don't expose internal error details in production
